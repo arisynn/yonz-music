@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.2.0 — Preview 3
+
+- Share one compact smart-paste editor between Downloads and local song-list import.
+- Split repeated/selected-library artists and explicit separated entries conservatively; preserve ambiguous text with a review hint.
+- Add undo and a full-list editing dialog, without growing the main field beyond three lines.
+- Recognize structured pasted JSON/CSV/M3U while keeping their content and signed URLs intact.
+- Document the next update plan and Spotify authorization/access prerequisites. Spotify OAuth is still not configured.
+- Dev version code 5 updates Preview 2 with the same debug signing identity.
+
+
 ## 1.2.0 — Preview 2
 
 - Enforce original audio format through the engine/API; disable conversion requests.

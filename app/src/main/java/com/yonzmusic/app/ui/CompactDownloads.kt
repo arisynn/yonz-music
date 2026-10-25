@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yonzmusic.app.MusicViewModel
 import com.yonzmusic.app.YonzApp
+import com.yonzmusic.app.importer.PasteListFormatter
 import org.json.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,8 @@ import androidx.compose.foundation.lazy.LazyColumn
     val plan by repo.plan.collectAsStateWithLifecycle()
     val message by repo.message.collectAsStateWithLifecycle()
     val destination by vm.outputDestination.collectAsStateWithLifecycle()
+    val tracks by vm.tracks.collectAsStateWithLifecycle()
+    val artists = remember(tracks) { tracks.filter { it.available }.flatMap { it.artist.split(';') }.distinct() }
     var text by rememberSaveable { mutableStateOf("") }
     var kind by rememberSaveable { mutableStateOf("auto") }
     var name by rememberSaveable { mutableStateOf("Playlist saya") }
@@ -53,14 +56,15 @@ import androidx.compose.foundation.lazy.LazyColumn
             scope.launch {
                 runCatching { withContext(Dispatchers.IO) {
                     context.contentResolver.openInputStream(uri)?.use { it.readBytesBounded(2 * 1024 * 1024).toString(Charsets.UTF_8).removePrefix("\uFEFF") } ?: error("Berkas tidak dapat dibaca")
-                } }.onSuccess { value -> text = value; kind = when { value.trimStart().startsWith("{") || value.trimStart().startsWith("[") -> "json"; value.startsWith("#EXTM3U") -> "m3u"; value.lineSequence().firstOrNull().orEmpty().contains(",") -> "csv"; else -> "text" } }.onFailure { vm.notify(it.message ?: "Gagal membaca berkas") }
+                } }.onSuccess { value -> text = value; kind = PasteListFormatter.detectKind(value) }.onFailure { vm.notify(it.message ?: "Gagal membaca berkas") }
             }
         }
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = Design.page), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
         Text("Unduh musik", style = MaterialTheme.typography.headlineSmall)
         if (editing || plan == null) {
-        OutlinedTextField(text, { if (it.toByteArray().size <= 2 * 1024 * 1024) { text = it; kind = "auto" } else vm.notify("Masukan melebihi 2 MiB") }, label = { Text("Tempel tautan atau daftar lagu") }, placeholder = { Text("Artis - Judul, satu per baris") }, minLines = 2, maxLines = 3, modifier = Modifier.fillMaxWidth(), enabled = !busy)
+        SmartSongListField(text, { text = it; kind = PasteListFormatter.detectKind(it) }, artists,
+            modifier = Modifier.fillMaxWidth(), enabled = !busy, onTooLarge = { vm.notify("Masukan melebihi 2 MiB") })
         Row(horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
             TextButton({ file.launch(arrayOf("text/*", "application/json", "application/octet-stream")) }, enabled = !busy) { Text("Pilih berkas") }
             TextButton({ folder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)) }, enabled = !busy) { Text(if (destination.isBlank()) "Pilih tujuan" else "Ubah tujuan") }
@@ -78,7 +82,7 @@ import androidx.compose.foundation.lazy.LazyColumn
             else LinearProgressIndicator(Modifier.fillMaxWidth())
             TextButton(repo::cancel, enabled = stage != "cancelling") { Text("Batal") }
         }
-        if (plan == null && !busy) TextButton({ repo.submit("get_last") }, enabled = destination.isNotBlank()) { Text("Pulihkan pemeriksaan terakhir") }
+        if (plan == null && !busy && text.isBlank()) TextButton({ repo.submit("get_last") }, enabled = destination.isNotBlank()) { Text("Pulihkan pemeriksaan terakhir") }
         if (message.isNotBlank()) Text(message, style = MaterialTheme.typography.bodySmall)
         if (!editing) plan?.let { p ->
             val counts = p.optJSONObject("counts") ?: JSONObject()

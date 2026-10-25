@@ -1,0 +1,15 @@
+{
+  "actual_clipboard_paste": true,
+  "requested_example": "Artis - judul lagu\nArtis - judul lagu",
+  "undo_restores_raw": true,
+  "ambiguous_preserved": true,
+  "explicit_semicolon_split": true,
+  "dialog_done_visible_with_ime": true,
+  "font_1_3_screenshot": true,
+  "emulator_api": 29,
+  "width_dp": 320,
+  "audio_network_tested": false,
+  "rendered_editor_frame_verified": true,
+  "dialog_done_above_actual_ime": true,
+  "rendered_large_font_frame_verified": true
+}

@@ -91,6 +91,8 @@ private fun Modifier.toggleableSetting(value: Boolean, change: (Boolean) -> Unit
 @Composable fun ImportScreen(vm: MusicViewModel, history: List<ImportLog>, files: () -> Unit, folder: () -> Unit, list: () -> Unit, done: () -> Unit, onHistory: (ImportLog) -> Unit) {
     val preview by vm.importPreview.collectAsStateWithLifecycle()
     val busy by vm.importBusy.collectAsStateWithLifecycle()
+    val selectedTracks by vm.tracks.collectAsStateWithLifecycle()
+    val pasteArtists = remember(selectedTracks) { selectedTracks.filter { it.available }.flatMap { it.artist.split(';') }.distinct() }
     var text by remember { mutableStateOf(vm.importedText) }
     var name by rememberSaveable { mutableStateOf("Imported collection") }
     val c = MaterialTheme.colorScheme
@@ -124,7 +126,9 @@ private fun Modifier.toggleableSetting(value: Boolean, change: (Boolean) -> Unit
             }
             item { SelectedSources(vm) }
             item { SectionTitle("Or paste a list", "One Artist — Title per line. Numbered AI lists work too.") }
-            item { OutlinedTextField(text, { if (it.length <= MusicListParser.MAX_BYTES) { text = it; vm.setImportText(it) } }, label = { Text("Song list") }, placeholder = { Text("Artist — Song title\nArtist — Another song") }, modifier = Modifier.fillMaxWidth().padding(horizontal = Design.page).heightIn(min = 144.dp, max = 240.dp), minLines = 4, maxLines = 8, enabled = !busy, shape = Design.small) }
+            item { SmartSongListField(text, { text = it; vm.setImportText(it) }, pasteArtists,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Design.page), enabled = !busy, label = "Song list",
+                onTooLarge = { vm.notify("Masukan melebihi 2 MiB") }) }
             item { Button({ vm.analyze() }, Modifier.fillMaxWidth().padding(horizontal = Design.page), enabled = text.isNotBlank() && !busy) { Icon(Icons.Rounded.ManageSearch, null); Spacer(Modifier.width(Design.sm)); Text("Match with my library") } }
             item { Text("Lists contain metadata. Reuse selected local audio, or review permitted sources in Downloads. Spotify music metadata does not itself provide playable audio.", modifier = Modifier.padding(horizontal = Design.page), style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant) }
             if (history.isNotEmpty()) {

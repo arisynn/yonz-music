@@ -2,7 +2,7 @@
 
 Your Music. Your Space.
 
-**[1.2.0 Preview 2](https://github.com/arisynn/yonz-music/releases/tag/v1.2.0-preview.2):** selalu format audio asli, pengenalan tautan berbagi, dan sampul pendamping untuk WebM/Opus. [Perubahan dan pengujian](docs/ENGINE_ORIGINAL_ARTWORK_PREVIEW_2.md). Kanal stabil 1.1.0 di bawah tetap tersedia.
+**[1.2.0 Preview 3](https://github.com/arisynn/yonz-music/releases/tag/v1.2.0-preview.3):** input tempelan otomatis dirapikan, editor ringkas, dan undo. [Rencana pembaruan](NEXT_UPDATE_PLAN.md) · [Implementasi/pengujian input](docs/SMART_PASTE_PREVIEW_3.md). Fitur format audio asli dan sampul dari Preview 2 tetap dipertahankan; kanal stabil 1.1.0 tersedia di bawah.
 
 ![Yono Music owner-supplied identity](brand/launcher-preview-1024.png)
 
