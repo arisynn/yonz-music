@@ -1,4 +1,6 @@
-# Yono Engine integration — 1.2.0 preview
+# Yono Engine integration — 1.2.0 Preview 1
+
+Historical Preview 1 report. [Preview 2 original-format and artwork update](ENGINE_ORIGINAL_ARTWORK_PREVIEW_2.md) supersedes encoder plans; MP3 conversion is now explicitly out of scope at the owner’s request.
 
 Integrated against application commit a4326b7, preserving its signing key, selected-source library, Room collections, MediaSession, logo and updater. The handoff's INTEGRATE_CODEX.md and companion documentation/code were read before execution. Imported source is GPL-3.0-or-later. The nested reference CLI was not executed.
 

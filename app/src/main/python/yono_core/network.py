@@ -201,11 +201,14 @@ def youtube_dl(control, runtime=None, *, flat=False, output=None):
     return GuardedYoutubeDL(options)
 
 
-def fetch_picture(url, control):
+def fetch_picture(url, control, source_url=""):
     # Artwork is optional, but an arbitrary URL from an import must not contact arbitrary services.
     host = (urlsplit(url).hostname or "").lower()
     allowed = {"i.ytimg.com", "img.youtube.com", "lh3.googleusercontent.com", "i.scdn.co",
                "image-cdn-ak.spotifycdn.com", "image-cdn-fa.spotifycdn.com"}
+    if source_url and urlsplit(source_url).scheme == "https" and host == urlsplit(source_url).hostname:
+        allowed.add(host)
+    allowed.update({"upload.wikimedia.org", "commons.wikimedia.org"})
     if host not in allowed and not host.endswith(".spotifycdn.com"):
         raise EngineError("ARTWORK_HOST", "Host sampul tidak didukung.")
     with session(control, {host}) as client:

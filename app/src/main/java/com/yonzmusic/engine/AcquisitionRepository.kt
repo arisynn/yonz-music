@@ -95,8 +95,10 @@ class AcquisitionRepository(private val app: YonzApp) {
             val artist = (0 until artists.length()).joinToString("; ") { artists.getString(it) }
             val track = known ?: app.repository.indexDownloaded(Uri.parse(uri), DownloadJob(row.getString("id"), id, i, playlist, result.getString("name"), "",
                 song.getString("title"), artist, song.optString("album"), song.optString("youtube_id"), song.optString("source_url"), "User-authorized source", ""))
-            knownByUri[uri] = track
-            ids += track.id
+            val art = row.optString("artwork_uri")
+            val indexed = if (art.isNotBlank() && art != track.artUri) track.copy(artUri = art).also { dao.upsert(listOf(it)) } else track
+            knownByUri[uri] = indexed
+            ids += indexed.id
         }
         app.repository.append(playlist, ids)
     }

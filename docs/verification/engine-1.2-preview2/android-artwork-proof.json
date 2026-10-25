@@ -1,0 +1,161 @@
+{
+  "fixture": true,
+  "live_download": false,
+  "plans": [
+    {
+      "schema": 1,
+      "engine": "Yono Engine",
+      "id": "998c4eaa25964d63ba7d87e29f7053f7",
+      "name": "Original artwork fixture",
+      "state": "complete",
+      "origin": "",
+      "completeness": "complete",
+      "total": 1,
+      "entries": [
+        {
+          "id": "c9f7edffafc041b993f1543f1d7f84ae",
+          "position": 1,
+          "status": "downloaded",
+          "request": {
+            "song": {
+              "title": "Owned tone webm a247d8",
+              "artists": [
+                "Yono original fixture"
+              ],
+              "duration": 5,
+              "sid": "",
+              "isrc": "",
+              "album": "",
+              "date": "",
+              "explicit": null,
+              "artwork_url": "",
+              "youtube_id": "",
+              "source_url": "https:\/\/example.test\/owned.webm?fixture=f314e04318c04c738372493ea4a83d74",
+              "direct_audio": true
+            }
+          },
+          "song": {
+            "title": "Owned tone webm a247d8",
+            "artists": [
+              "Yono original fixture"
+            ],
+            "duration": 5,
+            "sid": "",
+            "isrc": "",
+            "album": "",
+            "date": "",
+            "explicit": null,
+            "artwork_url": "",
+            "youtube_id": "",
+            "source_url": "https:\/\/example.test\/owned.webm?fixture=f314e04318c04c738372493ea4a83d74",
+            "direct_audio": true
+          },
+          "candidate": {
+            "direct": true
+          },
+          "pending_sha256": "e87da70eab47b24237936538b93c69962bbf5911911dbdcb5597c48781c1193e",
+          "audio": {
+            "extension": "webm",
+            "mime": "audio\/webm",
+            "sha256": "e87da70eab47b24237936538b93c69962bbf5911911dbdcb5597c48781c1193e",
+            "size": 48771,
+            "duration": 5.008,
+            "artwork_downloaded": true,
+            "artwork_sha256": "91e3156ad9e624b9fcc5eb7aed6447593991f07f260b715b93e7722cc9f09e95",
+            "artwork_extension": "png",
+            "artwork_mime": "image\/png",
+            "tags_embedded": false,
+            "artwork_embedded": false
+          },
+          "artwork_uri": "content:\/\/com.android.externalstorage.documents\/tree\/primary%3AMusic%2FYonoEngineGate\/document\/primary%3AMusic%2FYonoEngineGate%2FOriginal%20artwork%20fixture%2FYono%20original%20fixture%20-%20Owned%20tone%20webm%20a247d8.cover.png",
+          "uri": "content:\/\/com.android.externalstorage.documents\/tree\/primary%3AMusic%2FYonoEngineGate\/document\/primary%3AMusic%2FYonoEngineGate%2FOriginal%20artwork%20fixture%2FYono%20original%20fixture%20-%20Owned%20tone%20webm%20a247d8.webm"
+        }
+      ],
+      "collection_id": "cc1041a89d02d828ff221d96",
+      "folder": "Original artwork fixture",
+      "updated_at": 1792946405,
+      "counts": {
+        "downloaded": 1
+      }
+    },
+    {
+      "schema": 1,
+      "engine": "Yono Engine",
+      "id": "d66efbf1d9d946d49365ce76498e9c9f",
+      "name": "Original artwork fixture",
+      "state": "complete",
+      "origin": "",
+      "completeness": "complete",
+      "total": 1,
+      "entries": [
+        {
+          "id": "d45e79fcbdab4e59aecca7a60f3b8706",
+          "position": 1,
+          "status": "downloaded",
+          "request": {
+            "song": {
+              "title": "Owned tone opus 3d7cf1",
+              "artists": [
+                "Yono original fixture"
+              ],
+              "duration": 5,
+              "sid": "",
+              "isrc": "",
+              "album": "",
+              "date": "",
+              "explicit": null,
+              "artwork_url": "",
+              "youtube_id": "",
+              "source_url": "https:\/\/example.test\/owned.opus?fixture=7c244c7f24c44fe291c2704a226a807b",
+              "direct_audio": true
+            }
+          },
+          "song": {
+            "title": "Owned tone opus 3d7cf1",
+            "artists": [
+              "Yono original fixture"
+            ],
+            "duration": 5,
+            "sid": "",
+            "isrc": "",
+            "album": "",
+            "date": "",
+            "explicit": null,
+            "artwork_url": "",
+            "youtube_id": "",
+            "source_url": "https:\/\/example.test\/owned.opus?fixture=7c244c7f24c44fe291c2704a226a807b",
+            "direct_audio": true
+          },
+          "candidate": {
+            "direct": true
+          },
+          "pending_sha256": "425254f3875a627df4e7d5112fc98672920e34f44dc4d82c7dd787795bd5178f",
+          "audio": {
+            "extension": "opus",
+            "mime": "audio\/ogg",
+            "sha256": "425254f3875a627df4e7d5112fc98672920e34f44dc4d82c7dd787795bd5178f",
+            "size": 49304,
+            "duration": 5,
+            "artwork_downloaded": true,
+            "artwork_sha256": "91e3156ad9e624b9fcc5eb7aed6447593991f07f260b715b93e7722cc9f09e95",
+            "artwork_extension": "png",
+            "artwork_mime": "image\/png",
+            "tags_embedded": true,
+            "artwork_embedded": true
+          },
+          "artwork_uri": "content:\/\/com.android.externalstorage.documents\/tree\/primary%3AMusic%2FYonoEngineGate\/document\/primary%3AMusic%2FYonoEngineGate%2FOriginal%20artwork%20fixture%2FYono%20original%20fixture%20-%20Owned%20tone%20opus%203d7cf1.cover.png",
+          "uri": "content:\/\/com.android.externalstorage.documents\/tree\/primary%3AMusic%2FYonoEngineGate\/document\/primary%3AMusic%2FYonoEngineGate%2FOriginal%20artwork%20fixture%2FYono%20original%20fixture%20-%20Owned%20tone%20opus%203d7cf1.opus"
+        }
+      ],
+      "collection_id": "9710a09bc35ff5cadfa33539",
+      "folder": "Original artwork fixture",
+      "updated_at": 1792946406,
+      "counts": {
+        "downloaded": 1
+      }
+    }
+  ],
+  "native_playback": true,
+  "artwork_decodes": true,
+  "rescan_retained": true
+}

@@ -105,6 +105,7 @@ class Repository(val context: Context, val db: MusicDatabase) {
             val oldLocations = dao.locations().filter { it.sourceId == source.id }.associateBy { it.identity }
             val allLocations = dao.locations().groupBy { it.identity }
             val oldTracks = dao.allTracks()
+            val downloadSources = dao.allSources().filter { it.kind == "download" }.map { it.id }.toSet()
             val byId = oldTracks.associateBy { it.id }
             val priorByIdentity = oldTracks.groupBy { identity(Uri.parse(it.uri)) }
             val completed = dao.completedDownloads()
@@ -124,7 +125,11 @@ class Repository(val context: Context, val db: MusicDatabase) {
                 if (existing != null && equivalent.size > 1) mergeIdentities(existing, equivalent.filter { it != existing })
                 val id = existing ?: stable(key)
                 val previous = byId[id]
-                track = track.copy(id = id, added = previous?.added ?: track.added)
+                val downloaded = previous != null && (previous.source in downloadSources || allLocations[key].orEmpty().any { it.sourceId in downloadSources })
+                track = track.copy(id = id, added = previous?.added ?: track.added, artUri = previous?.artUri.orEmpty().ifBlank { track.artUri },
+                    title = if (downloaded) previous!!.title else track.title,
+                    artist = if (downloaded) previous!!.artist else track.artist,
+                    album = if (downloaded) previous!!.album else track.album)
                 foundTracks[id] = track
                 found += TrackLocation(source.id, key, id, uri.toString(), size, modified)
             }
@@ -261,7 +266,7 @@ class Repository(val context: Context, val db: MusicDatabase) {
         } finally { retriever.release() }
     }.getOrNull()
     companion object {
-        val AUDIO_EXT = setOf("mp3", "flac", "m4a", "aac", "wav", "ogg", "opus")
+        val AUDIO_EXT = setOf("mp3", "flac", "m4a", "aac", "wav", "ogg", "opus", "webm", "weba")
         const val MAX_AUDIO_BYTES = 256L * 1024 * 1024
     }
     suspend fun create(name: String, ids: List<String> = emptyList()): Long = db.withTransaction {

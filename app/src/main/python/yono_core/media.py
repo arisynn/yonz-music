@@ -1,4 +1,4 @@
-"""Real transfer, audio conversion, duration validation and embedded artwork."""
+"""Original audio transfer, native validation, embedded and companion artwork."""
 from __future__ import annotations
 import base64
 import hashlib
@@ -11,7 +11,7 @@ from .model import EngineError, Song, duration_matches
 from .network import MAX_AUDIO, fetch_picture, youtube_dl
 
 MIMES = {"mp3": "audio/mpeg", "m4a": "audio/mp4", "flac": "audio/flac", "ogg": "audio/ogg",
-         "opus": "audio/ogg", "wav": "audio/wav", "aac": "audio/aac", "webm": "audio/webm"}
+         "opus": "audio/ogg", "wav": "audio/wav", "aac": "audio/aac", "webm": "audio/webm", "weba": "audio/webm"}
 
 
 def file_hash(path, control=None):
@@ -159,6 +159,7 @@ class Media:
             path = Path(record["path"])
             info = probe(path, token, self.ffprobe, self.host)
             import mutagen
+            song.artwork_url = song.artwork_url or record.get("metadata", {}).get("artUrl", "")
             embedded = mutagen.File(path, easy=True)
             if embedded is not None:
                 if embedded.get("title"):
@@ -191,34 +192,29 @@ class Media:
         for url in dict.fromkeys(u for u in urls if u):
             self.control.check()
             try:
-                return fetch_picture(url, self.control)
+                return fetch_picture(url, self.control, song.source_url if song.direct_audio else "")
             except Exception:
                 self.control.check()
         return None
 
-    def finish(self, source, song, workspace, *, output_format="mp3", bitrate=192):
+    def finish(self, source, song, workspace, *, output_format="original", bitrate=192):
         self.control.emit("validating_audio", title=song.title, message="Memeriksa audio lengkap…")
         original = probe(source, self.control, self.ffprobe, self.host)
         if not original.get("audio") or original.get("video") or not duration_matches(song.duration, original.get("duration")):
             raise EngineError("DURATION_MISMATCH", "Kontainer/durasi audio tidak sesuai. Audio tidak disimpan.")
-        if output_format == "mp3":
-            if not self.ffmpeg:
-                raise EngineError("MP3_RUNTIME_REQUIRED", "MP3 memerlukan FFmpeg Android dengan encoder libmp3lame. Pilih format asli atau pasang runtime saat build.")
-            if bitrate not in {128, 192, 256, 320}:
-                raise EngineError("INVALID_BITRATE", "Bitrate harus 128, 192, 256, atau 320 kbps.")
-            self.control.emit("converting", title=song.title, message="Mengonversi audio ke MP3…")
-            path = workspace / "final.mp3"
-            command([self.ffmpeg, "-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-xerror",
-                     "-i", source, "-map", "0:a:0", "-vn", "-sn", "-dn", "-map_metadata", "-1",
-                     "-c:a", "libmp3lame", "-b:a", f"{bitrate}k", "-id3v2_version", "3", path],
-                    self.control, timeout=max(120, song.duration * 3))
-        elif output_format == "original":
-            path = source
-        else:
-            raise EngineError("INVALID_FORMAT", "Format keluaran harus mp3 atau original.")
+        if output_format != "original":
+            raise EngineError("ORIGINAL_ONLY", "Unduhan selalu memakai format audio asli; konversi dinonaktifkan.")
+        path = source
         self.control.emit("artwork", title=song.title, message="Menulis informasi dan sampul…")
         picture = self.artwork(song)
         embedded = tag(path, song, picture)
+        artwork = {}
+        if picture:
+            extension = "png" if picture.startswith(b"\x89PNG") else "jpg"
+            cover = workspace / ("cover." + extension)
+            cover.write_bytes(picture)
+            artwork = {"artwork_path": str(cover), "artwork_sha256": file_hash(cover, self.control),
+                       "artwork_extension": extension, "artwork_mime": "image/png" if extension == "png" else "image/jpeg"}
         final = probe(path, self.control, self.ffprobe, self.host)
         if not final.get("audio") or final.get("video") or not duration_matches(song.duration, final.get("duration")):
             raise EngineError("DURATION_MISMATCH", "Validasi audio setelah penulisan tag gagal.")
@@ -227,7 +223,7 @@ class Media:
             raise EngineError("UNSUPPORTED_CONTAINER", "Kontainer keluaran belum didukung.")
         return {"path": str(path), "extension": extension, "mime": MIMES[extension],
                 "sha256": file_hash(path, self.control), "size": path.stat().st_size,
-                "duration": final["duration"], **embedded}
+                "duration": final["duration"], "artwork_downloaded": bool(picture), **artwork, **embedded}
 
     def repair(self, source, song, workspace):
         # Stage a safe copy; the user's original is not edited or deleted.
@@ -238,7 +234,7 @@ class Media:
             raise EngineError("ARTWORK_UNAVAILABLE", "Sampul yang valid belum ditemukan.", retryable=True)
         result = tag(path, song, picture)
         if not result["artwork_embedded"]:
-            raise EngineError("ARTWORK_CONTAINER", "Kontainer belum mendukung sampul tertanam; konversi MP3 dapat dipilih secara terpisah.")
+            raise EngineError("ARTWORK_CONTAINER", "Kontainer belum mendukung sampul tertanam. Gunakan sampul pendamping tanpa mengubah audio.")
         checked = probe(path, self.control, self.ffprobe, self.host)
         if not duration_matches(song.duration, checked["duration"]):
             raise EngineError("DURATION_MISMATCH", "Durasi berubah saat memperbaiki sampul.")

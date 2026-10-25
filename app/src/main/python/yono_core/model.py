@@ -86,8 +86,11 @@ class Song:
     artwork_url: str = ""
     youtube_id: str = ""
     source_url: str = ""
+    direct_audio: bool = False
 
     def __post_init__(self):
+        if not isinstance(self.direct_audio, bool):
+            raise EngineError("INVALID_ENTRY", "direct_audio harus boolean.")
         self.title = str(self.title or "").strip()
         if not self.title or len(self.title) > 2000:
             raise EngineError("INVALID_ENTRY", "Judul kosong atau terlalu panjang.")

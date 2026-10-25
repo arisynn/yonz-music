@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from urllib.parse import urlsplit
-from .inputs import MAX_ENTRIES, parse, spotify_playlist, youtube_target
+from .inputs import MAX_ENTRIES, parse, spotify_playlist, youtube_target, normalize_link
 from .model import EngineError, Song, candidate_song, thumbnail
 from .network import public_https, session, youtube_dl
 
@@ -31,6 +31,16 @@ class Sources:
         value = str(request.get("url") or request.get("content") or "").strip().strip('"\'')
         if "\n" in value:
             return parse(value, request.get("name", "Playlist"))
+        value = normalize_link(value) or value
+        if urlsplit(value).hostname in {"spotify.link", "spoti.fi"}:
+            # Only a user-triggered review follows these known share hosts. Every
+            # redirect is checked before forwarding, including private-IP checks.
+            allowed = {"spotify.link", "spoti.fi", "open.spotify.com"}
+            with session(self.control, allowed) as client:
+                response = client.head(value, allow_redirects=True)
+                if response.status_code >= 400 or urlsplit(response.url).hostname != "open.spotify.com":
+                    raise EngineError("SHARE_LINK", "Tautan singkat belum dapat dibaca. Tempel tautan playlist lengkap atau ekspor daftar.", retryable=True)
+                value = normalize_link(response.url) or response.url
         pid = spotify_playlist(value)
         if pid:
             return self.spotify(pid, value)
@@ -166,11 +176,11 @@ class Sources:
 
     def external(self, url):
         public_https(url, self.control)
-        if urlsplit(url).path.lower().rsplit(".", 1)[-1] in {"mp3", "flac", "m4a", "wav", "ogg", "opus", "aac"}:
+        if urlsplit(url).path.lower().rsplit(".", 1)[-1] in {"mp3", "flac", "m4a", "wav", "ogg", "opus", "aac", "webm", "weba"}:
             import yono_engine
             qjs = ((self.runtime or {}).get("quickjs") or {}).get("path", "")
             record = json.loads(yono_engine.inspect(url, False, qjs, json.dumps(getattr(self.control, "network_options", {}))))
-            song = Song(record["title"], [record["artist"]], record["duration"] / 1000, album=record.get("album", ""), source_url=url)
+            song = Song(record["title"], [record["artist"]], record["duration"] / 1000, album=record.get("album", ""), source_url=url, artwork_url=record.get("artUrl", ""), direct_audio=True)
             return {"name": song.title, "entries": [{"song": song.to_dict(), "input": url}], "count": 1, "completeness": "complete", "origin": url}
         self.control.emit("reading_playlist", message="Membaca metadata tautan…")
         with youtube_dl(self.control, self.runtime, flat=True) as downloader:
@@ -190,14 +200,18 @@ class Sources:
                     if isinstance(artists, str):
                         artists = [artists]
                     title = row.get("track") or row.get("title", "")
-                    if artists:
-                        song = Song(title, artists, row.get("duration") or 0, source_url=url)
-                        rows.append({"song": song.to_dict(), "input": song.label})
+                    standalone = (row.get("vcodec") == "none" or any(f.get("vcodec") == "none" for f in row.get("formats", []) if isinstance(f, dict)))
+                    source = row.get("webpage_url") or row.get("original_url") or row.get("url") or url
+                    # A generic audio response can omit codec details; known audio
+                    # container metadata is accepted only provisionally. The native
+                    # parser still rejects video/corrupt bytes before publication.
+                    standalone = standalone or (row.get("ext") in {"mp3", "flac", "m4a", "wav", "ogg", "opus", "aac", "webm", "weba"} and row.get("vcodec") in {None, "none"} and data.get("_type") not in {"playlist", "multi_video"})
+                    if standalone:
+                        song = Song(title or "Audio", artists or [row.get("creator") or "Unknown artist"], row.get("duration") or 0,
+                                    album=row.get("album") or "", source_url=source, artwork_url=row.get("thumbnail") or "", direct_audio=True)
+                        rows.append({"song": song.to_dict(), "input": source})
                     else:
-                        parsed = parse(title)["entries"]
-                        if len(parsed) != 1 or "song" not in parsed[0]:
-                            raise EngineError("INCOMPLETE_CREDITS", "Nama artis/judul belum tersedia.")
-                        rows.append(parsed[0])
+                        raise EngineError("SOURCE_AUDIO_METADATA", "Aliran audio asli pada tautan ini belum dapat diverifikasi. Gunakan tautan audio langsung; rekaman lain tidak dipilih otomatis.")
                 except EngineError as error:
                     rows.append({"error": str(error), "code": error.code, "input": "Entri sumber"})
                 self.control.emit("reading_playlist", completed=len(rows), total=data.get("playlist_count"))

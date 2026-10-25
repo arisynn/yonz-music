@@ -4,7 +4,7 @@ import csv
 import io
 import json
 import re
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlsplit, urlunsplit
 from .model import Song, EngineError, norm, seconds
 
 MAX_ENTRIES = 5000
@@ -12,15 +12,58 @@ MAX_INPUT_BYTES = 2 * 1024 * 1024
 YT_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"}
 
 
+# Normalize only recognizable links, never guess a title as a URL. Signed media
+# query parameters are kept intact. No network access occurs during this step.
+LINK = re.compile(r"(?:https?://|(?:www\.)?(?:music\.youtube\.com|m\.youtube\.com|youtube\.com|youtu\.be|open\.spotify\.com|spotify\.link|spoti\.fi)/)[^\s<>\"']+|spotify:playlist:[A-Za-z0-9]+", re.I)
+
+def normalize_link(value):
+    value = re.sub(r"&(?:amp;|#38;|#x26;)", "&", str(value).strip(), flags=re.I).replace("\u200b", "")
+    links = LINK.findall(value)
+    if len(links) != 1:
+        return None
+    link = links[0]
+    # Share/Markdown punctuation is outside the URL; retain balanced URL brackets.
+    if value != link:
+        link = link.rstrip(".,!;:»”")
+        while link.endswith(")") and link.count(")") > link.count("("):
+            link = link[:-1]
+    if link.startswith("spotify:"):
+        return link
+    if not re.match(r"https?://", link, re.I):
+        link = "https://" + link
+    try:
+        p = urlsplit(link)
+        port = p.port
+    except ValueError as error:
+        raise EngineError("INVALID_LINK", "Alamat atau port tautan tidak valid.") from error
+    host = (p.hostname or "").lower()
+    if p.username or p.password:
+        raise EngineError("INVALID_LINK", "Tautan berkredensial tidak diterima.")
+    if host in YT_HOSTS | {"youtube-nocookie.com", "www.youtube-nocookie.com", "open.spotify.com"}:
+        if port not in (None, 443):
+            raise EngineError("INVALID_LINK", "Gunakan port HTTPS standar.")
+        # Known share hosts work over HTTPS. Strip only their fragment, not queries.
+        link = urlunsplit(("https", host, p.path, p.query, ""))
+    else:
+        link = urlunsplit((p.scheme.lower(), p.netloc, p.path, p.query, ""))
+    # YouTube's attribution share wrapper carries a relative watch URL.
+    if host in YT_HOSTS and p.path == "/attribution_link":
+        target = parse_qs(p.query).get("u", [""])[0]
+        if not target.startswith("/") or target.startswith("//"):
+            raise EngineError("INVALID_LINK", "Tujuan tautan berbagi tidak valid.")
+        link = "https://www.youtube.com" + target
+    return link
+
+
 def youtube_target(value):
     parsed = urlsplit(value)
-    if parsed.hostname not in YT_HOSTS:
+    if parsed.hostname not in YT_HOSTS | {"youtube-nocookie.com", "www.youtube-nocookie.com"}:
         return None
     query = parse_qs(parsed.query)
     video = query.get("v", [""])[0]
     if parsed.hostname == "youtu.be":
         video = parsed.path.strip("/").split("/")[0]
-    if parsed.path.startswith(("/shorts/", "/embed/")):
+    if parsed.path.startswith(("/shorts/", "/embed/", "/live/", "/v/")):
         video = parsed.path.split("/")[2]
     if video:
         if re.fullmatch(r"[A-Za-z0-9_-]{11}", video):
@@ -41,7 +84,7 @@ def spotify_playlist(value):
         parsed = urlsplit(value)
         if parsed.hostname != "open.spotify.com":
             return None
-        match = re.fullmatch(r"/(?:intl-[^/]+/)?playlist/([A-Za-z0-9]{22})/?", parsed.path)
+        match = re.fullmatch(r"/(?:intl-[^/]+/)?(?:embed/)?playlist/([A-Za-z0-9]{22})/?", parsed.path)
         if not match:
             raise EngineError("INVALID_LINK", "Gunakan tautan playlist Spotify yang valid.")
         identity = match[1]
@@ -59,9 +102,9 @@ def bounded(content):
 
 def entry(raw):
     line = re.sub(r"^(?:\d+[.)]|[-*+•])\s+", "", raw.strip()).replace("**", "")
-    link = re.fullmatch(r"\[[^\]]+\]\((https://[^\s)]+)\)", line)
+    link = normalize_link(line)
     if link:
-        line = link[1]
+        return {"url": link}
     if line.startswith(("https://", "http://", "spotify:")):
         return {"url": line}
     parts = re.split(r"\s+(?:-|–|—|\|)\s+", line, maxsplit=1)

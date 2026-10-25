@@ -151,14 +151,14 @@ class Engine:
         self.control.emit("review", total=plan["total"], counts=plan["counts"], plan_id=plan["id"])
         return plan
 
-    def acquire(self, plan_id, selected, *, output_format="mp3", bitrate=192):
+    def acquire(self, plan_id, selected, *, output_format="original", bitrate=192):
         plan = self.load_plan(plan_id)
         selected = set(selected)
         known = {r["id"] for r in plan["entries"]}
         if not selected.issubset(known):
             raise EngineError("INVALID_SELECTION", "Pilihan lagu tidak termasuk rencana ini.")
-        if output_format == "mp3" and not getattr(self.media, "ffmpeg", ""):
-            raise EngineError("MP3_RUNTIME_REQUIRED", "Runtime MP3 belum tersedia. Tidak ada audio diunduh; pilih format asli atau lengkapi build FFmpeg.")
+        if output_format != "original":
+            raise EngineError("ORIGINAL_ONLY", "Unduhan selalu memakai format audio asli; konversi dinonaktifkan.")
         plan["state"] = "downloading"
         self.save(plan)
         done = 0
@@ -192,11 +192,20 @@ class Engine:
                         verified, candidate = self.catalogue.resolve(song)
                         source = self.media.transfer(verified, workspace)
                         result = self.media.finish(source, verified, workspace, output_format=output_format, bitrate=bitrate)
-                        row.update(status="saving", pending_sha256=result["sha256"])
+                        row.update(status="saving", pending_sha256=result["sha256"],
+                                   audio={k: v for k, v in result.items() if k not in {"path", "artwork_path"}})
                         self.save(plan)
+                        if result.get("artwork_path"):
+                            cover_name = safe_name(f"{verified.artists[0] if verified.artists else 'Unknown artist'} - {verified.title}") + ".cover." + result["artwork_extension"]
+                            artwork_uri = str(self.storage.commit(result["artwork_path"], plan["folder"], cover_name,
+                                result["artwork_mime"], key + "-cover", result["artwork_sha256"]))
+                            if not artwork_uri or not self.storage.exists(artwork_uri):
+                                raise EngineError("ARTWORK_COMMIT", "Sampul belum tersimpan. Coba ulang; audio asli tidak diubah.", retryable=True)
+                            row["artwork_uri"] = artwork_uri
+                            self.save(plan)
                         self.control.check()
                         self.control.emit("saving", title=song.title, message="Menyimpan ke folder pilihan…")
-                        filename = safe_name(f"{song.artists[0]} - {song.title}") + "." + result["extension"]
+                        filename = safe_name(f"{verified.artists[0] if verified.artists else 'Unknown artist'} - {verified.title}") + "." + result["extension"]
                         receipt = self.storage.commit(result["path"], plan["folder"], filename, result["mime"],
                             key, result["sha256"])
                         # Once publication succeeds, persist its receipt even when cancellation arrives now.
@@ -205,7 +214,7 @@ class Engine:
                         uri = str(receipt)
                         self.index.add("download", verified, uri, result["sha256"])
                         row.update(status="downloaded", song=verified.to_dict(), uri=uri,
-                                   audio={k: v for k, v in result.items() if k != "path"})
+                                   audio={k: v for k, v in result.items() if k not in {"path", "artwork_path"}})
                         row.pop("error", None)
                     self.save(plan)
                     done += 1
@@ -286,17 +295,24 @@ class Engine:
         workspace = self.root / "work" / ("art-" + uuid.uuid4().hex)
         workspace.mkdir(parents=True)
         try:
-            # Kotlin returns a file inside this private workspace, never a raw shared-storage path.
-            source = Path(str(self.storage.copyToPrivate(row["uri"], str(workspace)))).resolve()
-            if source.parent != workspace.resolve() or not source.is_file():
-                raise EngineError("STORAGE_READ", "Salinan privat tidak valid.")
-            result = self.media.repair(source, song, workspace)
-            filename = safe_name(f"{song.artists[0]} - {song.title}") + "." + result["extension"]
-            uri = str(self.storage.commit(result["path"], "Sampul diperbaiki", filename, result["mime"],
-                "art-" + uuid.uuid4().hex, result["sha256"]))
-            self.index.retagged("", song, uri, result["sha256"])
-            return {"original_uri": row["uri"], "repaired_uri": uri, "original_unchanged": True,
-                    "audio_downloaded": False, "artwork_embedded": True}
+            # Existing audio is never fetched, rewritten or copied for cover repair.
+            picture = self.media.artwork(song)
+            if not picture:
+                raise EngineError("ARTWORK_UNAVAILABLE", "Sumber belum menyediakan sampul JPEG/PNG yang dapat diunduh.", retryable=True)
+            from .media import file_hash
+            extension = "png" if picture.startswith(b"\x89PNG") else "jpg"
+            path = workspace / ("cover." + extension)
+            path.write_bytes(picture)
+            key = f"{plan['id']}-{row['id']}-cover"
+            filename = safe_name(f"{song.artists[0] if song.artists else 'Unknown artist'} - {song.title}") + ".cover." + extension
+            uri = str(self.storage.commit(str(path), plan["folder"], filename,
+                "image/png" if extension == "png" else "image/jpeg", key, file_hash(path, self.control)))
+            if not uri or not self.storage.exists(uri):
+                raise EngineError("ARTWORK_COMMIT", "Sampul belum tersimpan. Coba lagi.", retryable=True)
+            row["artwork_uri"] = uri
+            row.setdefault("audio", {})["artwork_downloaded"] = True
+            self.save(plan)
+            return plan
         finally:
             shutil.rmtree(workspace, ignore_errors=True)
 

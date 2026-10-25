@@ -42,7 +42,7 @@ class Catalogue:
 
     def resolve(self, request):
         self.last_diagnostics = []
-        if request.source_url and not request.youtube_id and request.source_url.split("?", 1)[0].lower().rsplit(".", 1)[-1] in {"mp3", "flac", "m4a", "wav", "ogg", "opus", "aac"}:
+        if request.source_url and not request.youtube_id and (request.direct_audio or request.source_url.split("?", 1)[0].lower().rsplit(".", 1)[-1] in {"mp3", "flac", "m4a", "wav", "ogg", "opus", "aac", "webm", "weba"}):
             from .network import public_https
             public_https(request.source_url, self.control)
             return request, {"direct": True}

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0 — Preview 2
+
+- Enforce original audio format through the engine/API; disable conversion requests.
+- Recognize more shared link forms while preserving source, credentials and redirect checks.
+- Save companion covers for WebM/Opus; embed where supported and retain Room artwork across rescans.
+- Add a cover-only action in result details for earlier downloads without fetching/modifying audio.
+- Version code 4 updates the existing Dev preview. Production 1.1.0 remains stable.
+
+See `docs/ENGINE_ORIGINAL_ARTWORK_PREVIEW_2.md` for actual verification and source limitations.
+
+
 ## 1.1.0 — 2026-10-25
 
 - Rename the public application to Yono Music; credit Karisyono and use the supplied YONO mist-blue logo.

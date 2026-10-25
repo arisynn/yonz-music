@@ -1,5 +1,8 @@
 # Yono Music 1.1.0 — actual verification
 
+For the current 1.2.0 Preview 2 original-format/artwork update, see [the separate verification report](docs/ENGINE_ORIGINAL_ARTWORK_PREVIEW_2.md). Results below describe stable 1.1.0.
+
+
 Environment: JDK 17, Gradle 8.11.1, Android SDK/build tools 35/35.0.0, NDK r28c; AOSP API 29 x86_64 software emulators (320 dp existing installation and 360 dp fresh production installation). Physical devices were unavailable. Tests used original generated tones or explicitly licensed remote recordings.
 
 ## Compilation and automated checks

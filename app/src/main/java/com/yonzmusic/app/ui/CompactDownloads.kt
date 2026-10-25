@@ -101,6 +101,12 @@ import androidx.compose.foundation.lazy.LazyColumn
         LazyColumn(Modifier.heightIn(max = 420.dp)) {
             items(rows.length()) { i -> val row = rows.getJSONObject(i)
                 Text("${i+1}. ${row.optJSONObject("song")?.optString("title") ?: row.optJSONObject("request")?.optString("input")} · ${row.optString("status")}", style = MaterialTheme.typography.bodyMedium)
+                row.optJSONObject("audio")?.let {
+                    Text(if (row.optString("artwork_uri").isNotBlank()) "Format asli · sampul tersimpan" else "Format asli · sampul tidak tersedia dari sumber", style = MaterialTheme.typography.bodySmall)
+                }
+                if (row.optString("uri").isNotBlank() && row.optString("artwork_uri").isBlank()) {
+                    TextButton({ repo.submit("repair_artwork", JSONObject().put("plan_id", plan!!.getString("id")).put("entry_id", row.getString("id"))); details = false }, enabled = !busy && authorized) { Text("Ambil sampul") }
+                }
                 row.optJSONObject("error")?.let { error -> Text(error.optString("message"), style = MaterialTheme.typography.bodySmall)
                     error.optJSONArray("choices")?.let { choices -> for (j in 0 until choices.length()) { val c = choices.getJSONObject(j); TextButton({ repo.submit("choose", JSONObject().put("plan_id", plan!!.getString("id")).put("entry_id", row.getString("id")).put("youtube_id", c.getString("youtube_id"))); details = false }, enabled = !busy) { Text("Pilih: ${c.optString("title")} · ${c.optJSONArray("artists")}") } } }
                 }

@@ -39,11 +39,7 @@ def capabilities(config, token):
         except importlib.metadata.PackageNotFoundError:
             packages[name] = None
     result = {"schema": 1, "name": "Yono Engine", "version": __version__, "packages": packages,
-              "mp3": False, "javascript": False, "offline_library_requires_engine": False}
-    ffmpeg = config.get("ffmpeg", "")
-    if ffmpeg and Path(ffmpeg).is_file():
-        encoders = command([ffmpeg, "-hide_banner", "-encoders"], token, timeout=15).decode("utf-8", "replace")
-        result["mp3"] = "libmp3lame" in encoders
+              "mp3": False, "javascript": False, "offline_library_requires_engine": False, "output_formats": ["original"]}
     runtime = config.get("runtime") or {}
     if runtime:
         name, options = next(iter(runtime.items()))
@@ -105,7 +101,7 @@ def execute(action, payload_json, config_json, callback, storage):
                 plan["name"] = str(payload["name"])[:100]
                 plan["folder"] = safe_name(plan["name"])
                 engine.save(plan)
-            result = engine.acquire(payload["plan_id"], payload["entry_ids"], output_format=payload.get("format", "mp3"), bitrate=payload.get("bitrate", 192))
+            result = engine.acquire(payload["plan_id"], payload["entry_ids"], output_format=payload.get("format", "original"), bitrate=payload.get("bitrate", 192))
         elif action == "get_plan":
             result = engine.load_plan(payload["plan_id"])
         elif action == "get_last":

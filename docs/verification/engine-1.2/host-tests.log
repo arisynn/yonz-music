@@ -5,9 +5,12 @@ test_second_operation_reports_busy (test_api.ApiTests.test_second_operation_repo
 test_snapshot_and_offline_prepare (test_api.ApiTests.test_snapshot_and_offline_prepare) ... ok
 test_unknown_action (test_api.ApiTests.test_unknown_action) ... ok
 test_artwork_repair_preserves_audio_packets_no_audio_download (test_audio_real.RealAudioTests.test_artwork_repair_preserves_audio_packets_no_audio_download) ... ok
+test_conversion_rejected_even_when_host_encoder_exists (test_audio_real.RealAudioTests.test_conversion_rejected_even_when_host_encoder_exists) ... ok
 test_doctor_real_runtime (test_audio_real.RealAudioTests.test_doctor_real_runtime) ... ok
 test_m4a_tags_and_embedded_artwork (test_audio_real.RealAudioTests.test_m4a_tags_and_embedded_artwork) ... ok
+test_no_cover_is_reported_without_faking_success (test_audio_real.RealAudioTests.test_no_cover_is_reported_without_faking_success) ... ok
 test_real_mp3_duration_tags_and_cover (test_audio_real.RealAudioTests.test_real_mp3_duration_tags_and_cover) ... ok
+test_webm_and_opus_keep_original_packets_and_save_cover (test_audio_real.RealAudioTests.test_webm_and_opus_keep_original_packets_and_save_cover) ... ok
 test_wrong_duration_rejected_before_publication (test_audio_real.RealAudioTests.test_wrong_duration_rejected_before_publication) ... ok
 test_cancel (test_control_and_network.ControlTests.test_cancel) ... ok
 test_cancel_is_not_swallowed_by_except_exception (test_control_and_network.ControlTests.test_cancel_is_not_swallowed_by_except_exception) ... ok
@@ -34,10 +37,11 @@ test_ambiguous_choice_is_verified_and_saved (test_engine.EngineTests.test_ambigu
 test_arbitrary_choice_cannot_bypass_ambiguity_review (test_engine.EngineTests.test_arbitrary_choice_cannot_bypass_ambiguity_review) ... ok
 test_cancel_during_verification_saves_remaining (test_engine.EngineTests.test_cancel_during_verification_saves_remaining) ... ok
 test_circuit_breaker_retains_unprocessed_rows (test_engine.EngineTests.test_circuit_breaker_retains_unprocessed_rows) ... ok
+test_companion_cover_committed_and_recovered_without_duplicate (test_engine.EngineTests.test_companion_cover_committed_and_recovered_without_duplicate) ... ok
+test_conversion_fails_before_download (test_engine.EngineTests.test_conversion_fails_before_download) ... ok
 test_duplicate_input_only_one_transfer (test_engine.EngineTests.test_duplicate_input_only_one_transfer) ... ok
 test_incomplete_playlist_downloads_nothing (test_engine.EngineTests.test_incomplete_playlist_downloads_nothing) ... ok
 test_m3u_order_preserved (test_engine.EngineTests.test_m3u_order_preserved) ... ok
-test_missing_mp3_runtime_fails_before_download (test_engine.EngineTests.test_missing_mp3_runtime_fails_before_download) ... ok
 test_multiline_pasted_urls_expand (test_engine.EngineTests.test_multiline_pasted_urls_expand) ... ok
 test_output_clean_name_and_playlist_folder (test_engine.EngineTests.test_output_clean_name_and_playlist_folder) ... ok
 test_plan_path_traversal_rejected (test_engine.EngineTests.test_plan_path_traversal_rejected) ... ok
@@ -46,6 +50,7 @@ test_playlist_identity_ignores_tracking (test_engine.EngineTests.test_playlist_i
 test_playlist_ugc_not_accepted (test_engine.EngineTests.test_playlist_ugc_not_accepted) ... ok
 test_progress_emits_complete_count_before_verification (test_engine.EngineTests.test_progress_emits_complete_count_before_verification) ... ok
 test_published_receipt_recovers_saving_state (test_engine.EngineTests.test_published_receipt_recovers_saving_state) ... ok
+test_repair_cover_for_existing_download_never_redownloads_or_rewrites_audio (test_engine.EngineTests.test_repair_cover_for_existing_download_never_redownloads_or_rewrites_audio) ... ok
 test_repeat_acquisition_skips_existing (test_engine.EngineTests.test_repeat_acquisition_skips_existing) ... ok
 test_retry_includes_interrupted_tail (test_engine.EngineTests.test_retry_includes_interrupted_tail) ... ok
 test_single_song (test_engine.EngineTests.test_single_song) ... ok
@@ -112,8 +117,23 @@ test_text_single_artist_match (test_inputs_and_matching.MatchingTests.test_text_
 test_title_only_ambiguity (test_inputs_and_matching.MatchingTests.test_title_only_ambiguity) ... ok
 test_valid_full_verification (test_inputs_and_matching.MatchingTests.test_valid_full_verification) ... ok
 test_wrong_duration_rejected (test_inputs_and_matching.MatchingTests.test_wrong_duration_rejected) ... ok
+test_attribution_wrapper (test_links_original.ShareLinksTests.test_attribution_wrapper) ... ok
+test_explicit_webm_link_uses_original_source_not_catalogue_search (test_links_original.ShareLinksTests.test_explicit_webm_link_uses_original_source_not_catalogue_search) ... ok
+test_external_video_metadata_never_falls_back_to_another_recording (test_links_original.ShareLinksTests.test_external_video_metadata_never_falls_back_to_another_recording) ... ok
+test_extless_audio_metadata_is_not_swapped_for_a_catalogue_recording (test_links_original.ShareLinksTests.test_extless_audio_metadata_is_not_swapped_for_a_catalogue_recording) ... ok
+test_extless_explicit_audio_retains_same_source (test_links_original.ShareLinksTests.test_extless_explicit_audio_retains_same_source) ... ok
+test_fake_host_is_not_youtube (test_links_original.ShareLinksTests.test_fake_host_is_not_youtube) ... ok
+test_invalid_port_returns_actionable_link_error (test_links_original.ShareLinksTests.test_invalid_port_returns_actionable_link_error) ... ok
+test_live_embed_shorts_v_routes (test_links_original.ShareLinksTests.test_live_embed_shorts_v_routes) ... ok
+test_multiple_links_not_silently_dropped (test_links_original.ShareLinksTests.test_multiple_links_not_silently_dropped) ... ok
+test_share_caption_markdown_and_schemeless (test_links_original.ShareLinksTests.test_share_caption_markdown_and_schemeless) ... ok
+test_signed_audio_query_and_balanced_filename_unchanged (test_links_original.ShareLinksTests.test_signed_audio_query_and_balanced_filename_unchanged) ... ok
+test_signed_query_does_not_decode_arbitrary_html_entities (test_links_original.ShareLinksTests.test_signed_query_does_not_decode_arbitrary_html_entities) ... ok
+test_spotify_embed_locale_and_uri (test_links_original.ShareLinksTests.test_spotify_embed_locale_and_uri) ... ok
+test_spotify_short_link_routes_to_authorized_metadata_reader (test_links_original.ShareLinksTests.test_spotify_short_link_routes_to_authorized_metadata_reader) ... ok
+test_text_list_rows_recognize_embedded_links (test_links_original.ShareLinksTests.test_text_list_rows_recognize_embedded_links) ... ok
 
 ----------------------------------------------------------------------
-Ran 114 tests in 1.447s
+Ran 134 tests in 2.024s
 
 OK

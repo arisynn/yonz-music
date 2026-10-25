@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-10-25T20:08:52.106595+07:00",
+  "generated_at": "2026-10-25T22:50:15.935959+07:00",
   "python": "3.12.14",
   "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
-  "tests_run": 114,
+  "tests_run": 134,
   "failures": 0,
   "errors": 0,
   "skipped": [],
   "successful": true,
-  "seconds": 1.536,
+  "seconds": 2.107,
   "packages": {
     "yt-dlp": "2026.10.21",
     "yt-dlp-ejs": "0.8.0",

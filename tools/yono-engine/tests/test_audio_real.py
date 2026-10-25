@@ -30,7 +30,10 @@ class RealAudioTests(unittest.TestCase):
     def tearDown(self): shutil.rmtree(self.work)
     def test_real_mp3_duration_tags_and_cover(self):
         from mutagen.mp3 import MP3
-        result=self.media.finish(self.source,self.song,self.work)
+        source=self.work/'own-original.mp3'
+        subprocess.run(['ffmpeg','-v','error','-i',str(self.source),'-c:a','libmp3lame',str(source)],check=True)
+        result=self.media.finish(source,self.song,self.work)
+        self.assertEqual(Path(result['path']),source)
         audio=MP3(result['path'])
         self.assertTrue(result['tags_embedded'] and result['artwork_embedded'])
         self.assertGreater(audio.info.length,3.9)
@@ -51,7 +54,9 @@ class RealAudioTests(unittest.TestCase):
         with self.assertRaises(EngineError) as error: self.media.finish(self.source,Song('Wrong',['Artis'],240),self.work)
         self.assertEqual(error.exception.code,'DURATION_MISMATCH')
     def test_artwork_repair_preserves_audio_packets_no_audio_download(self):
-        result=self.media.finish(self.source,self.song,self.work)
+        source=self.work/'own-original.mp3'
+        subprocess.run(['ffmpeg','-v','error','-i',str(self.source),'-c:a','libmp3lame',str(source)],check=True)
+        result=self.media.finish(source,self.song,self.work)
         before=Path(result['path'])
         second=self.work/'repair'; second.mkdir()
         self.media.transfer=lambda *args: self.fail('audio redownload must not happen')
@@ -60,10 +65,41 @@ class RealAudioTests(unittest.TestCase):
             return subprocess.run(['ffmpeg','-v','error','-i',str(path),'-map','0:a:0','-c:a','copy','-f','hash','-hash','sha256','-'],check=True,capture_output=True).stdout
         self.assertEqual(audio_hash(before),audio_hash(repaired['path']))
         self.assertGreater(probe(repaired['path'],self.token,self.media.ffprobe)['duration'],3.9)
+    def test_webm_and_opus_keep_original_packets_and_save_cover(self):
+        from mutagen.oggopus import OggOpus
+        import base64
+        from mutagen.flac import Picture
+        def packets(path):
+            return subprocess.run(['ffmpeg','-v','error','-i',str(path),'-map','0:a:0','-c:a','copy','-f','hash','-hash','sha256','-'],check=True,capture_output=True).stdout
+        for ext in ('webm','opus'):
+            with self.subTest(ext=ext):
+                path=self.work/('original.'+ext)
+                subprocess.run(['ffmpeg','-v','error','-i',str(self.source),'-c:a','libopus',str(path)],check=True)
+                before=packets(path)
+                result=self.media.finish(path,self.song,self.work)
+                self.assertEqual(result['path'],str(path))
+                self.assertEqual(result['extension'],ext)
+                self.assertEqual(before,packets(path))
+                self.assertTrue(result['artwork_downloaded'])
+                self.assertEqual(Path(result['artwork_path']).read_bytes(),PNG)
+                self.assertEqual(result['artwork_embedded'],ext=='opus')
+                if ext=='opus':
+                    cover=Picture(base64.b64decode(OggOpus(path)['metadata_block_picture'][0]))
+                    self.assertEqual(cover.data,PNG)
+    def test_no_cover_is_reported_without_faking_success(self):
+        self.media.artwork=lambda song: None
+        result=self.media.finish(self.source,self.song,self.work)
+        self.assertFalse(result['artwork_downloaded'])
+        self.assertNotIn('artwork_path',result)
+    def test_conversion_rejected_even_when_host_encoder_exists(self):
+        with self.assertRaises(EngineError) as error:
+            self.media.finish(self.source,self.song,self.work,output_format='mp3')
+        self.assertEqual(error.exception.code,'ORIGINAL_ONLY')
     def test_doctor_real_runtime(self):
         from yono_engine_api import capabilities
         report=capabilities({'ffmpeg':shutil.which('ffmpeg'),'runtime':{'node':{'path':shutil.which('node')}}},self.token)
-        self.assertTrue(report['mp3'])
+        self.assertFalse(report['mp3'])
+        self.assertEqual(report['output_formats'], ['original'])
         self.assertTrue(report['javascript'])
         self.assertFalse(report['live_youtube_verified'])
 

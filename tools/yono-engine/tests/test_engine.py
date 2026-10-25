@@ -108,11 +108,43 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(plan['state'], 'paused_network')
         self.assertEqual(plan['counts']['failed'], 3)
         self.assertEqual(plan['counts']['pending'], 5)
-    def test_missing_mp3_runtime_fails_before_download(self):
+    def test_conversion_fails_before_download(self):
         plan = self.prepare(); self.engine.media.ffmpeg = ''
-        with self.assertRaises(EngineError) as error: self.engine.acquire(plan['id'], [plan['entries'][0]['id']])
-        self.assertEqual(error.exception.code, 'MP3_RUNTIME_REQUIRED')
+        with self.assertRaises(EngineError) as error: self.engine.acquire(plan['id'], [plan['entries'][0]['id']], output_format='mp3')
+        self.assertEqual(error.exception.code, 'ORIGINAL_ONLY')
         self.assertEqual(self.engine.media.transfers, 0)
+    def test_companion_cover_committed_and_recovered_without_duplicate(self):
+        from support import PNG
+        from yono_core.media import file_hash
+        plan=self.prepare()
+        original=self.engine.media.finish
+        def finish(source,song,workspace,**options):
+            self.assertEqual(options['output_format'],'original')
+            cover=workspace/'cover.png';cover.write_bytes(PNG)
+            return {**original(source,song,workspace,**options),'artwork_path':str(cover),
+                    'artwork_sha256':file_hash(cover),'artwork_extension':'png','artwork_mime':'image/png','artwork_downloaded':True}
+        self.engine.media.finish=finish
+        result=self.engine.acquire(plan['id'],[plan['entries'][0]['id']])
+        row=result['entries'][0]
+        self.assertEqual(self.storage.path(row['artwork_uri']).read_bytes(),PNG)
+        self.assertNotIn('artwork_path',row['audio'])
+        uri=row['artwork_uri'];row['status']='saving';row.pop('uri');self.engine.save(result)
+        again=self.engine.acquire(plan['id'],[row['id']])
+        self.assertEqual(again['entries'][0]['artwork_uri'],uri)
+        self.assertEqual(len(list(self.storage.root.rglob('*.png'))),1)
+    def test_repair_cover_for_existing_download_never_redownloads_or_rewrites_audio(self):
+        from support import PNG
+        from yono_core.media import file_hash
+        plan=self.prepare();result=self.engine.acquire(plan['id'],[plan['entries'][0]['id']])
+        row=result['entries'][0];uri=row['uri'];before=file_hash(self.storage.path(uri))
+        self.engine.media.transfer=Mock(side_effect=AssertionError('no audio download'))
+        self.engine.media.artwork=lambda song: PNG
+        repaired=self.engine.repair_artwork(plan['id'],row['id'])
+        self.assertEqual(repaired['entries'][0]['uri'],uri)
+        self.assertEqual(file_hash(self.storage.path(uri)),before)
+        self.assertEqual(self.storage.path(repaired['entries'][0]['artwork_uri']).read_bytes(),PNG)
+        again=self.engine.repair_artwork(plan['id'],row['id'])
+        self.assertEqual(again['entries'][0]['artwork_uri'],repaired['entries'][0]['artwork_uri'])
     def test_storage_collision_never_overwrites(self):
         plan = self.prepare()
         folder = self.storage.root / plan['folder']; folder.mkdir()
