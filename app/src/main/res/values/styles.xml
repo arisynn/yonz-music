@@ -1,0 +1,15 @@
+<resources>
+    <color name="splash_background">#101718</color>
+    <style name="Theme.Yonz" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/brand_y</item>
+        <item name="postSplashScreenTheme">@style/Theme.Yonz.App</item>
+    </style>
+    <style name="Theme.Yonz.App" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:colorAccent">#64DCC3</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@color/splash_background</item>
+    </style>
+</resources>

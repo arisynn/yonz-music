@@ -1,0 +1,3 @@
+Exit code: 1
+DOES NOT VERIFY
+ERROR: Missing META-INF/MANIFEST.MF

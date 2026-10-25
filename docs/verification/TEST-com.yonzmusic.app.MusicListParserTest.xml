@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yonzmusic.app.MusicListParserTest" tests="37" skipped="0" failures="0" errors="0" timestamp="2026-10-25T05:11:09" hostname="779195434498" time="405.481">
+  <properties/>
+  <testcase name="csvQuotedCommasAndEscapedQuotes" classname="com.yonzmusic.app.MusicListParserTest" time="0.125"/>
+  <testcase name="wrongArtistNeverMatches" classname="com.yonzmusic.app.MusicListParserTest" time="0.007"/>
+  <testcase name="jsonInvalidValueIsARowError" classname="com.yonzmusic.app.MusicListParserTest" time="0.047"/>
+  <testcase name="m3uDoesNotOpenTraversalPaths" classname="com.yonzmusic.app.MusicListParserTest" time="0.007"/>
+  <testcase name="utf8BomAndCrlf" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="ambiguousFilenameNotGuessed" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="numberedMarkdownAndArtistHyphen" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="accentsAndWhitespaceNormalize" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="featuredCreditMatchesFullNames" classname="com.yonzmusic.app.MusicListParserTest" time="0.005"/>
+  <testcase name="jsonSimpleAndArtistsArray" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="brokenCsvQuoteRejected" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="exportRoundTripsOnSameLibrary" classname="com.yonzmusic.app.MusicListParserTest" time="0.008"/>
+  <testcase name="oversizedInputRejected" classname="com.yonzmusic.app.MusicListParserTest" time="0.016"/>
+  <testcase name="relativeM3uMatchesIndexedFilenameOnly" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="remoteLinkIsInvalid" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="csvExportHeadersAndMilliseconds" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="excessiveJsonNestingRejected" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="titleOnlyCanMatchUniqueLocalAudio" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="unavailableFileNeverMatches" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="tenThousandEntryLibraryMatchesWithoutFalseDuplicates" classname="com.yonzmusic.app.MusicListParserTest" time="405.171"/>
+  <testcase name="csvWithoutTitleHeaderRejected" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="officialLabelIsPresentation" classname="com.yonzmusic.app.MusicListParserTest" time="0.002"/>
+  <testcase name="jsonMissingTitleReportsInvalid" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="reportKeepsErrorsAndStatus" classname="com.yonzmusic.app.MusicListParserTest" time="0.016"/>
+  <testcase name="jsonNestedSpotifyExportMetadataOnly" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="csvSemicolonDelimiter" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="csvQuotedMultiline" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="durationMismatchIsUnmatched" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="oversizedRowBecomesBoundedError" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="tooManyEntriesRejected" classname="com.yonzmusic.app.MusicListParserTest" time="0.059"/>
+  <testcase name="unmatchedHasNoInventedId" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="malformedJsonIsRejected" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="titleOnlyAmbiguityIsNotGuessed" classname="com.yonzmusic.app.MusicListParserTest" time="0.001"/>
+  <testcase name="recordingVersionsArePreserved" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="m3uRemoteReferencesAreInvalid" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="duplicateRowsAreCountedOnce" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <testcase name="markdownRemoteLinkIsReportedInvalid" classname="com.yonzmusic.app.MusicListParserTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

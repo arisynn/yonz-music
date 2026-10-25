@@ -1,0 +1,48 @@
+MEDIA SESSION SERVICE (dumpsys media_session)
+
+2 sessions listeners.
+Global priority session is com.android.server.telecom/HeadsetMediaButton (userId=0)
+  HeadsetMediaButton com.android.server.telecom/HeadsetMediaButton (userId=0)
+    ownerPid=1930, ownerUid=1000, userId=0
+    package=com.android.server.telecom
+    launchIntent=null
+    mediaButtonReceiver=null
+    active=false
+    flags=65537
+    rating type=0
+    controllers: 0
+    state=null
+    audioAttrs=AudioAttributes: usage=USAGE_VOICE_COMMUNICATION content=CONTENT_TYPE_SPEECH flags=0x800 tags= bundle=null
+    volumeType=1, controlType=2, max=0, current=0
+    metadata: null
+    queueTitle=null, size=0
+User Records:
+Record for full_user=0
+  Volume key long-press listener: null
+  Volume key long-press listener package: 
+  Media key listener: null
+  Media key listener package: 
+  Callback: null
+  Last MediaButtonReceiver: PendingIntent{32e5267: PendingIntentRecord{a7ea814 com.yonzmusic.app startForegroundService}}
+  Restored MediaButtonReceiver: null
+  Restored MediaButtonReceiverComponentType: 0
+  Media button session is com.yonzmusic.app/androidx.media3.session.id. (userId=0)
+  Sessions Stack - have 1 sessions:
+    androidx.media3.session.id. com.yonzmusic.app/androidx.media3.session.id. (userId=0)
+      ownerPid=5164, ownerUid=10116, userId=0
+      package=com.yonzmusic.app
+      launchIntent=PendingIntent{29bd8bd: PendingIntentRecord{da36fae com.yonzmusic.app startActivity (whitelist: 4bad8ba:+30s0ms)}}
+      mediaButtonReceiver=PendingIntent{32e5267: PendingIntentRecord{a7ea814 com.yonzmusic.app startForegroundService}}
+      active=true
+      flags=7
+      rating type=0
+      controllers: 2
+      state=PlaybackState {state=6, position=0, buffered position=0, speed=0.0, updated=3087987, actions=7339995, custom actions=[], active item id=4, error=null}
+      audioAttrs=AudioAttributes: usage=USAGE_MEDIA content=CONTENT_TYPE_MUSIC flags=0x800 tags= bundle=null
+      volumeType=1, controlType=2, max=0, current=0
+      metadata: size=11, description=Violet Hours, Yonz Test Ensemble, Quiet Signals
+      queueTitle=null, size=5
+
+  Session2Tokens:
+Audio playback (lastly played comes first)
+  uid=10116 packages=com.yonzmusic.app 
