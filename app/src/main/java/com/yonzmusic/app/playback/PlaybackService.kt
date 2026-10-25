@@ -47,7 +47,7 @@ class PlaybackService : MediaSessionService() {
                 val result = SettableFuture.create<MutableList<MediaItem>>()
                 scope.launch {
                     try {
-                        val local = withContext(Dispatchers.IO) { mediaItems.take(10000).mapNotNull { app.repository.dao.track(it.mediaId)?.takeIf { t -> t.available && android.net.Uri.parse(t.uri).scheme == "content" }?.mediaItem() }.toMutableList() }
+                        val local = withContext(Dispatchers.IO) { mediaItems.take(10000).mapNotNull { app.repository.dao.track(it.mediaId)?.takeIf { t -> t.active && t.available && android.net.Uri.parse(t.uri).scheme == "content" }?.mediaItem() }.toMutableList() }
                         result.set(local)
                     } catch (e: Exception) { result.setException(e) }
                 }
@@ -86,9 +86,10 @@ class PlaybackService : MediaSessionService() {
         })
         scope.launch {
             val saved = app.preferences.snapshot() ?: return@launch
-            val tracks = withContext(Dispatchers.IO) { saved.ids.mapNotNull { app.repository.dao.track(it)?.takeIf(Track::available) } }
+            val restoredIds = withContext(Dispatchers.IO) { saved.ids.map { app.repository.dao.state("track_alias:$it")?.value ?: it } }
+            val tracks = withContext(Dispatchers.IO) { restoredIds.mapNotNull { app.repository.dao.track(it)?.takeIf { it.active && it.available } }.distinctBy { it.id } }
             if (tracks.isNotEmpty() && player.mediaItemCount == 0) {
-                val currentId = saved.ids.getOrNull(saved.index)
+                val currentId = restoredIds.getOrNull(saved.index)
                 val index = tracks.indexOfFirst { it.id == currentId }.coerceAtLeast(0)
                 val position = if (tracks[index].id == currentId) com.yonzmusic.app.data.PlaybackResume.position(saved.position, tracks[index].duration) else 0L
                 player.setMediaItems(tracks.map(Track::mediaItem), index, position)

@@ -72,8 +72,11 @@ import java.util.Date
         item { ListItem(headlineContent = { Text("Possible duplicate recordings") }, supportingContent = { Text("$duplicates metadata groups. Files are never deleted or merged automatically.") }, leadingContent = { Icon(Icons.Rounded.CopyAll, null) }) }
         item { MenuAction(Icons.Rounded.Security, "Manage Android permissions", appSettings) }
         item { MenuAction(Icons.Rounded.Info, "Open-source licenses", { licenses = true }) }
-        item { SectionTitle("A space of your own", "Yon'z Music · 1.0.0") }
-        item { Text("Built for listening, without ads, accounts, or tracking. Your music, playlists, and preferences stay on this device. This app has no internet permission.\n\nOn Xiaomi HyperOS, if screen-off playback is interrupted, open this app's battery settings and allow background activity. No battery exemption is requested automatically.\n\nSleep timers apply to the current playback-service session. Playback context is restored paused after reopening.\n\n© 2026 Yon'z Music · Your Music. Your Space.", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant, modifier = Modifier.padding(horizontal = Design.page, vertical = Design.sm)) }
+        item { UpdateSettings() }
+        item { SectionTitle("A space of your own", "Yono Music · ${com.yonzmusic.app.BuildConfig.VERSION_NAME}") }
+        item { Text("Dibuat oleh Karisyono · Open source · GPL-3.0-or-later", Modifier.padding(horizontal = Design.page), style = MaterialTheme.typography.titleSmall) }
+        item { MenuAction(Icons.Rounded.Info, "Source code · arisynn/yonz-music") { runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/arisynn/yonz-music"))) } } }
+        item { Text("Built for listening, without ads, accounts, or tracking. Your music, playlists, and preferences stay on this device. Only optional downloads and GitHub update checks use the internet. Playback stays offline.\n\nOn Xiaomi HyperOS, if screen-off playback is interrupted, open this app's battery settings and allow background activity. No battery exemption is requested automatically.\n\nSleep timers apply to the current playback-service session. Playback context is restored paused after reopening.\n\n© 2026 Yono Music · Your Music. Your Space.", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant, modifier = Modifier.padding(horizontal = Design.page, vertical = Design.sm)) }
     }
     if (licenses) AlertDialog(onDismissRequest = { licenses = false }, title = { Text("Open-source licenses") }, text = { Text(licenseText, Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()), style = MaterialTheme.typography.bodySmall) }, confirmButton = { TextButton({ licenses = false }) { Text("Done") } })
 }
@@ -92,8 +95,16 @@ private fun Modifier.toggleableSetting(value: Boolean, change: (Boolean) -> Unit
     var name by rememberSaveable { mutableStateOf("Imported collection") }
     val c = MaterialTheme.colorScheme
     val listState = rememberLazyListState()
+    var downloadMode by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(preview) { if (preview != null) { listState.scrollToItem(0); if (vm.importedFileName != "pasted.txt") name = vm.importedFileName.substringBeforeLast('.').take(100).ifBlank { "Imported collection" } } }
     LazyColumn(state = listState, contentPadding = PaddingValues(bottom = Design.section), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
+        item {
+            Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Design.page), horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
+                FilterChip(!downloadMode, { downloadMode = false }, label = { Text("Files & playlists") })
+                FilterChip(downloadMode, { downloadMode = true }, label = { Text("Downloads") })
+            }
+        }
+        if (downloadMode) { item { LicensedDownloads(vm) } } else {
         item { Column(Modifier.padding(horizontal = Design.page, vertical = Design.md), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
             Text(if (preview == null) "Bring your collection\ninto your space." else "Here's what we found.", style = MaterialTheme.typography.headlineMedium)
             Text(if (preview == null) "Choose audio to play, or match a song list with files already in your library. Your originals stay exactly where they are." else "Only matched local audio becomes playable. Missing titles stay in this report.", style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant)
@@ -111,10 +122,11 @@ private fun Modifier.toggleableSetting(value: Boolean, change: (Boolean) -> Unit
                     }
                 }
             }
+            item { SelectedSources(vm) }
             item { SectionTitle("Or paste a list", "One Artist — Title per line. Numbered AI lists work too.") }
             item { OutlinedTextField(text, { if (it.length <= MusicListParser.MAX_BYTES) { text = it; vm.setImportText(it) } }, label = { Text("Song list") }, placeholder = { Text("Artist — Song title\nArtist — Another song") }, modifier = Modifier.fillMaxWidth().padding(horizontal = Design.page).heightIn(min = 144.dp, max = 240.dp), minLines = 4, maxLines = 8, enabled = !busy, shape = Design.small) }
             item { Button({ vm.analyze() }, Modifier.fillMaxWidth().padding(horizontal = Design.page), enabled = text.isNotBlank() && !busy) { Icon(Icons.Rounded.ManageSearch, null); Spacer(Modifier.width(Design.sm)); Text("Match with my library") } }
-            item { Text("Song lists contain metadata, not audio. Remote links and downloads are not supported.", modifier = Modifier.padding(horizontal = Design.page), style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant) }
+            item { Text("Lists contain metadata. Reuse selected local audio, or review permitted sources in Downloads. Spotify music metadata does not itself provide playable audio.", modifier = Modifier.padding(horizontal = Design.page), style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant) }
             if (history.isNotEmpty()) {
                 item { SectionTitle("Import history", "Saved locally") }
                 items(history.take(8), key = { it.id }) { log -> ListItem(headlineContent = { Text(log.name, maxLines = 1, overflow = TextOverflow.Ellipsis) }, supportingContent = { Text(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(log.date))) }, leadingContent = { Icon(Icons.Rounded.History, null) }, trailingContent = { Icon(Icons.Rounded.ChevronRight, null) }, modifier = Modifier.clickable { onHistory(log) }) }
@@ -130,6 +142,7 @@ private fun Modifier.toggleableSetting(value: Boolean, change: (Boolean) -> Unit
             item { Button({ vm.commitImport(name, done) }, Modifier.fillMaxWidth().padding(horizontal = Design.page), enabled = result.matched.isNotEmpty() && name.isNotBlank() && !busy) { Text("Create playlist · ${result.matched.size} songs") } }
             item { TextButton({ vm.clearImportPreview(); text = vm.importedText }, Modifier.padding(horizontal = Design.page)) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, null); Spacer(Modifier.width(Design.sm)); Text("Edit or choose another list") } }
             itemsIndexed(result.rows) { _, row -> ImportResultRow(row) }
+        }
         }
     }
 }

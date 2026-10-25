@@ -5,3 +5,11 @@ local.properties
 *.jks
 *.keystore
 signing.properties
+
+*.p12
+*.pfx
+*.key
+*.pem
+*.apk
+*.aab
+__pycache__/

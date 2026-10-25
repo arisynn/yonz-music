@@ -98,8 +98,8 @@ import kotlinx.coroutines.withContext
     }
 }
 @Composable fun LibraryScreen(
-    tracks: List<Track>, favorites: Set<String>, activeId: String?, sort: String, scanning: Boolean, permission: Boolean,
-    onPermission: () -> Unit, onImport: () -> Unit, onScan: () -> Unit, onSort: (String) -> Unit,
+    tracks: List<Track>, favorites: Set<String>, activeId: String?, sort: String, scanning: Boolean,
+    onImport: () -> Unit, onScan: () -> Unit, onSort: (String) -> Unit,
     onPlay: (List<Track>, String) -> Unit, onMenu: (Track) -> Unit, onGroup: (String, String, String) -> Unit
 ) {
     var tab by rememberSaveable { mutableStateOf("Songs") }
@@ -115,22 +115,13 @@ import kotlinx.coroutines.withContext
                 ActionIcon(Icons.Rounded.Refresh, "Rescan library", onScan, enabled = !scanning)
             }
         }
-        if (!permission) item {
-            Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = Design.small, modifier = Modifier.padding(horizontal = Design.page, vertical = Design.sm)) {
-                Column(Modifier.padding(Design.gap), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
-                    Text("Let your music in", style = MaterialTheme.typography.titleMedium)
-                    Text("Allow access to audio so Yon'z can find and play your songs. Your files stay on your device. You can also choose individual files in Import.", style = MaterialTheme.typography.bodySmall)
-                    TextButton(onPermission) { Text("Allow music access") }
-                }
-            }
-        }
         item {
             Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Design.page), horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
                 listOf("Songs", "Albums", "Artists", "Folders").forEach { label -> FilterChip(selected = tab == label, onClick = { tab = label }, label = { Text(label) }) }
             }
         }
         if (scanning) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = Design.page, vertical = Design.sm)) }
-        if (tracks.isEmpty() && !scanning) item { EmptyState("Your collection lives here", "Scan your device or choose a folder to start listening.", action = { Button(onImport) { Text("Choose music") } }) }
+        if (tracks.isEmpty() && !scanning) item { EmptyState("Your collection lives here", "Choose your music files or folders in Import. Only your selections appear here.", action = { Button(onImport) { Text("Choose music") } }) }
         if (tracks.isNotEmpty() && tab == "Songs") {
             item { Row(Modifier.fillMaxWidth().padding(start = Design.page, end = Design.md), verticalAlignment = Alignment.CenterVertically) {
                 TextButton({ sorted.firstOrNull { it.available }?.let { onPlay(sorted, it.id) } }) { Icon(Icons.Rounded.PlayArrow, null); Spacer(Modifier.width(Design.xs)); Text("Play all") }

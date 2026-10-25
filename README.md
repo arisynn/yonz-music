@@ -1,49 +1,34 @@
-# Yon'z Music 1.0.0
+# Yono Music — by Karisyono
 
 Your Music. Your Space.
 
-![Yon'z Music identity](brand/identity-preview.png)
+![Yono Music owner-supplied identity](brand/launcher-preview-1024.png)
 
-## Download v1.0.0
+**1.1.0 is being verified.** The owner requested an early GitHub preview so they can test alongside development. Use the clearly labelled **Dev preview** from [Releases](https://github.com/arisynn/yonz-music/releases). It installs as `com.yonzmusic.app.dev` beside the earlier app. It is not the production update channel. The stable v1.0.0 release remains historical; a verified production 1.1.0 will have separate release notes and artifacts.
 
-- **[Installable Android debug APK](https://github.com/arisynn/yonz-music/releases/download/v1.0.0/Yonz_Music_v1.0.0_debug.apk)** — Android 8.0+; development/debug signed.
-- [Release page, source archive, assets and checksums](https://github.com/arisynn/yonz-music/releases/tag/v1.0.0).
-- The optimized release APK is **unsigned** and requires the owner's production signing key before installation/distribution.
+A native Kotlin/Jetpack Compose music player, with Media3 background playback, local Room collections and DataStore preferences. Free, open source, no ads, no tracking, no account. Local playback, library browsing and playlists work without internet. Optional source downloads and GitHub update checks use the network.
 
-Verified: 44 JVM tests and 6 Android instrumentation tests passed; debug/release builds and lint completed with zero errors. Physical HyperOS and Play Protect approval are not claimed. See [test evidence](TEST_REPORT.md) and the [full build report](docs/FINAL_BUILD_REPORT.md).
+## What changes in 1.1.0
 
-A native Kotlin / Jetpack Compose Android player. No account, ads, analytics, internet permission, or remote startup dependency. All library and collection data stays on the device.
+- **Choose your library.** Import audio documents or SAF folders, control subfolders, enable/exclude/remove sources, and refresh only those sources. Opening the app reads the saved database. There is no whole-storage scan, permission-triggered scan, or broad music/storage permission.
+- **Keep collection context.** The real Room 1→2 migration retains favorites, playlists/order, history and old track references. Former global entries stay unavailable until selected sources reconnect exact identities. Removing a source never deletes its music.
+- **Spoti's useful engine inside Android.** Chaquopy embeds pinned Python/yt-dlp, EJS and a reviewed Android QuickJS runtime. Kotlin owns queue, SAF storage, progress/cancel/retry and native playback. Termux is unnecessary. Explicit authorized source URLs are reviewed before downloading. Wikimedia Commons is an additional catalog, not the replacement engine.
+- **Preserve recordings.** Native validation checks the audio, original encoding is retained, Mutagen adds tags/artwork where the container permits, and per-playlist folders include source/license attribution. Exact verified source history or conservative selected-library identity can reuse an existing recording. Lists alone never create playable audio.
+- **Original owner logo.** The supplied mist-blue YONO monogram/note is traced into adaptive, monochrome and splash vectors. Main navigation, themes and playback UI are retained.
+- **Production updater.** The stable channel checks GitHub Releases asynchronously, offers Unduh/Batal, verifies APK contents/signing and uses Android's confirmation installer. Successful replacement and next-launch reconciliation clean only the owned temporary APK. OS installer checks are still being completed for the preview.
 
-## Start listening
+## Start listening and import
 
-Install the debug APK from the delivery folder. Open **Library → Allow music access** to index Android's shared music library, or use **Import music → Local audio files / A music folder** to grant access to specific documents. Read permission is enough. Grant audio access again in Android settings if it was permanently declined.
+Open **Import → Files & playlists** and choose local audio or a folder. No global permission is required. Only chosen sources appear in Library. TXT, CSV, JSON, M3U/M3U8 and pasted numbered/Markdown lists match actual selected audio. HTTPS source references can be reviewed separately in **Import → Downloads**. Downloading requires a writable destination and explicit content/source authorization.
 
-Tap a song to play. The mini-player sits above navigation and opens Now Playing. Notification, lock-screen, Bluetooth, and wired media buttons use the same Media3 session. Unplugging headphones pauses playback. The player requests audio focus and follows Android interruption policy. Resume context is restored paused; tap Play to resume. MP3, AAC/M4A, FLAC, WAV, and OGG/Opus use the formats supported by the device's Media3/platform decoders.
+Downloaded MP3/FLAC/M4A/Ogg are validated and tagged without re-encoding. WAV metadata remains in Room/attribution rather than rewriting its container. Actual codec playback depends on Android/Media3 support. The embedded engine does not include FFmpeg stream merging, video extraction or transcoding. Remote catalog/extractor support varies: see [migration and source scope](LEGACY_MIGRATION_REPORT.md). No DRM bypass, login/cookie import, Spotify-to-MP3 claim or untested blanket platform support is offered.
 
-**Playlists** owns custom collections; Favorites uses the same collection from Home or Playlists. Create/rename/delete collections, select songs, change order with arrows, and export M3U8. Deleting a playlist or removing a song only changes database references. Original music is never renamed, moved, retagged, or deleted.
+Home, Library, Search and Playlists remain the four main destinations. One mini-player opens the shared Now Playing session. Favorites, custom playlist editing/reordering/export, queue, sleep timer, system equalizer intent, dark/light/system themes, reduced motion and glass settings remain available.
 
-## Bring your old lists
+## Signing and installation
 
-Use the single **Import music** destination (top-bar import icon). Choose TXT, CSV, JSON, M3U/M3U8, or paste one `Artist — Title` per line. Numbered/Markdown AI lists are accepted. CSV supports title/name/Track Name, artist/artists/Artist Name(s), and optional duration fields. JSON accepts arrays or tracks/songs/items arrays, including nested Spotify export metadata. UTF-8 and UTF-8 BOM are accepted.
+Minimum Android 8.0/API 26; **64-bit arm64-v8a and x86_64** only. Dev previews use ID `com.yonzmusic.app.dev` and standard debug signing. The initial public production identity is separately persisted in the owner's encrypted GitHub repository secrets. Old differently signed test APKs cannot be upgraded to that identity in place. The Migration build/export-and-restore path is documented; the app never uninstalls itself. See [signing and owner recovery](docs/SIGNING_AND_RECOVERY.md).
 
-Scan or choose your audio first. Review matched/unmatched/duplicate/invalid rows and create a named playlist from real matches. Titles alone match only when unambiguous; artist credits and supplied duration must agree. Live/remix versions remain distinct. Lists do not contain playable audio, and the app never downloads missing titles. Metadata imports are capped at 2 MB / 10,000 entries and 2,048 characters per entry; folder imports at 10,000 tracks / 20,000 directories. Import history retains row reports for completed imports.
+[Build](BUILD_INSTRUCTIONS.md) · [Actual tests and limitations](TEST_REPORT.md) · [Security](SECURITY.md) · [Architecture](docs/ARCHITECTURE.md) · [Licenses/source directions](docs/THIRD_PARTY_NOTICES.md)
 
-M3U file paths are matched against indexed local filenames and metadata; they are never opened as arbitrary filesystem paths. Export uses content URI references, suitable for round trips on the same installation/library. References are not a portable backup of the audio or permission grants.
-
-## Preferences and device behavior
-
-Settings offers System/Dark/Light themes, an opaque surface option, reduced motion, sleep timer (15/30/45/60 minutes), and an intent to the device's system equalizer using the active audio-session ID (play a song first). A message explains when the equalizer is unavailable. Sleep timers pause playback and can be cancelled; they last for the current service process. They are not exact-alarm schedules across reboots.
-
-On Xiaomi HyperOS, normal Android audio services can still be constrained by manufacturer battery settings. If playback stops when the screen is off, open Settings → Apps → Yon'z Music → Battery and permit background playback / No restrictions as appropriate for your HyperOS version. Menu names vary. The app does not force battery exemptions, acquire extra wake locks beyond Media3's playback-only CPU lock, or request autostart permissions. Physical Xiaomi testing has not been performed; see TEST_REPORT.md for actual validation.
-
-## Source map
-
-- `data/`: Room entities/DAO, transactional collection edits, DataStore, read-only MediaStore/SAF indexing.
-- `importer/`: bounded format parsers and conservative local matching; no networking or file execution.
-- `playback/`: MediaSessionService, one ExoPlayer, one controller, queue restoration and session sleep timer.
-- `ui/`: shared design tokens, four main destinations, reusable filtered detail screen, artwork cache, settings/import and playback UI.
-- `brand/`: original editable SVGs and high-resolution launcher preview.
-- `app/src/test/`: parser, matching and collection ordering unit tests.
-- `app/src/androidTest/`: real SQLite consistency tests when configured.
-
-See BUILD_INSTRUCTIONS.md, SECURITY.md, LEGACY_MIGRATION_REPORT.md, TEST_REPORT.md and docs/FINAL_BUILD_REPORT.md. This is a first release build with documented testing limits; security-scanner/Play Protect approval is not guaranteed.
+Physical Xiaomi HyperOS, Bluetooth hardware and Google Play Protect classification are not verified. If HyperOS interrupts screen-off playback, allow background activity through its normal app battery settings; the app does not force an exemption.

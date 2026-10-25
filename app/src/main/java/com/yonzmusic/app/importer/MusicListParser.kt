@@ -30,7 +30,10 @@ object MusicListParser {
         if (line.length > 2048) return SongRequest(line.take(256), error = "Entry exceeds 2,048 characters")
         line = line.replace(Regex("""^(?:\d+[.)]|[-*+•])\s+"""), "").replace("**", "").trim()
         if (line.endsWith(':') && !remote(line)) return null
-        if (remote(line) || line.startsWith("[https", true) || Regex("""\]\(https?://""", RegexOption.IGNORE_CASE).containsMatchIn(line)) return SongRequest(line, error = "Remote sources are not imported. Choose local audio or metadata.")
+        if (line.startsWith("https://", true)) return SongRequest(line, reference = line)
+        val sourceLink = Regex("""^\[([^\]]+)\]\((https://[^\s)]+)\)$""", RegexOption.IGNORE_CASE).matchEntire(line)
+        if (sourceLink != null) return (textRequest(sourceLink.groupValues[1]) ?: SongRequest(line)).copy(raw = line, reference = sourceLink.groupValues[2])
+        if (remote(line) || line.startsWith("[https", true) || Regex("""\]\(https?://""", RegexOption.IGNORE_CASE).containsMatchIn(line)) return SongRequest(line, error = "Use an HTTPS source in Downloads, or local audio/metadata.")
         val parts = line.split(Regex("""\s+(?:-|–|—|\|)\s+"""), limit = 2)
         return if (parts.size == 2) SongRequest(line, parts[1].trim(), parts[0].trim()) else SongRequest(line, line)
     }
@@ -99,7 +102,8 @@ object MusicListParser {
                         else -> ""
                     }
                     val duration = if (row.has("duration_ms")) row.optLong("duration_ms") else seconds(row.optString("duration"))
-                    SongRequest(listOf(artists, title).filter { it.isNotBlank() }.joinToString(" — ").ifBlank { "Row ${n + 1}" }, title, artists, duration = duration, error = if (title.isBlank()) "Missing title" else "")
+                    val source = row.optString("source_url").ifBlank { row.optString("audio_url") }.ifBlank { row.optString("uri") }
+                    SongRequest(listOf(artists, title).filter { it.isNotBlank() }.joinToString(" — ").ifBlank { "Row ${n + 1}" }, title, artists, reference = source, duration = duration, error = if (title.isBlank() && source.isBlank()) "Missing title" else "")
                 }
                 else -> SongRequest("Row ${n + 1}", error = "Expected a song object or text entry")
             }
@@ -125,7 +129,8 @@ object MusicListParser {
             val title = field(row, "title", "name", "Track Name")
             val artist = field(row, "artist", "artists", "Artist Name", "Artist Name(s)")
             val ms = field(row, "duration_ms", "Duration (ms)", "Track Duration (ms)").toLongOrNull()
-            SongRequest("${artist.ifBlank { "Row ${i + 2}" }} — $title", title, artist, duration = ms ?: seconds(field(row, "duration", "Duration (s)", "duration_seconds")), error = if (title.isBlank()) "Missing title" else "")
+            val source = field(row, "source_url", "audio_url", "Source URL", "Audio URL", "uri")
+            SongRequest("${artist.ifBlank { "Row ${i + 2}" }} — $title", title, artist, reference = source, duration = ms ?: seconds(field(row, "duration", "Duration (s)", "duration_seconds")), error = if (title.isBlank() && source.isBlank()) "Missing title" else "")
         }
     }
     internal fun csvTable(text: String, delimiter: Char): List<List<String>> {
@@ -148,8 +153,8 @@ object MusicListParser {
         return rows
     }
     fun match(requests: List<SongRequest>, library: List<Track>): ImportPreview {
-        val local = library.filter { it.available }
-        val titles = local.groupBy { titleKey(it.title) }
+        val local = library.filter { it.active && it.available }
+        val titles = local.groupBy { com.yonzmusic.app.download.RecordingMatch.title(it.title) }
         val filenames = local.filter { it.fileName.isNotBlank() }.groupBy { it.fileName.lowercase(Locale.ROOT) }
         val uris = local.associateBy { it.uri }
         val seen = HashSet<String>()
@@ -157,16 +162,17 @@ object MusicListParser {
             val candidates: List<Track> = when {
                 request.error.isNotBlank() -> emptyList()
                 request.reference.startsWith("content://") -> listOfNotNull(uris[request.reference])
+                request.reference.startsWith("https://") -> titles[com.yonzmusic.app.download.RecordingMatch.title(request.title)].orEmpty()
                 request.reference.isNotBlank() -> {
                     val basename = runCatching { java.net.URLDecoder.decode(request.reference.replace('+', '\u0000'), "UTF-8").replace('\u0000', '+') }.getOrDefault(request.reference).replace('\\', '/').substringAfterLast('/')
                     val byFile = filenames[basename.lowercase(Locale.ROOT)].orEmpty()
-                    if (byFile.isNotEmpty()) byFile else titles[titleKey(request.title)].orEmpty()
+                    if (byFile.isNotEmpty()) byFile else titles[com.yonzmusic.app.download.RecordingMatch.title(request.title)].orEmpty()
                 }
-                else -> titles[titleKey(request.title)].orEmpty()
+                else -> titles[com.yonzmusic.app.download.RecordingMatch.title(request.title)].orEmpty()
             }
             val compatible = candidates.filter { t ->
-                (request.title.isBlank() || titleKey(t.title) == titleKey(request.title)) &&
-                    (request.artist.isBlank() || artistKey(t.artist) == artistKey(request.artist)) &&
+                (request.title.isBlank() || com.yonzmusic.app.download.RecordingMatch.title(t.title) == com.yonzmusic.app.download.RecordingMatch.title(request.title)) &&
+                    (request.artist.isBlank() || com.yonzmusic.app.download.RecordingMatch.artists(t.artist, t.title) == com.yonzmusic.app.download.RecordingMatch.artists(request.artist, request.title)) &&
                     (request.duration <= 0 || abs(t.duration - request.duration) <= 2500)
             }
             when {

@@ -5,6 +5,15 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CollectionOrderTest {
+    @Test fun retryInsertsAtRequestedPositionWithoutDroppingUserAdditions() {
+        assertEquals(listOf("user-added", "first", "second"), CollectionOrder.insertBeforeFollowing(listOf("user-added", "second"), "first", setOf("second")))
+    }
+    @Test fun arrivingTrackDoesNotRecreatePreviouslyRemovedBatchMembers() {
+        assertEquals(listOf("arriving", "later"), CollectionOrder.insertBeforeFollowing(listOf("later"), "arriving", setOf("later")))
+    }
+    @Test fun existingArrivingTrackKeepsItsUserChosenPosition() {
+        assertEquals(listOf("later", "arriving", "user-added"), CollectionOrder.insertBeforeFollowing(listOf("later", "arriving", "user-added"), "arriving", setOf("later")))
+    }
     @Test fun appendPreservesOrderAndSuppressesDuplicates() { assertEquals(listOf("a", "b", "c"), CollectionOrder.append(listOf("a", "b"), listOf("b", "c", "c"))) }
     @Test fun movingDownKeepsMembership() { assertEquals(listOf("b", "c", "a"), CollectionOrder.move(listOf("a", "b", "c"), 0, 2)) }
     @Test fun movingUpKeepsMembership() { assertEquals(listOf("c", "a", "b"), CollectionOrder.move(listOf("a", "b", "c"), 2, 0)) }

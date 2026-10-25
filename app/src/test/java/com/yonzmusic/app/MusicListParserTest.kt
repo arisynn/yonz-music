@@ -33,7 +33,7 @@ class MusicListParserTest {
     }
     @Test fun unavailableFileNeverMatches() { assertEquals(0, MusicListParser.match(MusicListParser.parse("Mangu"), listOf(track().copy(available = false))).matched.size) }
     @Test fun unmatchedHasNoInventedId() { assertNull(MusicListParser.match(MusicListParser.parse("Not on disk"), emptyList()).rows.single().trackId) }
-    @Test fun remoteLinkIsInvalid() { assertEquals("Invalid", MusicListParser.match(MusicListParser.parse("https://example.org/audio.mp3"), emptyList()).rows.single().status) }
+    @Test fun remoteLinkNeedsDownloadReviewAndIsNeverLocalAudio() { assertEquals("Unmatched", MusicListParser.match(MusicListParser.parse("https://example.org/audio.mp3"), emptyList()).rows.single().status) }
     @Test fun jsonSimpleAndArtistsArray() {
         val rows = MusicListParser.parse("""{"tracks":[{"title":"Mangu","artists":["Fourtwnty","Charita Utami"],"duration":263}]}""", "a.json")
         assertEquals(263000L, rows.single().duration); assertEquals(1, MusicListParser.match(rows, listOf(track())).matched.size)
@@ -76,7 +76,7 @@ class MusicListParserTest {
     @Test fun reportKeepsErrorsAndStatus() { val p = MusicListParser.match(MusicListParser.parse("Not here"), emptyList()); assertTrue(p.json().contains("Unmatched")) }
     @Test(expected = IllegalArgumentException::class) fun oversizedInputRejected() { MusicListParser.parse("a".repeat(MusicListParser.MAX_BYTES + 1)) }
     @Test(expected = IllegalArgumentException::class) fun tooManyEntriesRejected() { MusicListParser.parse("Song\n".repeat(10001)) }
-    @Test fun markdownRemoteLinkIsReportedInvalid() { assertTrue(MusicListParser.parse("[Song](https://example.org/a)").single().error.isNotBlank()) }
+    @Test fun markdownSourceLinkPreservesReferenceForExplicitReview() { val row = MusicListParser.parse("[Song](https://example.org/a)").single(); assertEquals("https://example.org/a", row.reference); assertTrue(row.error.isBlank()); assertTrue(MusicListParser.match(listOf(row), emptyList()).matched.isEmpty()) }
     @Test(expected = IllegalArgumentException::class) fun excessiveJsonNestingRejected() { MusicListParser.parse("[".repeat(40) + "0" + "]".repeat(40), "a.json") }
     @Test fun tenThousandEntryLibraryMatchesWithoutFalseDuplicates() {
         val library = (1..10000).map { track(it.toString(), title = "Track $it", artist = "Artist $it", file = "$it.mp3") }
@@ -86,4 +86,18 @@ class MusicListParserTest {
     }
     @Test fun oversizedRowBecomesBoundedError() { val row = MusicListParser.parse("x".repeat(10000)).single(); assertTrue(row.error.isNotBlank()); assertTrue(row.raw.length <= 256) }
     @Test fun utf8BomAndCrlf() { assertEquals("Diri", MusicListParser.parse("\uFEFFTulus - Diri\r\n").single().title) }
+    @Test fun inactiveLegacyAudioCannotMatchEvenIfAnOldAvailableFlagIsTrue() {
+        assertTrue(MusicListParser.match(MusicListParser.parse("Mangu"), listOf(track().copy(active = false))).matched.isEmpty())
+    }
+    @Test fun sourceExportsPreserveUrlAndRequestedRecordingForVerification() {
+        val row = MusicListParser.parse("""[{"title":"Mangu","artist":"Fourtwnty; Charita Utami","source_url":"https://example.org/audio.mp3","duration_ms":263000}]""", "source.json").single()
+        assertEquals("https://example.org/audio.mp3", row.reference); assertEquals(263000L, row.duration)
+        val csv = MusicListParser.parse("title,artist,source_url\nMangu,Fourtwnty,https://example.org/audio.mp3", "source.csv").single()
+        assertEquals(row.reference, csv.reference)
+    }
+    @Test fun featuringInTitleStillRequiresAllArtistCredits() {
+        val recording = track(title = "Mangu (feat. Charita Utami)", artist = "Fourtwnty")
+        assertEquals(1, MusicListParser.match(MusicListParser.parse("Fourtwnty; Charita Utami - Mangu"), listOf(recording)).matched.size)
+        assertTrue(MusicListParser.match(MusicListParser.parse("Fourtwnty - Mangu"), listOf(recording)).matched.isEmpty())
+    }
 }

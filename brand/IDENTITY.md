@@ -1,9 +1,7 @@
-# Yon'z Music identity
+# Yono Music identity — owner-selected logo
 
-Original geometric Y mark: two rhythmic branches meet a central stem, flanked by four short sound pulses. Mint on deep teal is the primary launcher treatment; white is the monochrome treatment. Safe area is built into the 108 × 108 Android foreground. Android 13 themed icons use the same silhouette.
+The final identity is the supplied mist-blue YONO monogram with musical-note detail, preserved as `logo-reference.jpg`. It is not a new replacement concept. Technical vector tracing preserves the letter contours, note, proportions and palette: ink #315673, accent #88B3CD, mist #CFEAF5. Antialiasing/JPEG texture are flattened to a practical two-ink vector. The final dark silhouette has approximately 0.9928 intersection-over-union with the reference mask; this is geometric tracing evidence, not a substitute for visual inspection.
 
-Palette: charcoal #0E1416, deep teal #101F22, mint #79E2CB / launcher #64DCC3, quiet violet #C2B4ED. Light mode uses ivory #F5F5EF, ink #172B2B, and forest #006B59. System sans-serif typography needs no network font download. Material rounded vector icons share consistent 24 dp optical sizes and at least 48 dp interactive targets.
+`tools/branding/trace_owner_logo.py` reproduces SVG and Android vector assets from the supplied reference. `brand_y.xml` is the adaptive foreground and splash/in-app mark; background and API 33 monochrome assets are separate vectors. Foreground scaling stays inside the central circular adaptive safe zone, preserving the musical tail under launcher masks. Editable SVGs, original JPEG and high-resolution PNG previews are included. Empty states/default covers remain native Canvas/vector UI without external image URLs.
 
-Spacing scale: 4, 8, 12, 16, 24, 28 dp. Corners: 12, 24, 32 dp. Motion token: 240 ms, honoring app reduction and Android animation scaling. Glass opacity: 90%; an opaque option is available. Android 12+ blur affects the artwork background, never foreground labels.
-
-SVGs are editable source artwork. Launcher/splash drawables are native Android vectors. In-app illustrations are drawn with Compose Canvas and Material vector glyphs; accompanying SVGs are supplementary standalone assets. Artwork belongs to Yon'z Music's supplied original identity; no remote photographs or other product logos are bundled.
+The existing dark charcoal/quiet mint-violet and light ivory UI themes, spacing, type, motion and glass tokens remain. Branding changes do not redesign the owner's accepted navigation. System fonts and Material rounded vectors work offline. The app identifies its creator as Karisyono and software license as GPL-3.0-or-later.

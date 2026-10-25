@@ -1,0 +1,86 @@
+# Install as .github/workflows/owner-release.yml from an owner-authenticated checkout.
+# Kept as a template because the publication credential does not have GitHub's workflow scope.
+name: Owner release and encrypted key recovery
+on:
+  workflow_dispatch:
+    inputs:
+      age_recipient:
+        description: Optional owner age PUBLIC recipient for an encrypted keystore backup (never enter a private key)
+        required: false
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    if: github.actor == 'arisynn'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: android-actions/setup-android@v3
+      - name: Install reviewed build components
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
+      - name: Restore owner signing identity into temporary private files
+        env:
+          KEYSTORE: ${{ secrets.YONO_RELEASE_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.YONO_RELEASE_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.YONO_RELEASE_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.YONO_RELEASE_KEY_ALIAS }}
+        shell: bash
+        run: |
+          set +x
+          python3 - <<'PY'
+          import os, pathlib, base64, json
+          private = pathlib.Path(os.environ['RUNNER_TEMP']) / 'yono-private'
+          private.mkdir(mode=0o700)
+          key = private / 'yono-release.p12'
+          key.write_bytes(base64.b64decode(os.environ['KEYSTORE'], validate=True))
+          key.chmod(0o600)
+          config = {'storeFile': str(key), 'storePassword': os.environ['STORE_PASSWORD'],
+                    'keyPassword': os.environ['KEY_PASSWORD'], 'keyAlias': os.environ['KEY_ALIAS']}
+          # JSON preserves exact credentials for optional encrypted owner recovery.
+          backup = private / 'owner-signing.json'
+          backup.write_text(json.dumps(config))
+          backup.chmod(0o600)
+          def escape(s): return s.replace('\\', '\\\\').replace('\n', '\\n').replace('\r', '\\r')
+          props = pathlib.Path('signing.properties')
+          props.write_text('\n'.join(k+'='+escape(v) for k,v in config.items())+'\n')
+          props.chmod(0o600)
+          PY
+      - name: Build and verify production APK
+        run: |
+          bash ./gradlew --no-daemon :app:testDebugUnitTest :app:lintRelease :app:assembleRelease
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+      - name: Encrypt owner recovery bundle
+        if: inputs.age_recipient != ''
+        env:
+          AGE_RECIPIENT: ${{ inputs.age_recipient }}
+        shell: bash
+        run: |
+          set +x
+          [[ "$AGE_RECIPIENT" =~ ^age1[a-z0-9]{58}$ ]] || { echo 'Enter an age PUBLIC recipient'; exit 1; }
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq age
+          tar -C "$RUNNER_TEMP/yono-private" -czf - yono-release.p12 owner-signing.json | age -r "$AGE_RECIPIENT" -o "$RUNNER_TEMP/yono-owner-recovery.tar.gz.age"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: owner-signed-apk
+          path: app/build/outputs/apk/release/app-release.apk
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: inputs.age_recipient != ''
+        with:
+          name: encrypted-owner-signing-recovery
+          path: ${{ runner.temp }}/yono-owner-recovery.tar.gz.age
+          retention-days: 7
+      - name: Remove private runner files
+        if: always()
+        shell: bash
+        run: rm -f signing.properties && rm -rf "$RUNNER_TEMP/yono-private"

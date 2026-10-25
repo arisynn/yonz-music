@@ -1,0 +1,31 @@
+{
+  "network": "LIVE HTTPS via test proxy with verified CA",
+  "runtime": {
+    "python": "3.12.15",
+    "yt_dlp": "2026.10.21",
+    "ejs": "0.8.0",
+    "mutagen": "1.48.1",
+    "node": false,
+    "deno": false,
+    "ffmpeg": false,
+    "ffprobe": false,
+    "quickjs": "{\"value\":42,\"runtime\":\"quickjs-ng\"}",
+    "quickjsExit": 0,
+    "ejsBoot": "{\"ejsLoaded\":true,\"answer\":42,\"filesystem\":\"undefined\",\"network\":\"undefined\"}",
+    "ejsExit": 0,
+    "ytDlpJsRuntime": {
+      "name": "quickjs-ng",
+      "version": "0.17.0",
+      "supported": true
+    }
+  },
+  "source": "https:\/\/upload.wikimedia.org\/wikipedia\/commons\/2\/24\/Mozart_-_Eine_kleine_Nachtmusik_-_1._Allegro.ogg",
+  "license": "CC BY-SA 2.0",
+  "status": "Complete",
+  "size": 11483368,
+  "sha256": "3440cfb54a3834ca4b0ec9aa63ab95cfb2442b1c2fdfe9337a07d8e7e7890655",
+  "uri": "content:\/\/com.android.externalstorage.documents\/tree\/primary%3AMusic%2FYonoEngineGate\/document\/primary%3AMusic%2FYonoEngineGate%2FYono%20live%20permitted%20acquisition%2FAdvent%20Chamber%20Orchestra%3B%20Wolfgang%20Amadeus%20Mozart%20-%20Eine%20kleine%20Nachtmusik%20-%20Allegro.ogg",
+  "durationMs": 355413,
+  "progressEvents": 13,
+  "mediaSessionPlaying": true
+}

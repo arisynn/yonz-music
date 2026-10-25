@@ -1,30 +1,17 @@
-# Architecture and safety boundaries
+# Yono Music architecture — 1.1.0
 
-```mermaid
-flowchart LR
-  MS[MediaStore audio] --> R[Repository / IO scans]
-  SAF[User-granted SAF documents] --> R
-  R --> DB[(Room)]
-  DS[(DataStore)] --> VM[MusicViewModel / StateFlow]
-  DB --> VM
-  VM --> UI[Compose: Home / Library / Search / Playlists]
-  UI --> C[One MediaController]
-  C <--> S[MediaSessionService]
-  S --> E[One ExoPlayer]
-  E --> A[Local content URI audio]
-  S --> DS
-  I[Bounded metadata parsers] --> M[Conservative local matcher]
-  DB --> M
-  M --> P[Import preview]
-  P --> DB
-```
+The existing Kotlin/Compose MVVM application and four primary destinations remain. There is one Media3 ExoPlayer/MediaSessionService, one Room database, one playlist manager and one DataStore preference/paused-playback store.
 
-All durable collection edits are Room transactions. Import history stores individually bounded rows instead of one large JSON blob, so a 10,000-row report can cross Android cursor windows safely. Metadata upserts preserve favorites, history and playlist references because those are independent tables. Missing media is marked unavailable. Playlist and queue ordering are explicit; imports use stable track IDs and one membership constraint. Playlist deletion cascades to memberships only.
+- `data/Repository.kt` indexes only explicit SAF folder/document registrations on user action. Opening the app reads Room; it does not scan or hash storage. `locations` separates physical identity from overlapping source memberships. Disabled/removed source entries preserve collection context. Exact provider/document and verified MediaStore row identities reconnect old entries; similar names do not.
+- Room schema 2 uses a real 1→2 migration. Old global tracks become inactive/unavailable; playlists, favorites, history, row order and import reports remain. Stable aliases and collection rebinding are transactional. The selected-source notice leads into the existing Import screen.
+- `importer/MusicListParser.kt` is bounded pure local parsing for TXT/CSV/JSON/M3U/M3U8 and pasted lists. HTTPS metadata/source references are never playable local files. Download review consumes explicit links and optional requested recording constraints separately.
+- `download/RecordingMatch.kt` centralizes title, full artist credits, version and duration validation. It refuses cover/karaoke/live/remix substitutions and ambiguous local matches. No automatic catalog-wide best-guess downloading is advertised.
+- `download/EmbeddedEngine.kt` lazily initializes Chaquopy only for explicit engine work. Bundled yt-dlp extracts one authorized source at a time; Python has no UI or queue authority. A reviewed urllib transport validates HTTPS, public destinations and redirects, preserves TLS verification, and exports Android system roots for Python. Spotify metadata and audio acquisition are distinct.
+- `app/src/main/python/yono_engine.py` uses fixed arguments and private workspaces. No shell, cookie/login import, pip/npm runtime installation, remote plugins, downloaded executables or self-updating engine. Bundled EJS uses the restricted read-only Android QuickJS executable. Native probing and Mutagen tagging replace the particular ffprobe/FFmpeg tasks used by the original CLI without re-encoding audio. Merging/transcoding is not implemented.
+- `download/DownloadEngine.kt` validates complete audio before shared publication, checks requested identity when provided, writes metadata/artwork, hashes the result, stages to a chosen SAF playlist folder, verifies the copy, renames atomically when supported, writes attribution and indexes the exact final URI. Journals recover completed publication; partial stages are app-identifiable. Existing user files are never overwritten or deleted. Exact completed source identity plus verified bytes can be reused.
+- `DownloadWorker` serializes durable Room jobs through WorkManager's unique coordinator chain. Batches cancel by persisted status; cancelling one never cancels dependent WorkManager batches. Progress is throttled. Retries are bounded; failed early entries insert before later requested entries without undoing user edits.
+- `update/ReleaseContract.kt` defines an exact GitHub Releases `update.json` contract. `UpdateManager` checks asynchronously on process foreground, uses ETags/backoff, downloads only after consent, verifies signatures/content/metadata, and submits a standard user-confirmed PackageInstaller session. Only app-owned private update cache files are eligible for cleanup after verified replacement or explicit cache clearing.
+- `ui/` retains the existing themes, tokens, library/playback hierarchy and inset-aware scaffold. Import contains source management and an internal Downloads mode. Commons is an additional licensed catalog, while the embedded engine accepts explicit authorized source URLs. Fast player progress state stays in playback-specific composables.
+- `native/` contains reviewed QuickJS-NG sources and the fixed restricted runner. `tools/native` reproducibly cross-compiles reviewed code for arm64-v8a/x86_64 with NDK r28c; no Termux binary is copied.
 
-Media3 owns audio focus, playback, media notifications, screen-off CPU wake handling, and headset controls. Playback state originates in the service and is mirrored by one controller. Controller initialization is deferred until after the first UI frame to keep library startup independent from player class initialization. Queue state is saved on timeline changes (including paused queue edits), playback changes and every ten seconds only while playing; restoration is paused and excludes unavailable items. Recent history is based on actual playback, not placeholder content.
-
-The shared ViewModel never receives a progress tick. Only visible seek/progress components read position, under lifecycle STARTED, and only visible timer labels update their countdown. The sleep service uses one delayed coroutine, not polling. App-scoped sequential IO dispatch lets pending DataStore writes finish after orderly service destruction. Force-stop or power loss can lose the latest few seconds; Android does not permit guaranteeing execution after process death.
-
-UI content uses Scaffold-consumed top/horizontal safe insets and a bottom bar that stacks the mini-player above navigation/system gesture padding. Lazy list content receives the full bottom-bar padding. Player controls use a scrollable full-screen dialog with safe drawing insets, so short landscape windows can reveal lower controls by scrolling. Sheets have capped scrollable content; text inputs resize with the IME. Reusable detail screens serve favorites, albums, artists, folders, history and playlists without duplicating collection state.
-
-No parser opens a playlist file path or URL. Only content URIs indexed through MediaStore/Android document pickers can become playback items. Session clients cannot supply arbitrary network media. Import is metadata matching, never audio acquisition. No legacy executable code is reused.
+The application is free/offline-first. Only optional source requests and production GitHub update checks use the network. No login, advertising, tracking, custom backend or broad storage permission is required.

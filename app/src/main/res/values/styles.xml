@@ -1,5 +1,5 @@
 <resources>
-    <color name="splash_background">#101718</color>
+    <color name="splash_background">#CFEAF5</color>
     <style name="Theme.Yonz" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/brand_y</item>
