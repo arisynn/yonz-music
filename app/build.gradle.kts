@@ -19,8 +19,8 @@ android {
         applicationId = "com.yonzmusic.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(2)
-        versionName = "1.1.0"
+        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(3)
+        versionName = "1.2.0"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -71,12 +71,10 @@ ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 chaquopy {
     defaultConfig {
         version = "3.12"
+        extractPackages("ytmusicapi")
         buildPython("python3")
         pip {
-            install("yt-dlp==2026.10.21")
-            install("yt-dlp-ejs==0.8.0")
-            install("certifi==2026.10.19")
-            install("mutagen==1.48.1")
+            install("-r", "requirements-android.lock")
         }
     }
 }

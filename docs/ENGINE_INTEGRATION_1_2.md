@@ -1,0 +1,19 @@
+# Yono Engine integration — 1.2.0 preview
+
+Integrated against application commit a4326b7, preserving its signing key, selected-source library, Room collections, MediaSession, logo and updater. The handoff's INTEGRATE_CODEX.md and companion documentation/code were read before execution. Imported source is GPL-3.0-or-later. The nested reference CLI was not executed.
+
+The actual yono_core/yono_engine_api modules and Kotlin client/SAF store are integrated. New download UI sends prepare/review/choose/acquire/retry/recover through this single engine, with foreground WorkManager ownership. Room remains authoritative; successful content URIs are indexed individually. Explicit selected-library snapshots hash only registered/active files and never enumerate the output tree as a library. Failed/cancelled reads do not replace the snapshot. Native track-level audio validation replaces the supplied weaker has-video heuristic. Android system roots/proxy settings are bridged to the reviewed TLS transports without disabling verification. Direct permitted HTTPS audio reuses the reviewed transport library inside the new engine, retaining a single work/plan pipeline.
+
+UI: one short paste box, choose-file/choose-destination row, concise authorization and Check action. Review collapses the editor, shows real counts and the primary action; large result lists and ambiguity choices are lazy-rendered inside a detail dialog. No long Commons catalog or implementation-description sections occupy the main download page. Playback/navigation are unchanged.
+
+The 50-entry ceiling is removed; the new core rejects inputs beyond 5000 rather than returning a partial list. Request/job IDs, native cooperative cancellation, private durable plans and SAF receipts survive through the supplied engine. Android worker cancellation invokes Task.cancel and waits for the native operation to complete. Long API/native calls remain cooperatively cancellable, not a guaranteed hard stop.
+
+MP3 conversion is deliberately not offered: no FFmpeg/LAME Android binary has been built/validated in this update. Source recipe is preserved under tools/yono-engine; Linux binaries are never copied into the APK. Original format remains available, including files already encoded as MP3. Spotify token/OAuth UI is not configured and produces a clear API-authorization message. No new live YouTube success or full CLI parity is claimed; the host tests use fixtures. Native runtime and UI checks for this preview are reported separately below/in release notes, not copied from the handoff's historical report.
+
+## Actual verification in this workspace
+
+114 host tests passed against the integrated source; 72 existing JVM unit tests passed. Debug/release builds and release lint passed during integration. The Android bridge test ran the bundled QuickJS doctor and processed all 110 synthetic local metadata entries with actual Chaquopy/SAF URI access. This is fixture evidence, not 110 live downloads. An actual callback interoperability error was repaired by preferring Java onEvent over Python callable detection.
+
+API 29 emulator screenshots show the input/destination/authorization/check action without scrolling at 320 dp, and a collapsed review with one real local recording correctly marked exists. The foreground worker completed review; local reuse was exercised through the playlist action. No new authorized live YouTube transfer, FFmpeg/LAME Android build, MP3 conversion, hardware HyperOS or R8 bridge instrumentation has been verified for this preview. Existing v1.1.0 live-download evidence is historical and is not claimed as a new-engine live transfer. Full CLI parity is not claimed.
+
+Release scope: distributed as a Dev preview (separate application ID), while the v1.1.0 production release remains latest stable. MP3 encoder integration remains incomplete; no new live YouTube/network acquisition is claimed. The downloaded package is not represented as complete CLI parity.

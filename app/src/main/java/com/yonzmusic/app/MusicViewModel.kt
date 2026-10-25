@@ -83,7 +83,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun sourcesFromImportedList() { action {
         val requests = withContext(Dispatchers.Default) { MusicListParser.parse(importedText, importedFileName) }
         val sources = requests.filter { it.error.isBlank() && it.reference.startsWith("https://") }
-        require(sources.size in 1..50) { "This list needs 1–50 explicit HTTPS source links. Titles alone can be matched locally; they are not downloadable audio." }
+        require(sources.size in 1..5000) { "This list needs 1–5000 explicit HTTPS source links. Titles alone can be matched locally; they are not downloadable audio." }
         importedSourceRequests = sources
         engineInput.value = sources.map { it.reference }.distinct().joinToString("\n")
         messages.emit("Source links loaded. Review permissions, then read their metadata.")
@@ -92,8 +92,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         sourceJob?.cancel()
         sourceJob = action {
             require(contentPermission) { "Confirm content rights and the source's download permission before requesting it." }
-            val urls = text.lineSequence().map { it.trim() }.filter { it.isNotBlank() }.distinct().take(51).toList()
-            require(urls.size in 1..50 && urls.all { it.length <= 4096 }) { "Use 1–50 explicit source links, one per line." }
+            val urls = text.lineSequence().map { it.trim() }.filter { it.isNotBlank() }.distinct().take(5001).toList()
+            require(urls.size in 1..5000 && urls.all { it.length <= 4096 }) { "Use 1–5000 explicit source links, one per line." }
             sourceBusy.value = true; engineCandidates.value = emptyList(); engineReport.value = ""
             try {
                 val candidates = mutableListOf<AudioCandidate>(); val failures = mutableListOf<String>()
@@ -132,7 +132,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             sourceBusy.value = true; acquisition.value = emptyList()
             try {
                 val requests = withContext(Dispatchers.Default) { MusicListParser.parse(importedText, importedFileName) }
-                require(requests.size <= 50) { "Online resolution is limited to 50 entries per batch. Local matching supports 10,000." }
+                require(requests.size <= 5000) { "Online resolution is limited to 5000 entries per batch. Local matching supports 10,000." }
                 val preview = MusicListParser.match(requests, dao.allTracks().filter { it.active })
                 val rows = mutableListOf<AcquisitionRow>(); val seen = HashSet<String>()
                 for ((index, request) in requests.withIndex()) {
@@ -164,7 +164,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val destination = dao.state("download_destination")?.value ?: error("Choose a writable music destination first.")
         require(app.contentResolver.persistedUriPermissions.any { it.uri.toString() == destination && it.isWritePermission && it.isReadPermission }) { "Output access has expired. Select the destination again." }
         val accepted = rows.filter { it.status in setOf("Ready", "Existing") }.distinctBy { it.candidate?.id ?: it.trackId }
-        require(accepted.isNotEmpty() && accepted.size <= 50) { "Select between 1 and 50 supported recordings." }
+        require(accepted.isNotEmpty() && accepted.size <= 5000) { "Select between 1 and 5000 supported recordings." }
         val batchId = java.util.UUID.randomUUID().toString()
         val validName = repository.validName(name)
         val jobs = app.database.withTransaction {

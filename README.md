@@ -2,6 +2,8 @@
 
 Your Music. Your Space.
 
+**1.2.0 preview:** mesin handoff baru dan halaman unduh ringkas sedang diintegrasikan. [Catatan implementasi dan pengujian](docs/ENGINE_INTEGRATION_1_2.md). Kanal stabil 1.1.0 di bawah tetap tersedia.
+
 ![Yono Music owner-supplied identity](brand/launcher-preview-1024.png)
 
 **[Download Yono Music 1.1.0](https://github.com/arisynn/yonz-music/releases/download/v1.1.0/Yono_Music_v1.1.0.apk)** · [Release, source, assets and checksums](https://github.com/arisynn/yonz-music/releases/tag/v1.1.0). Android 8.0+, 64-bit arm64-v8a/x86_64. Production-signed by Karisyono. The [early Dev preview](https://github.com/arisynn/yonz-music/releases/tag/v1.1.0-preview.1) remains available as a separate testing channel.

@@ -137,7 +137,7 @@ def downloader(service_permission, qjs, callback=None, output=None, test_config=
 
     options = {
         'quiet': True, 'no_warnings': True, 'logger': QuietLog(),
-        'noplaylist': True, 'playlistend': 50, 'socket_timeout': 15,
+        'noplaylist': True,  'socket_timeout': 15,
         'retries': 2, 'fragment_retries': 2, 'extractor_retries': 1,
         'max_filesize': MAX_AUDIO, 'max_downloads': 1,
         # Generic application/ogg links omit codec fields. Accept unknown codec metadata,

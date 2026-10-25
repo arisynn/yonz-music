@@ -23,8 +23,7 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
     private val batch get() = inputData.getString("batch").orEmpty()
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            var processed = 0
-            while (!isStopped && processed++ < 250) {
+            while (!isStopped) {
                 val job = app.repository.dao.nextTransfer() ?: return@withContext Result.success()
                 setForeground(foreground(job.title, 0, job.expectedSize, job.batchId))
                 DownloadEngine(app).run(job) { current ->

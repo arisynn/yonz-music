@@ -1,0 +1,11 @@
+# Pure Python dependencies. No runtime pip installation, no downloaded engine/plugin code.
+# Versions are grounded in the inspected CLI/app environment (25 October 2026).
+yt-dlp==2026.10.21
+yt-dlp-ejs==0.8.0
+ytmusicapi==1.12.3
+mutagen==1.48.1
+requests==2.34.2
+certifi==2026.10.23
+charset-normalizer==3.5.2
+idna==3.20
+urllib3==2.8.0

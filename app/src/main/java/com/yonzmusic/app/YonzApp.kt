@@ -13,6 +13,7 @@ class YonzApp : Application() {
     val database by lazy { Room.databaseBuilder(this, MusicDatabase::class.java, "yonz-music.db").addMigrations(MusicDatabase.MIGRATION_1_2).build() }
     val repository by lazy { Repository(this, database) }
     val preferences by lazy { Preferences(this) }
+    val acquisition by lazy { com.yonzmusic.engine.AcquisitionRepository(this) }
     val sleepEnd = MutableStateFlow(0L)
     val updates by lazy { com.yonzmusic.app.update.UpdateManager(this) }
     override fun onCreate() {
