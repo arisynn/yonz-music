@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.0 preview — 2026-10-25
+## 1.1.0 — 2026-10-25
 
 - Rename the public application to Yono Music; credit Karisyono and use the supplied YONO mist-blue logo.
 - Replace global library scanning with an explicit SAF source registry and non-destructive Room migration.
@@ -9,7 +9,7 @@
 - Add a signature-verified GitHub Releases/PackageInstaller update path, pending-install reconciliation and owned-cache cleanup.
 - Establish an owner-persisted initial production signing identity; separate Dev and Migration channels.
 
-This preview is published early at the owner's request. See TEST_REPORT.md for passed checks and verification still in progress.
+A separate Preview 1 was published early at the owner's request. Stable delivery follows build, unit, migration, permitted-source, installer and UI verification. See TEST_REPORT.md for actual coverage and remaining device limitations.
 
 ## 1.0.0 — historical
 

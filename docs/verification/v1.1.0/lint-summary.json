@@ -1,0 +1,14 @@
+{
+  "errors": 0,
+  "warnings": 85,
+  "byId": {
+    "ApplySharedPref": 13,
+    "GradleDependency": 18,
+    "ConfigurationScreenWidthHeight": 1,
+    "ModifierParameter": 1,
+    "VectorPath": 15,
+    "UsableSpace": 1,
+    "MonochromeLauncherIcon": 1,
+    "UseKtx": 35
+  }
+}

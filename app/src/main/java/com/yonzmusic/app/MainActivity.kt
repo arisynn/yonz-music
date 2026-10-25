@@ -5,16 +5,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
 import com.yonzmusic.app.ui.YonzRoot
 
 class MainActivity : ComponentActivity() {
     override fun onResume() { super.onResume(); (application as YonzApp).updates.apply { interaction(true); resume() } }
     override fun onPause() { (application as YonzApp).updates.interaction(false); super.onPause() }
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
+        val vm = ViewModelProvider(this)[MusicViewModel::class.java]
+        splash.setKeepOnScreenCondition { !vm.appearanceReady.value }
         enableEdgeToEdge()
-        setContent { val vm: MusicViewModel = viewModel(); YonzRoot(vm) }
+        setContent { YonzRoot(vm) }
     }
 }

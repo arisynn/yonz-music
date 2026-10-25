@@ -59,6 +59,7 @@ preview = '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" vi
 header = '<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">'
 group = '<group android:translateX="18.81" android:translateY="21.156" android:scaleX="0.051" android:scaleY="0.051">'
 (root / 'app/src/main/res/drawable/brand_y.xml').write_text(header + group + ''.join(vector_paths) + '</group></vector>\n')
+(root / 'app/src/main/res/drawable/brand_symbol.xml').write_text('<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="128dp" android:height="128dp" android:viewportWidth="1280" android:viewportHeight="1280">' + ''.join(vector_paths) + '</vector>\n')
 (root / 'app/src/main/res/drawable/brand_monochrome.xml').write_text(header + group + ''.join(mono_paths) + '</group></vector>\n')
 (root / 'app/src/main/res/drawable/brand_background.xml').write_text('<shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="#CFEAF5"/></shape>\n')
 print('Owner logo traced into color/monochrome vectors and safe-zone launcher assets.')

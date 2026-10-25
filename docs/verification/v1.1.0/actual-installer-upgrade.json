@@ -1,0 +1,17 @@
+{
+  "mechanism": "Actual production PackageInstaller UI, private emulator-only higher-code APK fixture seeded with adb root; no fake public release",
+  "installedCodeBefore": 2,
+  "installedCodeAfter": 3,
+  "sameProductionCertificate": "ebefa44cc5fba1292fec9fc25bb4840e41e501bb0958a86931c046fd1be523e5",
+  "candidateSha256": "3225f91f517312d533d8c9e9ad7eb0cc5344ab2db92e4167593fdabc851d1f89",
+  "unknownSourceDeniedWithoutInstall": true,
+  "installerCancelledCodeUnchanged": true,
+  "appForceStoppedBeforeOSConfirmation": true,
+  "osConfirmationSucceeded": true,
+  "temporaryApkAlreadyRemovedBeforeRelaunch": true,
+  "temporaryApkRemovedAfterRelaunch": true,
+  "pendingRecordCleared": true,
+  "playlistRetained": true,
+  "selectedLibraryAndSourceRetained": true,
+  "originalAvdPreserved": true
+}

@@ -1,0 +1,13 @@
+{
+  "network": "LIVE HTTPS via test proxy with verified CA",
+  "source": "https:\/\/incompetech.com\/music\/royalty-free\/mp3-royaltyfree\/Monkeys%20Spinning%20Monkeys.mp3",
+  "licensePage": "https:\/\/incompetech.com\/music\/royalty-free\/licenses\/",
+  "license": "CC BY 4.0 · Kevin MacLeod (incompetech.com)",
+  "status": "Complete",
+  "size": 5005207,
+  "sha256": "af5f371b82763d68bba492d3856da53732a7a2356b206bae265f2aa96b254d41",
+  "uri": "content:\/\/com.android.externalstorage.documents\/tree\/primary%3AMusic%2FYonoEngineGate\/document\/primary%3AMusic%2FYonoEngineGate%2FYono%20permitted%20creator%20acquisition%2FKevin%20MacLeod%20-%20Monkeys%20Spinning%20Monkeys.mp3",
+  "durationMs": 125074,
+  "progressEvents": 8,
+  "mediaSessionPlaying": true
+}

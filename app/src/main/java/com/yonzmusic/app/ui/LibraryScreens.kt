@@ -45,7 +45,15 @@ import kotlinx.coroutines.withContext
         }
         item {
             Surface(onClick = if (current != null) onContinue else onImport, modifier = Modifier.padding(horizontal = Design.page).fillMaxWidth(), color = c.primaryContainer, shape = Design.card) {
-                Row(Modifier.padding(Design.gap), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.gap)) {
+                if (LocalDensity.current.fontScale > 1.3f) Column(Modifier.padding(Design.gap), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
+                        if (current != null) Artwork(current, Modifier.size(56.dp)) else BrandMark(Modifier.size(56.dp))
+                        Text(if (current != null) "CONTINUE LISTENING" else "YOUR COLLECTION", Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, color = c.onPrimaryContainer)
+                        Icon(if (current != null) Icons.AutoMirrored.Rounded.ArrowForward else Icons.Rounded.Add, null, tint = c.onPrimaryContainer)
+                    }
+                    Text(current?.title ?: "Bring your music home", style = MaterialTheme.typography.titleMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    Text(current?.artist ?: "Choose files. Find your rhythm.", style = MaterialTheme.typography.bodySmall, color = c.onPrimaryContainer, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                } else Row(Modifier.padding(Design.gap), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.gap)) {
                     if (current != null) Artwork(current, Modifier.size(88.dp)) else BrandMark(Modifier.size(72.dp).clip(Design.small).background(c.onPrimaryContainer.copy(alpha = .08f)))
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Design.xs)) {
                         Text(if (current != null) "CONTINUE LISTENING" else "MADE FOR YOUR COLLECTION", style = MaterialTheme.typography.labelSmall, color = c.onPrimaryContainer)

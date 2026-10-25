@@ -68,6 +68,7 @@ class DownloadQueueTest {
             val reused = engine.run(reuse) { progress++ }
             assertEquals("Existing", reused.status); assertEquals(retried.trackId, reused.trackId); assertEquals(0, progress)
             assertEquals(4, dao.entries(playlist).size)
+            dao.removeEntry(playlist, manualId); dao.deleteIndexRow(manualId)
         } finally { server.close() }
     }
 }

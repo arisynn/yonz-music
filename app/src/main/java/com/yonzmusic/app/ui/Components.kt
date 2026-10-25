@@ -91,7 +91,7 @@ private object ArtCache {
         drawPath(y, accent.copy(alpha = .8f), style = Stroke(s * .023f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     }
 }
-@Composable fun BrandMark(modifier: Modifier = Modifier) { Image(painterResource(R.drawable.brand_y), "Yono Music symbol", modifier.clip(Design.small).background(Color(0xFFCFEAF5))) }
+@Composable fun BrandMark(modifier: Modifier = Modifier) { Image(painterResource(R.drawable.brand_symbol), "Yono Music symbol", modifier.clip(Design.small).background(Design.brandMist)) }
 
 @Composable fun ActionIcon(icon: ImageVector, label: String, onClick: () -> Unit, modifier: Modifier = Modifier, tint: Color = LocalContentColor.current, enabled: Boolean = true) {
     IconButton(onClick, modifier.sizeIn(minWidth = Design.touch, minHeight = Design.touch), enabled = enabled) { Icon(icon, label, tint = if (enabled) tint else tint.copy(alpha = .38f), modifier = Modifier.size(Design.icon)) }

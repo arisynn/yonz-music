@@ -1,0 +1,438 @@
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AudioContainerTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.AudioContainerTest:
+INSTRUMENTATION_STATUS: test=flacM4aOggAndWavRemainValidAndKeepIdenticalAudioPacketsAfterTagging
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AudioContainerTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=flacM4aOggAndWavRemainValidAndKeepIdenticalAudioPacketsAfterTagging
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AudioContainerTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=invalidTruncatedAndVideoFilesAreRejectedBeforePublication
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AudioContainerTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=invalidTruncatedAndVideoFilesAreRejectedBeforePublication
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.DatabaseConsistencyTest:
+INSTRUMENTATION_STATUS: test=playlistDeleteCascadesOnlyMembership
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=playlistDeleteCascadesOnlyMembership
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=tenThousandImportRowsReadAcrossCursorWindows
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=tenThousandImportRowsReadAcrossCursorWindows
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=repeatedAppendDoesNotDuplicateAndMoveIsConsistent
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=repeatedAppendDoesNotDuplicateAndMoveIsConsistent
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=scanUpdatePreservesFavoritesHistoryAndPlaylistOrder
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=scanUpdatePreservesFavoritesHistoryAndPlaylistOrder
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=missingTrackPreservesCollectionReference
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DatabaseConsistencyTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=missingTrackPreservesCollectionReference
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DownloadQueueTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.DownloadQueueTest:
+INSTRUMENTATION_STATUS: test=failedFirstRecordingRetriesInOrderAndCancelledBatchDoesNotBlockFollowingBatch
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DownloadQueueTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=failedFirstRecordingRetriesInOrderAndCancelledBatchDoesNotBlockFollowingBatch
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.EmbeddedEngineTest
+INSTRUMENTATION_STATUS: current=9
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.EmbeddedEngineTest:
+INSTRUMENTATION_STATUS: test=cancellationStopsActualTransferAndNeverPublishesAudio
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.EmbeddedEngineTest
+INSTRUMENTATION_STATUS: current=9
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=cancellationStopsActualTransferAndNeverPublishesAudio
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.EmbeddedEngineTest
+INSTRUMENTATION_STATUS: current=10
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=runtimeAndOriginalAudioTransferTagsArtworkAndNativeProbe
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.EmbeddedEngineTest
+INSTRUMENTATION_STATUS: current=10
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=runtimeAndOriginalAudioTransferTagsArtworkAndNativeProbe
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.LiveEngineAcquisitionTest
+INSTRUMENTATION_STATUS: current=11
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.LiveEngineAcquisitionTest:
+INSTRUMENTATION_STATUS: test=permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.LiveEngineAcquisitionTest
+INSTRUMENTATION_STATUS: current=11
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stack=com.chaquo.python.PyException: DownloadError: ERROR: [generic] Mozart_-_Eine_kleine_Nachtmusik_-_1._Allegro: Unable to download webpage: [Errno 111] Connection refused (caused by TransportError('[Errno 111] Connection refused'))
+	at <python>.yt_dlp.YoutubeDL.trouble(YoutubeDL.py:1102)
+	at <python>.yt_dlp.YoutubeDL.report_error(YoutubeDL.py:1164)
+	at <python>.yt_dlp.YoutubeDL.wrapper(YoutubeDL.py:1748)
+	at <python>.yt_dlp.YoutubeDL.extract_info(YoutubeDL.py:1719)
+	at <python>.yono_engine.inspect(yono_engine.py:199)
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.download.EmbeddedEngine.inspect(EmbeddedEngine.kt:30)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest$permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession$1.invokeSuspend(LiveEngineAcquisitionTest.kt:38)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest.permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession(LiveEngineAcquisitionTest.kt:28)
+
+INSTRUMENTATION_STATUS: stream=
+Error in permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession(com.yonzmusic.app.LiveEngineAcquisitionTest):
+com.chaquo.python.PyException: DownloadError: ERROR: [generic] Mozart_-_Eine_kleine_Nachtmusik_-_1._Allegro: Unable to download webpage: [Errno 111] Connection refused (caused by TransportError('[Errno 111] Connection refused'))
+	at <python>.yt_dlp.YoutubeDL.trouble(YoutubeDL.py:1102)
+	at <python>.yt_dlp.YoutubeDL.report_error(YoutubeDL.py:1164)
+	at <python>.yt_dlp.YoutubeDL.wrapper(YoutubeDL.py:1748)
+	at <python>.yt_dlp.YoutubeDL.extract_info(YoutubeDL.py:1719)
+	at <python>.yono_engine.inspect(yono_engine.py:199)
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.download.EmbeddedEngine.inspect(EmbeddedEngine.kt:30)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest$permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession$1.invokeSuspend(LiveEngineAcquisitionTest.kt:38)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest.permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession(LiveEngineAcquisitionTest.kt:28)
+
+INSTRUMENTATION_STATUS: test=permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.LiveEngineAcquisitionTest
+INSTRUMENTATION_STATUS: current=12
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.LiveEngineAcquisitionTest
+INSTRUMENTATION_STATUS: current=12
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stack=com.chaquo.python.PyException: DownloadError: ERROR: [generic] Monkeys Spinning Monkeys: Unable to download webpage: [Errno 111] Connection refused (caused by TransportError('[Errno 111] Connection refused'))
+	at <python>.yt_dlp.YoutubeDL.trouble(YoutubeDL.py:1102)
+	at <python>.yt_dlp.YoutubeDL.report_error(YoutubeDL.py:1164)
+	at <python>.yt_dlp.YoutubeDL.wrapper(YoutubeDL.py:1748)
+	at <python>.yt_dlp.YoutubeDL.extract_info(YoutubeDL.py:1719)
+	at <python>.yono_engine.inspect(yono_engine.py:199)
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.download.EmbeddedEngine.inspect(EmbeddedEngine.kt:30)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest$permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession$1.invokeSuspend(LiveEngineAcquisitionTest.kt:77)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest.permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession(LiveEngineAcquisitionTest.kt:69)
+
+INSTRUMENTATION_STATUS: stream=
+Error in permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession(com.yonzmusic.app.LiveEngineAcquisitionTest):
+com.chaquo.python.PyException: DownloadError: ERROR: [generic] Monkeys Spinning Monkeys: Unable to download webpage: [Errno 111] Connection refused (caused by TransportError('[Errno 111] Connection refused'))
+	at <python>.yt_dlp.YoutubeDL.trouble(YoutubeDL.py:1102)
+	at <python>.yt_dlp.YoutubeDL.report_error(YoutubeDL.py:1164)
+	at <python>.yt_dlp.YoutubeDL.wrapper(YoutubeDL.py:1748)
+	at <python>.yt_dlp.YoutubeDL.extract_info(YoutubeDL.py:1719)
+	at <python>.yono_engine.inspect(yono_engine.py:199)
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.download.EmbeddedEngine.inspect(EmbeddedEngine.kt:30)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest$permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession$1.invokeSuspend(LiveEngineAcquisitionTest.kt:77)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest.permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession(LiveEngineAcquisitionTest.kt:69)
+
+INSTRUMENTATION_STATUS: test=permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=13
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.PlaybackIntegrationTest:
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=13
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=14
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.SourceMigrationTest:
+INSTRUMENTATION_STATUS: test=overlappingSourcesKeepOneTrackAndPreserveCollectionsWhenRemoved
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=14
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=overlappingSourcesKeepOneTrackAndPreserveCollectionsWhenRemoved
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=15
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=exactIdentityRemappingIsTransactionalAndPreservesOrderFavoritesAndLatestHistory
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=15
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=exactIdentityRemappingIsTransactionalAndPreservesOrderFavoritesAndLatestHistory
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=16
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=versionOneMigrationKeepsCollectionsAndHidesAllUnselectedGlobalAudio
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=16
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=versionOneMigrationKeepsCollectionsAndHidesAllUnselectedGlobalAudio
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=17
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=revokedSourceDoesNotDropItsMembershipOrOriginalIndexContext
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=17
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=revokedSourceDoesNotDropItsMembershipOrOriginalIndexContext
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateRecoveryTest
+INSTRUMENTATION_STATUS: current=18
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.UpdateRecoveryTest:
+INSTRUMENTATION_STATUS: test=actualSignatureAndManifestChecksRejectTamperingAndIncompatibleArtifacts
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateRecoveryTest
+INSTRUMENTATION_STATUS: current=18
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualSignatureAndManifestChecksRejectTamperingAndIncompatibleArtifacts
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateRecoveryTest
+INSTRUMENTATION_STATUS: current=19
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=interruptedVerifiedRenameRecoversButIncompleteOrTamperedCacheIsDiscarded
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateRecoveryTest
+INSTRUMENTATION_STATUS: current=19
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=interruptedVerifiedRenameRecoversButIncompleteOrTamperedCacheIsDiscarded
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateRecoveryTest
+INSTRUMENTATION_STATUS: current=20
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=forgedCallbackCannotTriggerCleanupAndVerifiedReplacementOnlyRemovesOwnedFiles
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateRecoveryTest
+INSTRUMENTATION_STATUS: current=20
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=20
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=forgedCallbackCannotTriggerCleanupAndVerifiedReplacementOnlyRemovesOwnedFiles
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 114.898
+There were 2 failures:
+1) permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession(com.yonzmusic.app.LiveEngineAcquisitionTest)
+com.chaquo.python.PyException: DownloadError: ERROR: [generic] Mozart_-_Eine_kleine_Nachtmusik_-_1._Allegro: Unable to download webpage: [Errno 111] Connection refused (caused by TransportError('[Errno 111] Connection refused'))
+	at <python>.yt_dlp.YoutubeDL.trouble(YoutubeDL.py:1102)
+	at <python>.yt_dlp.YoutubeDL.report_error(YoutubeDL.py:1164)
+	at <python>.yt_dlp.YoutubeDL.wrapper(YoutubeDL.py:1748)
+	at <python>.yt_dlp.YoutubeDL.extract_info(YoutubeDL.py:1719)
+	at <python>.yono_engine.inspect(yono_engine.py:199)
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.download.EmbeddedEngine.inspect(EmbeddedEngine.kt:30)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest$permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession$1.invokeSuspend(LiveEngineAcquisitionTest.kt:38)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest.permittedCommonsSourceThroughYtDlpToSelectedFolderAndMediaSession(LiveEngineAcquisitionTest.kt:28)
+2) permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession(com.yonzmusic.app.LiveEngineAcquisitionTest)
+com.chaquo.python.PyException: DownloadError: ERROR: [generic] Monkeys Spinning Monkeys: Unable to download webpage: [Errno 111] Connection refused (caused by TransportError('[Errno 111] Connection refused'))
+	at <python>.yt_dlp.YoutubeDL.trouble(YoutubeDL.py:1102)
+	at <python>.yt_dlp.YoutubeDL.report_error(YoutubeDL.py:1164)
+	at <python>.yt_dlp.YoutubeDL.wrapper(YoutubeDL.py:1748)
+	at <python>.yt_dlp.YoutubeDL.extract_info(YoutubeDL.py:1719)
+	at <python>.yono_engine.inspect(yono_engine.py:199)
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.download.EmbeddedEngine.inspect(EmbeddedEngine.kt:30)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest$permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession$1.invokeSuspend(LiveEngineAcquisitionTest.kt:77)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.LiveEngineAcquisitionTest.permittedCreatorMp3ThroughEmbeddedEngineAndRealMediaSession(LiveEngineAcquisitionTest.kt:69)
+
+FAILURES!!!
+Tests run: 20,  Failures: 2
+
+
+INSTRUMENTATION_CODE: -1

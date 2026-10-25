@@ -17,6 +17,7 @@ object Design {
     val icon = 24.dp; val touch = 48.dp
     const val motion = 240
     const val glassOpacity = .90f
+    val brandMist = Color(0xFFCFEAF5)
 }
 private val Dark = darkColorScheme(
     primary = Color(0xFF79E2CB), onPrimary = Color(0xFF00382F), primaryContainer = Color(0xFF183E39), onPrimaryContainer = Color(0xFFB8F7E7),

@@ -1,0 +1,13 @@
+{
+  "freshProductionInstall": true,
+  "versionCode": 2,
+  "versionName": "1.1.0",
+  "wifiAndMobileDisabled": true,
+  "emptyBeforeSelection": true,
+  "selectedViaDocumentsUI": true,
+  "outsideSelectedFolderExcluded": true,
+  "backgroundSessionPlaying": true,
+  "screenOffSessionPlaying": true,
+  "playlistCreatedForUpdateRetention": "Installer kept this",
+  "landscapeRecreated": true
+}

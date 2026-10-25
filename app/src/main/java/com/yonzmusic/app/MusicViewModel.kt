@@ -18,7 +18,8 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val app = application as YonzApp
     val repository = app.repository
     private val dao = repository.dao
-    val preferences = app.preferences.flow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UserPreferences())
+    val appearanceReady = MutableStateFlow(false)
+    val preferences = app.preferences.flow.onEach { appearanceReady.value = true }.stateIn(viewModelScope, SharingStarted.Eagerly, UserPreferences())
     val tracks = dao.tracks().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val collectionTracks = dao.collectionTracks().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val sources = dao.sources().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

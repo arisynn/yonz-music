@@ -4,7 +4,7 @@ Your Music. Your Space.
 
 ![Yono Music owner-supplied identity](brand/launcher-preview-1024.png)
 
-**1.1.0 is being verified.** The owner requested an early GitHub preview so they can test alongside development. Use the clearly labelled **Dev preview** from [Releases](https://github.com/arisynn/yonz-music/releases). It installs as `com.yonzmusic.app.dev` beside the earlier app. It is not the production update channel. The stable v1.0.0 release remains historical; a verified production 1.1.0 will have separate release notes and artifacts.
+**[Download Yono Music 1.1.0](https://github.com/arisynn/yonz-music/releases/download/v1.1.0/Yono_Music_v1.1.0.apk)** · [Release, source, assets and checksums](https://github.com/arisynn/yonz-music/releases/tag/v1.1.0). Android 8.0+, 64-bit arm64-v8a/x86_64. Production-signed by Karisyono. The [early Dev preview](https://github.com/arisynn/yonz-music/releases/tag/v1.1.0-preview.1) remains available as a separate testing channel.
 
 A native Kotlin/Jetpack Compose music player, with Media3 background playback, local Room collections and DataStore preferences. Free, open source, no ads, no tracking, no account. Local playback, library browsing and playlists work without internet. Optional source downloads and GitHub update checks use the network.
 
@@ -15,7 +15,7 @@ A native Kotlin/Jetpack Compose music player, with Media3 background playback, l
 - **Spoti's useful engine inside Android.** Chaquopy embeds pinned Python/yt-dlp, EJS and a reviewed Android QuickJS runtime. Kotlin owns queue, SAF storage, progress/cancel/retry and native playback. Termux is unnecessary. Explicit authorized source URLs are reviewed before downloading. Wikimedia Commons is an additional catalog, not the replacement engine.
 - **Preserve recordings.** Native validation checks the audio, original encoding is retained, Mutagen adds tags/artwork where the container permits, and per-playlist folders include source/license attribution. Exact verified source history or conservative selected-library identity can reuse an existing recording. Lists alone never create playable audio.
 - **Original owner logo.** The supplied mist-blue YONO monogram/note is traced into adaptive, monochrome and splash vectors. Main navigation, themes and playback UI are retained.
-- **Production updater.** The stable channel checks GitHub Releases asynchronously, offers Unduh/Batal, verifies APK contents/signing and uses Android's confirmation installer. Successful replacement and next-launch reconciliation clean only the owned temporary APK. OS installer checks are still being completed for the preview.
+- **Production updater.** The stable channel checks GitHub Releases asynchronously, offers Unduh/Batal, verifies APK contents/signing and uses Android's confirmation installer. Successful replacement and next-launch reconciliation clean only the owned temporary APK. Actual installer permission denial, cancellation, same-key upgrade, process-stop reconciliation and temporary APK cleanup were exercised on the API 29 emulator.
 
 ## Start listening and import
 

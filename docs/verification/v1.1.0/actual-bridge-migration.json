@@ -1,0 +1,20 @@
+{
+  "schema": 2,
+  "tracks": 5,
+  "playlists": 3,
+  "playlist_entries": 6,
+  "favorites": 1,
+  "history": 5,
+  "imports": 2,
+  "import_details": 7,
+  "collectionRowsPreservedExactly": true,
+  "activeTracks": 0,
+  "sourceCount": 0,
+  "oldToProductionRejected": true,
+  "bridgeCompatible": true,
+  "exportViaDocumentsUI": true,
+  "backupBytes": 4124,
+  "backupTracks": 5,
+  "backupPlaylists": 3,
+  "backupContainsPreferences": true
+}

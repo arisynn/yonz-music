@@ -1,0 +1,34 @@
+[
+  {
+    "name": "yt-dlp",
+    "version": "2026.10.21",
+    "file": "yt_dlp-2026.10.21.tar.gz",
+    "sourceUrl": "https://files.pythonhosted.org/packages/06/13/d2ea252871826205dc4965cb70e6037ab93697fcabf4feda49fe981f6da0/yt_dlp-2026.10.21.tar.gz",
+    "sha256": "cbf748d7d17cd37647c4b9f07b6c25f24384bfd4361407ee5ec519e753d22539",
+    "bytes": 3057326
+  },
+  {
+    "name": "yt-dlp-ejs",
+    "version": "0.8.0",
+    "file": "yt_dlp_ejs-0.8.0.tar.gz",
+    "sourceUrl": "https://files.pythonhosted.org/packages/d3/e6/cceb9530e8f4e5940f6f7822d90e9d94f1b85343329a16baaf47bbbb3de1/yt_dlp_ejs-0.8.0.tar.gz",
+    "sha256": "d5fa1639f63b5c4af8d932495f60689d5370f1a095782c944f7f62a303eb104e",
+    "bytes": 96571
+  },
+  {
+    "name": "mutagen",
+    "version": "1.48.1",
+    "file": "mutagen-1.48.1.tar.gz",
+    "sourceUrl": "https://files.pythonhosted.org/packages/df/70/1675da133ea92227da41bf5b24e1c66be597ff736a1533ade41da986852f/mutagen-1.48.1.tar.gz",
+    "sha256": "8f95637ab9f6f305cec6bd1294e197debe207998e3e068596563c74f86b0a173",
+    "bytes": 1276978
+  },
+  {
+    "name": "certifi",
+    "version": "2026.10.19",
+    "file": "certifi-2026.10.19.tar.gz",
+    "sourceUrl": "https://files.pythonhosted.org/packages/a6/bd/1436c50cc46699de0230fbaacc1d1de7bfec413176099949e9d5112e88f2/certifi-2026.10.19.tar.gz",
+    "sha256": "035c1e85572b141bf1c3a3eff0e33a8eb74917522f2559075ff8d2fea780a1ae",
+    "bytes": 137598
+  }
+]

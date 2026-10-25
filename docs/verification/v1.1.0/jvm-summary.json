@@ -1,0 +1,46 @@
+{
+  "suites": [
+    {
+      "name": "com.yonzmusic.app.RecordingMatchTest",
+      "tests": "9",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-25T11:26:30",
+      "hostname": "779195434498",
+      "time": "0.01"
+    },
+    {
+      "name": "com.yonzmusic.app.CollectionOrderTest",
+      "tests": "10",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-25T11:26:29",
+      "hostname": "779195434498",
+      "time": "0.03"
+    },
+    {
+      "name": "com.yonzmusic.app.MusicListParserTest",
+      "tests": "40",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-25T11:26:29",
+      "hostname": "779195434498",
+      "time": "1.402"
+    },
+    {
+      "name": "com.yonzmusic.app.ReleaseContractTest",
+      "tests": "13",
+      "skipped": "0",
+      "failures": "0",
+      "errors": "0",
+      "timestamp": "2026-10-25T11:26:30",
+      "hostname": "779195434498",
+      "time": "0.031"
+    }
+  ],
+  "tests": 72,
+  "failures": 0
+}

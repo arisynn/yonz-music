@@ -1,0 +1,23 @@
+{
+  "python": "3.12.15",
+  "openssl": "OpenSSL 3.5.9 29 Sep 2026",
+  "sqlite": "3.53.4",
+  "zlib": "1.2.11",
+  "expat": "expat_2.8.5",
+  "yt_dlp": "2026.10.21",
+  "ejs": "0.8.0",
+  "mutagen": "1.48.1",
+  "node": false,
+  "deno": false,
+  "ffmpeg": false,
+  "ffprobe": false,
+  "quickjs": "{\"value\":42,\"runtime\":\"quickjs-ng\"}",
+  "quickjsExit": 0,
+  "ejsBoot": "{\"ejsLoaded\":true,\"answer\":42,\"filesystem\":\"undefined\",\"network\":\"undefined\"}",
+  "ejsExit": 0,
+  "ytDlpJsRuntime": {
+    "name": "quickjs-ng",
+    "version": "0.17.0",
+    "supported": true
+  }
+}
