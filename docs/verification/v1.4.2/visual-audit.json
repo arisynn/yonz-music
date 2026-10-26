@@ -1,0 +1,27 @@
+{
+  "actual_emulator": true,
+  "api": 29,
+  "width_dp": 320,
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "font_scales": [
+    1.0,
+    1.5
+  ],
+  "inspected": [
+    "final-home-light-a.png",
+    "final-home-light-b.png",
+    "final-home-dark.png",
+    "final-home-font150.png",
+    "final-queue-shuffle.png"
+  ],
+  "queue_visible_order": [
+    "Original fixture 1",
+    "Original fixture 0",
+    "Original fixture 3"
+  ],
+  "unintended_overlap_observed": false,
+  "note": "Full-app artwork uses existing original QA covers (several are identical). Distinct-colour rotation and no-click/reduced-motion assertions use HomeCarouselTest fixtures, not these repeated-cover screenshots."
+}

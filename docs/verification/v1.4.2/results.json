@@ -1,0 +1,32 @@
+{
+  "jvm_tests": 113,
+  "jvm_failures": 0,
+  "android_tests": 5,
+  "android_failures": 0,
+  "api": 29,
+  "baseline_shuffle_reproduction": "8 songs; only [4, 5, 3, 7, 1] reachable from current with repeat off",
+  "shuffle_real_player": true,
+  "actual_audio_end_transition": true,
+  "repeat_one_all": true,
+  "external_controller_next": true,
+  "dev_upgrade_code_8_to_9_preserved_collections": true,
+  "live_source_downloads_rerun": false,
+  "physical_hyperos": false,
+  "final_suite_runs": [
+    {
+      "cases": 5,
+      "passed": 4,
+      "failed": 1,
+      "reason": "Carousel rotation expected but emulator system animations were disabled (scale0)"
+    },
+    {
+      "cases": 1,
+      "passed": 1,
+      "failed": 0,
+      "reason": "Same carousel binary rerun with emulator animations enabled; rotation, no click action and app Reduce motion validated"
+    }
+  ],
+  "carousel_real_pixels": true,
+  "carousel_no_click_action": true,
+  "carousel_reduce_motion": true
+}

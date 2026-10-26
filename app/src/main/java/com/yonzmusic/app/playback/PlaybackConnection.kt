@@ -12,7 +12,7 @@ import com.yonzmusic.app.data.Track
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** A single controller mirrors the service. Progress is read only by visible player composables. */
-data class PlaybackUi(val id: String? = null, val playing: Boolean = false, val queue: List<String> = emptyList(), val index: Int = 0, val shuffle: Boolean = false, val repeat: Int = Player.REPEAT_MODE_OFF, val error: String? = null, val ready: Boolean = false, val queueKeys: List<String> = emptyList())
+data class PlaybackUi(val id: String? = null, val playing: Boolean = false, val queue: List<String> = emptyList(), val index: Int = 0, val shuffle: Boolean = false, val repeat: Int = Player.REPEAT_MODE_OFF, val error: String? = null, val ready: Boolean = false, val queueKeys: List<String> = emptyList(), val playbackOrder: List<Int> = emptyList())
 class PlaybackConnection(context: Context) {
     val state = MutableStateFlow(PlaybackUi())
     private var controller: MediaController? = null
@@ -34,10 +34,21 @@ class PlaybackConnection(context: Context) {
                 .onFailure { state.value = state.value.copy(error = "Playback service unavailable. Reopen the app to retry.") }
         }, ContextCompat.getMainExecutor(context))
     }
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     private fun refresh() { controller?.let { p ->
+        val order = ArrayList<Int>(p.mediaItemCount)
+        val timeline = p.currentTimeline
+        var next = timeline.getFirstWindowIndex(p.shuffleModeEnabled)
+        val seen = BooleanArray(p.mediaItemCount)
+        // Repeat-one/all must not duplicate rows or loop forever in the queue sheet.
+        while (next in seen.indices && !seen[next]) {
+            seen[next] = true; order.add(next)
+            next = timeline.getNextWindowIndex(next, Player.REPEAT_MODE_OFF, p.shuffleModeEnabled)
+        }
         state.value = PlaybackUi(p.currentMediaItem?.mediaId, p.isPlaying, (0 until p.mediaItemCount).map { p.getMediaItemAt(it).mediaId }, p.currentMediaItemIndex.coerceAtLeast(0), p.shuffleModeEnabled, p.repeatMode,
             if (p.playerError != null) "Audio unavailable. Check file access and rescan your library." else null, true,
-            (0 until p.mediaItemCount).map { p.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key") ?: "legacy:$it" })
+            (0 until p.mediaItemCount).map { p.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key") ?: "legacy:$it" },
+            order.takeIf { it.size == p.mediaItemCount } ?: (0 until p.mediaItemCount).toList())
     } }
     fun play(tracks: List<Track>, id: String) {
         val available = tracks.filter { it.available }.distinctBy { it.id }.take(10000)

@@ -1,4 +1,4 @@
-# Build Yono Music 1.4.1
+# Build Yono Music 1.4.2
 
 Use JDK 17, Gradle 8.11.1 (included wrapper), Android SDK platform/build-tools 35/35.0.0, NDK 28.2.13676358 and CMake 3.22.1. A Linux x86_64 build host with Python 3.12 is the verified environment. Set ANDROID_HOME and JAVA_HOME normally, or use an ignored `local.properties` for sdk.dir.
 
@@ -16,7 +16,7 @@ An emulator-only higher code can be built with `-PtestVersionCode=3` for updater
 
 ## Collection repair verification
 
-Public default: code 8, name 1.4.1 (Dev suffix -dev), Room schema 3. Keep all schema JSON files and migration 1→2→3; never delete the database to make an upgrade pass.
+Public default: code 9, name 1.4.2 (Dev suffix -dev), Room schema 3. Keep all schema JSON files and migration 1→2→3; never delete the database to make an upgrade pass.
 
 Host engine checks: install `app/requirements-android.lock` into a separate Python 3.12 virtual environment, then run `python tools/yono-engine/verify_host.py`. Reports default to `docs/verification/v1.3.0`; `--output` selects a different evidence directory. Host FFmpeg creates/inspects owned fixture audio only; it is not an app dependency. After building, `PYTHONPATH=app/build/python/pip/debug/common python3 tools/yono-engine/verify_host.py` can reuse the resolved pure-Python dependencies.
 

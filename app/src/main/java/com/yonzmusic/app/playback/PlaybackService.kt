@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.media3.common.*
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ShuffleOrder
 import androidx.media3.session.*
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -33,6 +34,22 @@ class PlaybackService : MediaSessionService() {
     private var sleepJob: Job? = null
     private val app get() = application as YonzApp
     private var consecutiveErrors = 0
+    private var wasShuffling = false
+    private var previousQueueKeys = emptySet<String>()
+    private fun updateShuffleCycle() {
+        val keys = (0 until player.mediaItemCount).map {
+            player.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key") ?: "legacy:$it"
+        }.toSet()
+        val newQueue = keys.isNotEmpty() && keys.none { it in previousQueueKeys }
+        val startCycle = player.shuffleModeEnabled && (!wasShuffling || newQueue)
+        // Update guards before setShuffleOrder emits another timeline event.
+        wasShuffling = player.shuffleModeEnabled
+        previousQueueKeys = keys
+        if (startCycle && player.mediaItemCount > 0) {
+            player.setShuffleOrder(ShuffleOrder.DefaultShuffleOrder(
+                ShuffleCycle.indices(player.mediaItemCount, player.currentMediaItemIndex), kotlin.random.Random.nextLong()))
+        }
+    }
     private val listens=ListenAccumulator()
     private fun listenTick(restart: Boolean = false) {
         val result=listens.tick(player.currentMediaItem?.mediaId,player.duration.coerceAtLeast(0),player.isPlaying,android.os.SystemClock.elapsedRealtime(),restart)
@@ -88,6 +105,7 @@ class PlaybackService : MediaSessionService() {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) { listenTick(reason==Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) }
             override fun onAudioSessionIdChanged(audioSessionId: Int) { session?.setSessionExtras(Bundle().apply { putInt(AUDIO_SESSION, audioSessionId) }) }
             override fun onEvents(player: Player, events: Player.Events) {
+                if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)) updateShuffleCycle()
                 listenTick()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED)) persist()
             }

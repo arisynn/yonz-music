@@ -1,0 +1,14 @@
+{
+  "method": "adb install -r; no uninstall/clear",
+  "package": "com.yonzmusic.app.dev",
+  "versionCodeBefore": 8,
+  "versionCodeAfter": 9,
+  "schemaBefore": 3,
+  "schemaAfter": 3,
+  "collectionsExactlyRetained": {
+    "favorites": true,
+    "playlists": true,
+    "playlist_entries": true,
+    "sources": true
+  }
+}

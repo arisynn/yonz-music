@@ -24,7 +24,10 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun QueueSheet(tracks: List<Track>, state: PlaybackUi, connection: PlaybackConnection, close: () -> Unit) {
     val byId=remember(tracks){tracks.associateBy { it.id }}
-    val keys=state.queueKeys.takeIf { it.size==state.queue.size } ?: state.queue.mapIndexed { i,id -> "$i:$id" }
+    val nativeKeys=state.queueKeys.takeIf { it.size==state.queue.size } ?: state.queue.mapIndexed { i,id -> "$i:$id" }
+    val order=state.playbackOrder.takeIf { it.size==state.queue.size && it.toSet()==state.queue.indices.toSet() } ?: state.queue.indices.toList()
+    val keys=order.map(nativeKeys::get)
+    val currentRow=order.indexOf(state.index)
     val latestKeys by rememberUpdatedState(keys)
     val list=rememberLazyListState()
     val scope=rememberCoroutineScope()
@@ -57,7 +60,8 @@ import kotlinx.coroutines.launch
             SnackbarHost(snackbar,Modifier.padding(horizontal=Design.md))
             if(keys.isEmpty())EmptyState("Lagu berikutnya pilihanmu","Tambahkan lagu ke antrean untuk mulai mendengarkan.","playlist")
             LazyColumn(state=list,modifier=Modifier.weight(1f),contentPadding=PaddingValues(bottom=Design.page)) {
-                itemsIndexed(keys,key={_,key->key}) { index,key ->
+                itemsIndexed(keys,key={_,key->key}) { row,key ->
+                    val index=order[row]
                     val track=byId[state.queue[index]]
                     val swipe=rememberSwipeToDismissBoxState(confirmValueChange={ value -> if(value==SwipeToDismissBoxValue.EndToStart)remove(key);false })
                     SwipeToDismissBox(state=swipe,enableDismissFromStartToEnd=false,enableDismissFromEndToStart=dragging==null,
@@ -65,7 +69,7 @@ import kotlinx.coroutines.launch
                         modifier=Modifier.zIndex(if(dragging==key)1f else 0f).graphicsLayer { if(dragging==key){translationY=offset;shadowElevation=8.dp.toPx()} }) {
                         Surface(color=if(dragging==key)MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface) {
                             Column {
-                                if(index==state.index || index==state.index+1)Text(if(index==state.index)"SEDANG DIPUTAR"else "BERIKUTNYA",Modifier.padding(start=Design.page,top=Design.sm),style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary)
+                                if(row==currentRow || row==currentRow+1)Text(if(row==currentRow)"SEDANG DIPUTAR"else "BERIKUTNYA",Modifier.padding(start=Design.page,top=Design.sm),style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary)
                                 val handle: @Composable () -> Unit = {
                                     val color=MaterialTheme.colorScheme.onSurfaceVariant
                                     var menu by remember { mutableStateOf(false) }

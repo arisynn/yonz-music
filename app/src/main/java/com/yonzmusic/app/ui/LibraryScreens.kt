@@ -35,7 +35,7 @@ import kotlinx.coroutines.withContext
     val albums=remember(tracks) { tracks.filter { it.available && MetadataPolicy.known(it.album).isNotBlank() }.distinctBy(::albumKey).take(5) }
     var mix by remember { mutableStateOf<SmartMix.Mix?>(null) }
     LazyColumn(state=scrollState,contentPadding=PaddingValues(bottom=Design.page)) {
-        item { HomeIdentity(tracks.firstOrNull { it.available }) }
+        item { HomeIdentity(tracks) }
         if(tracks.isEmpty()) item { EmptyState("Mulai dari musikmu", "Pilih file atau folder. Koleksi dan playback tetap bekerja offline.",action={ Button(onImport) { Text("Pilih musik") } }) }
         if(recent.isNotEmpty()) {
             item { SectionTitle("Terakhir diputar",action={ TextButton(onHistory) { Text("Semua") } }) }

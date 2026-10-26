@@ -12,6 +12,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -21,6 +25,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.yonzmusic.app.data.Track
 import com.yonzmusic.app.playback.PlaybackUi
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlin.math.sin
 
 internal val LocalPlayingState = compositionLocalOf<StateFlow<PlaybackUi>?> { null }
@@ -51,7 +58,7 @@ internal val LocalPlayingState = compositionLocalOf<StateFlow<PlaybackUi>?> { nu
     }
 }
 
-@Composable fun HomeIdentity(track: Track?) {
+@Composable fun HomeIdentity(tracks: List<Track>) {
     val c = MaterialTheme.colorScheme
     Box(Modifier.fillMaxWidth().padding(horizontal=Design.page,vertical=Design.sm).clip(Design.card)
         .background(Brush.linearGradient(listOf(c.primaryContainer,c.surfaceVariant,c.secondaryContainer)))) {
@@ -70,7 +77,53 @@ internal val LocalPlayingState = compositionLocalOf<StateFlow<PlaybackUi>?> { nu
                 Spacer(Modifier.height(Design.xs))
                 Text("Dekat dengan yang kamu suka.",style=MaterialTheme.typography.bodySmall,color=c.onSurfaceVariant)
             }
-            if(LocalDensity.current.fontScale<=1.3f) Artwork(track,Modifier.size(76.dp),"Karya dari koleksi lokal")
+            if(LocalDensity.current.fontScale<=1.3f) HomeCoverCarousel(tracks,Modifier.size(76.dp))
         }
+    }
+}
+
+/** Decorative only: bounded local artwork cache, no navigation, network or playback action. */
+@Composable private fun HomeCoverCarousel(tracks: List<Track>, modifier: Modifier) {
+    val context = LocalContext.current.applicationContext
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val reduced = LocalReducedMotion.current
+    val pixels = with(LocalDensity.current) { 76.dp.roundToPx() }
+    val candidates = remember(tracks) { HomeArtCandidates.select(tracks) }
+    var visible by remember { mutableStateOf(false) }
+    var cover by remember(candidates, pixels) { mutableStateOf<android.graphics.Bitmap?>(null) }
+    LaunchedEffect(candidates, pixels, lifecycle, reduced, visible) {
+        if (!visible || candidates.isEmpty()) return@LaunchedEffect
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            var cursor = 0
+            val missing = mutableSetOf<Int>()
+            while (true) {
+                if (cover != null) delay(6000)
+                var next: android.graphics.Bitmap? = null
+                // Missing covers are skipped, rather than flashing a placeholder between photos.
+                repeat(candidates.size) {
+                    if (next == null) {
+                        val index = cursor % candidates.size
+                        val track = candidates[index]
+                        cursor++
+                        if (index !in missing) {
+                            next = withContext(Dispatchers.IO) { runCatching { ArtCache.load(context, track, pixels) }.getOrNull() }
+                            if (next == null) missing += index
+                        }
+                    }
+                }
+                if (next == null) return@repeatOnLifecycle
+                cover = next
+                if (reduced || candidates.size - missing.size < 2) return@repeatOnLifecycle
+            }
+        }
+    }
+    androidx.compose.animation.Crossfade(cover,
+        modifier = modifier.clip(Design.small).onGloballyPositioned {
+            val bounds = it.boundsInWindow()
+            visible = bounds.width > 0 && bounds.height > 0
+        }.clearAndSetSemantics { },
+        animationSpec = androidx.compose.animation.core.tween(if (reduced) 0 else 600), label = "home local covers") { bitmap ->
+        if (bitmap != null) androidx.compose.foundation.Image(bitmap.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        else DefaultArt(Modifier.fillMaxSize())
     }
 }

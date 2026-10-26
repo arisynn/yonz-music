@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.2 — 2026-10-26
+
+- Start each newly enabled shuffle cycle at the current song so all other queued songs remain reachable; keep the original queue order when disabling shuffle.
+- Display Media3’s actual playback order in the queue, including correct upcoming labels and native-index jump/remove behavior.
+- Crossfade decorative Home artwork between existing local covers every six seconds. No tap action; pause when hidden/backgrounded and respect reduced motion. Missing covers are skipped; no artwork network lookup.
+- Keep IDs, Room schema 3, signing, permissions, downloader, original audio and updater verification unchanged.
+
 ## 1.4.1 — 2026-10-26
 
 - Fix updater crash `current must not be NaN` at download completion: capture immutable UI state and calculate a finite progress value before deferred draw/semantics callbacks.
