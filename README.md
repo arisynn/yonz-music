@@ -2,11 +2,13 @@
 
 Your Music. Your Space.
 
+**1.4.1 hotfix:** memperbaiki crash progres updater setelah unduhan. Jika updater lama crash, unduh APK melalui browser dan instal menimpa aplikasi official; jangan uninstall.
+
 **1.4.0:** tinjauan playlist dengan pilihan tersimpan, nama otomatis, playlist opsional, satu lagu langsung di tujuan, sampul `.cover`, Home baru, indikator playback dan antrean gestur. [Cakupan dan batasan](docs/UPDATE_1_4_0.md).
 
 ![Yono Music owner-supplied identity](brand/launcher-preview-1024.png)
 
-**[Download Yono Music 1.4.0](https://github.com/arisynn/yonz-music/releases/download/v1.4.0/Yono_Music_v1.4.0.apk)** · [Release, source, assets and checksums](https://github.com/arisynn/yonz-music/releases/tag/v1.4.0). Android 8.0+, 64-bit arm64-v8a/x86_64. Production-signed by Karisyono. The [early Dev preview](https://github.com/arisynn/yonz-music/releases/tag/v1.1.0-preview.1) remains available as a separate testing channel.
+**[Download Yono Music 1.4.1](https://github.com/arisynn/yonz-music/releases/download/v1.4.1/Yono_Music_v1.4.1.apk)** · [Release, source, assets and checksums](https://github.com/arisynn/yonz-music/releases/tag/v1.4.1). Android 8.0+, 64-bit arm64-v8a/x86_64. Production-signed by Karisyono. The [early Dev preview](https://github.com/arisynn/yonz-music/releases/tag/v1.1.0-preview.1) remains available as a separate testing channel.
 
 A native Kotlin/Jetpack Compose music player, with Media3 background playback, local Room collections and DataStore preferences. Free, open source, no ads, no tracking, no account. Local playback, library browsing and playlists work without internet. Optional source downloads and GitHub update checks use the network.
 

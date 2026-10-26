@@ -1,0 +1,11 @@
+{
+  "jvm_tests": 108,
+  "jvm_failures": 0,
+  "android_tests": 2,
+  "android_success": true,
+  "actual_reported_exception_reproduced": true,
+  "actual_updater_ui_state_transitions": 40,
+  "live_download_install": false,
+  "physical_hyperos": false,
+  "api": 29
+}

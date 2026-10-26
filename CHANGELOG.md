@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1 — 2026-10-26
+
+- Fix updater crash `current must not be NaN` at download completion: capture immutable UI state and calculate a finite progress value before deferred draw/semantics callbacks.
+- Unknown totals use indeterminate progress. All download/playback progress uses the same bounded snapshot calculation.
+- Existing signature/checksum validation, signing identity, collection database and 1.4.0 features retained.
+
 ## 1.4.0 — 2026-10-26
 
 - Tambah tinjauan per lagu, pencarian, pilihan tersimpan, pemulihan daftar sama, dan retry metadata dengan ID rencana tetap.

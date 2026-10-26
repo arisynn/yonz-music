@@ -19,8 +19,8 @@ android {
         applicationId = "com.yonzmusic.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(7)
-        versionName = "1.4.0"
+        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(8)
+        versionName = "1.4.1"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

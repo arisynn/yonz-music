@@ -59,7 +59,8 @@ import kotlinx.coroutines.delay
 }
 @Composable private fun MiniProgress(track: Track, connection: PlaybackConnection) {
     val position by playbackPosition(track, connection)
-    LinearProgressIndicator(progress = { (position.toFloat() / track.duration.coerceAtLeast(1)).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth().height(2.dp), color = MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f), gapSize = 0.dp, drawStopIndicator = {})
+    val fraction=ProgressFraction.of(position,track.duration) ?: 0f
+    LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth().height(2.dp), color = MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f), gapSize = 0.dp, drawStopIndicator = {})
 }
 @Composable fun PlayerScreen(track: Track, state: PlaybackUi, connection: PlaybackConnection, favorite: Boolean, preferences: UserPreferences, sleepEnd: Long, close: () -> Unit, toggleFavorite: () -> Unit, queue: () -> Unit, options: () -> Unit) {
     val c = MaterialTheme.colorScheme

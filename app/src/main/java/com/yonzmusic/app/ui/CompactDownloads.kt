@@ -100,7 +100,8 @@ import androidx.compose.foundation.lazy.LazyColumn
             Text(when(stage) { "cancelling" -> "Membatalkan…"; "matching", "verifying" -> "Memeriksa rekaman…"; "downloading" -> "Mengunduh audio…"; "saving" -> "Menyimpan…"; "snapshot" -> "Memeriksa koleksi pilihan…"; else -> event.optString("message", "Membaca daftar…") }, style = MaterialTheme.typography.bodyMedium)
             val total = event.optInt("total"); if (total > 0) Text("${event.optInt("completed")} / $total", style = MaterialTheme.typography.bodySmall)
             val bytes = event.optLong("downloaded_bytes"); val totalBytes = event.optLong("total_bytes")
-            if (totalBytes > 0) LinearProgressIndicator(progress = { (bytes.toFloat() / totalBytes).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+            val fraction = ProgressFraction.of(bytes,totalBytes)
+            if (fraction != null) LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
             else LinearProgressIndicator(Modifier.fillMaxWidth())
             TextButton(repo::cancel, enabled = stage != "cancelling") { Text("Batal") }
         }

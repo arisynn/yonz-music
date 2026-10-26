@@ -1,15 +1,9 @@
-# Yono Music 1.4.0 — build report
+# Yono Music 1.4.1 — hotfix build report
 
-Creator Karisyono. Repository https://github.com/arisynn/yonz-music . Version 1.4.0, code 7, production com.yonzmusic.app, Dev com.yonzmusic.app.dev. Existing owner/Dev signing identities, Room schema 3 and additive migrations retained.
+Karisyono · com.yonzmusic.app · versionCode 8 · Room schema 3 · existing production/Dev signing identities retained. Repository https://github.com/arisynn/yonz-music .
 
-Implemented: compact review with selection/search/reasons, persistent choices and same-list recovery, in-place metadata retry, actual source names, optional playlist, direct destination for one song or no-playlist batches, original audio, hidden companion covers and portable references. Home visual, real playback-status animation, keyed queue drag/swipe/undo/accessibility, local artist portraits. Offline core remains native Kotlin/Media3/Room/DataStore; optional embedded Python engine retains yt-dlp/EJS/QuickJS. No new dependency versions.
+Fixes a completion-state race that supplied NaN to Compose progress semantics. Immutable snapshots and a shared finite progress calculation cover updater, download list, acquisition UI and mini-player. Unknown totals remain indeterminate. APK hash/certificate/manifest checks and official Android installer confirmation are unchanged. All 1.4.0 collection/download/UI features remain.
 
-Spotify metadata connection is optional browser PKCE, requires configured public Client ID and permitted accounts. No shared production Spotify credentials were supplied. Playlist contents remain subject to API/Development Mode limitations. No live login success is claimed. Photos are explicitly local; automatic online artist photography is deferred. No new broad storage permission or whole-storage scan.
+SDK min26, target/compile35; Gradle8.11.1, JDK17, Kotlin2.1.20, AGP8.9.1, Media3 1.6.1; arm64-v8a/x86_64. No permission/dependency/database/signing changes. Permissions remain INTERNET, ACCESS_NETWORK_STATE, POST_NOTIFICATIONS, WAKE_LOCK, FOREGROUND_SERVICE, FOREGROUND_SERVICE_MEDIA_PLAYBACK, FOREGROUND_SERVICE_DATA_SYNC, REQUEST_INSTALL_PACKAGES.
 
-SDK: min26, target/compile35, JDK17, Gradle8.11.1, AGP8.9.1, Kotlin2.1.20, Media3 1.6.1, arm64-v8a/x86_64. Permissions: INTERNET, ACCESS_NETWORK_STATE, POST_NOTIFICATIONS, WAKE_LOCK, FOREGROUND_SERVICE, FOREGROUND_SERVICE_MEDIA_PLAYBACK, FOREGROUND_SERVICE_DATA_SYNC, REQUEST_INSTALL_PACKAGES. Existing MainActivity handles a package-specific OAuth redirect with state/PKCE validation; service/component restrictions retained.
-
-Actual tests and limits: TEST_REPORT.md, docs/verification/v1.4.0 and screenshot evidence. Install replacement preserved the existing nonempty Dev collection. Source archives exclude private signing files, local configuration, tokens, build caches and APKs. Production signing uses the existing external owner key; no private key is distributed. Google Play Protect and physical HyperOS are external/unverified. Final measured APK size/hash/signature, commit and compilation results accompany distribution.
-
-Debug/release compilation, JVM tests and both lint variants passed. See available verification logs for warnings and actual checks.
-
-Final regression: 156 host, 106 JVM and 16 Android cases passed. Actual UI drag/swipe/Undo and final panel/footer/contrast recheck passed on API29. Deleted files/folders stop forming Library groups after sync; permission/storage failures remain reconnectable, and stable collection identities survive restoration. Lint reports 0 errors and 109 warnings.
+Actual current tests are in TEST_REPORT.md and docs/verification/v1.4.1. State fixtures are distinct from live APK downloading/installation. No physical HyperOS or Play Protect result is claimed. Final measured size/hash/signature/commit accompany the distribution. Keystore/passwords/tokens are excluded.

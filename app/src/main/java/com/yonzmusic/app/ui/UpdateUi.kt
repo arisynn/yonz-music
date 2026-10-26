@@ -27,7 +27,8 @@ import com.yonzmusic.app.YonzApp
 @Composable fun UpdateDialogs() {
     val context = LocalContext.current
     val manager = (context.applicationContext as YonzApp).updates
-    val state by manager.ui.collectAsStateWithLifecycle()
+    val state = manager.ui.collectAsStateWithLifecycle().value
+    val fraction = ProgressFraction.of(state.received, state.total)
     when (state.status) {
         "Available" -> state.artifact?.let { artifact ->
             AlertDialog(onDismissRequest = manager::dismiss, title = { Text("Yono Music ${artifact.versionName}") }, text = {
@@ -40,7 +41,7 @@ import com.yonzmusic.app.YonzApp
         }
         "Downloading", "Verifying" -> AlertDialog(onDismissRequest = {}, title = { Text(if (state.status == "Verifying") "Verifying update" else "Downloading update") }, text = {
             Column(verticalArrangement = Arrangement.spacedBy(Design.gap)) {
-                if (state.total > 0 && state.status == "Downloading") LinearProgressIndicator(progress = { (state.received.toFloat() / state.total).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth()) else LinearProgressIndicator(Modifier.fillMaxWidth())
+                if (fraction != null && state.status == "Downloading") LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth()) else LinearProgressIndicator(Modifier.fillMaxWidth())
                 Text(if (state.status == "Verifying") "Checking the package, version, checksum and APK signature." else "${state.received / 1024} / ${state.total / 1024} KB")
             }
         }, confirmButton = {}, dismissButton = { TextButton(manager::cancelDownload) { Text("Batal") } })

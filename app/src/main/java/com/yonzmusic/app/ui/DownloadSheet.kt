@@ -102,7 +102,8 @@ fun downloadStatus(value:String):String=when(value) {
     val bytes=event.optLong("downloaded_bytes");val total=event.optLong("total_bytes")
     DownloadStatusLabel(downloadStatus(event.optString("stage")))
     val count=event.optInt("total");if(count>0 && event.optString("stage") in setOf("matching","verifying"))Text("${event.optInt("completed")} / $count diperiksa",style=MaterialTheme.typography.bodySmall)
-    if(total>0) { LinearProgressIndicator(progress={(bytes.toFloat()/total).coerceIn(0f,1f)},modifier=Modifier.fillMaxWidth());Text("${bytes/1024} / ${total/1024} KiB",style=MaterialTheme.typography.bodySmall) }
+    val fraction=ProgressFraction.of(bytes,total)
+    if(fraction!=null) { LinearProgressIndicator(progress={fraction},modifier=Modifier.fillMaxWidth());Text("${bytes/1024} / ${total/1024} KiB",style=MaterialTheme.typography.bodySmall) }
     else LinearProgressIndicator(Modifier.fillMaxWidth())
 }
 
