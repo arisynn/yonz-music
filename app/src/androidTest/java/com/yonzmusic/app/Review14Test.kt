@@ -21,6 +21,36 @@ class Review14Test {
  private val app get()=ApplicationProvider.getApplicationContext<YonzApp>()
  private fun asset(name:String)=InstrumentationRegistry.getInstrumentation().context.assets.open(name).use{it.readBytes()}
  private fun hash(bytes:ByteArray)=MessageDigest.getInstance("SHA-256").digest(bytes).joinToString(""){"%02x".format(it)}
+ @Test fun deletedFilesAndFoldersDisappearAfterSyncAndReturnWithCollectionIdentity():Unit=runBlocking {
+  val tree=Uri.parse(app.repository.dao.state("download_destination")!!.value)
+  val root=D.buildDocumentUriUsingTree(tree,D.getTreeDocumentId(tree))
+  val folder=D.createDocument(app.contentResolver,root,D.Document.MIME_TYPE_DIR,"DeleteQA-${System.nanoTime()}")!!
+  val db=Room.inMemoryDatabaseBuilder(app,MusicDatabase::class.java).build()
+  try {
+   val repo=Repository(app,db);val dao=repo.dao
+   fun create(name:String):Uri {
+    val file=D.createDocument(app.contentResolver,folder,"audio/wav",name)!!
+    app.contentResolver.openOutputStream(file,"w")!!.use{it.write(asset("formats/owned-tone.wav"))};return file
+   }
+   val first=create("own.wav");repo.importFolder(folder)
+   val track=dao.allTracks().single();val playlist=repo.create("Deletion QA",listOf(track.id))
+   dao.favorite(Favorite(track.id));dao.remember(History(track.id,123,456))
+   assertTrue(D.deleteDocument(app.contentResolver,first));repo.scan()
+   assertFalse(dao.track(track.id)!!.active);assertEquals(Availability.MISSING,dao.track(track.id)!!.availability)
+   assertNotNull(dao.favoriteRow(track.id));assertEquals(track.id,dao.entries(playlist).single().trackId)
+   val restored=create("renamed.wav");repo.scan()
+   assertTrue(dao.track(track.id)!!.active);assertEquals(restored.toString(),dao.track(track.id)!!.uri)
+   assertEquals(456L,dao.historyRow(track.id)!!.position)
+   assertTrue(D.deleteDocument(app.contentResolver,folder));repo.scan()
+   assertFalse(dao.track(track.id)!!.active)
+   // Typed permission/storage failures remain visible for reconnection; not deletion evidence.
+   val location=dao.locations().first {it.uri==restored.toString()}
+   dao.locations(listOf(location.copy(available=false,status=Availability.PERMISSION)));repo.refreshVisibility()
+   assertTrue(dao.track(track.id)!!.active)
+   dao.locations(listOf(location.copy(available=false,status=Availability.STORAGE)));repo.refreshVisibility()
+   assertTrue(dao.track(track.id)!!.active)
+  } finally {db.close()}
+ }
  @Test fun hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan():Unit=runBlocking {
   val tree=Uri.parse(app.repository.dao.state("download_destination")!!.value)
   val parent=D.buildDocumentUriUsingTree(tree,D.getTreeDocumentId(tree));val stamp=System.nanoTime().toString()

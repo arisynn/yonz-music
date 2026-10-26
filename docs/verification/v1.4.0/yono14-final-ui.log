@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/testing/yono14_ui_final.py", line 2, in <module>
+    d.app_start('com.yonzmusic.app.dev',activity='com.yonzmusic.app.MainActivity');assert d(description='Settings').wait(timeout=60)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

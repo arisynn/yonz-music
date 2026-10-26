@@ -1,0 +1,15 @@
+{
+  "actual_ui_drag": true,
+  "before": [
+    "Original fixture 1",
+    "Original fixture 3",
+    "Original fixture 0"
+  ],
+  "after": [
+    "Original fixture 3",
+    "Original fixture 0",
+    "Original fixture 1"
+  ],
+  "actual_swipe_remove_and_undo": true,
+  "api": 29
+}

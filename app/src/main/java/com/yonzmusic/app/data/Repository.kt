@@ -128,6 +128,7 @@ class Repository(val context: Context, val db: MusicDatabase) {
     private fun reason(uri: Uri, error: Exception): String = when {
         error is SecurityException -> Availability.PERMISSION
         storageMissing(uri) -> Availability.STORAGE
+        error is FileNotFoundException && !runCatching { resolver.acquireUnstableContentProviderClient(uri)?.use { true } ?: false }.getOrDefault(false) -> Availability.STORAGE
         error is FileNotFoundException -> Availability.MISSING
         error is IOException -> Availability.STORAGE
         else -> Availability.UNREADABLE
@@ -200,8 +201,33 @@ class Repository(val context: Context, val db: MusicDatabase) {
             }
         } catch(e:kotlinx.coroutines.CancellationException) { throw e }
         catch(e:Exception) {
-            val status=reason(root,e).let { if(source.kind=="tree" && it==Availability.UNREADABLE) Availability.STORAGE else it }
-            db.withTransaction { dao.locations(oldLocations.values.map { it.copy(available=false,status=status) });dao.source(source.copy(status=Availability.label(status))) }
+            val absentFolder=source.kind=="tree" && !storageMissing(root) && runCatching {
+                // Verify absence through an accessible parent inside the original SAF grant.
+                // A provider may return SecurityException for descendants of a deleted directory.
+                val id=treeRoot(root);val grant=DocumentsContract.getTreeDocumentId(root)
+                val parent=id.substringBeforeLast('/',"")
+                if(parent!=grant && !parent.startsWith("$grant/"))false else {
+                    val children=DocumentsContract.buildChildDocumentsUriUsingTree(root,parent)
+                    resolver.query(children,arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),null,null,null)?.use { cursor ->
+                        var found=false;while(cursor.moveToNext())if(cursor.getString(0)==id)found=true
+                        !found
+                    } ?: false
+                }
+            }.getOrDefault(false)
+            val status=if(absentFolder)Availability.MISSING else reason(root,e).let { if(source.kind=="tree" && it==Availability.UNREADABLE) Availability.STORAGE else it }
+            // A deleted directory can make the provider return a null child cursor (IOException).
+            // Verify its known local documents instead of labelling every such failure as storage loss.
+            val checked=oldLocations.values.map { location ->
+                if(status==Availability.STORAGE && root.authority=="com.android.externalstorage.documents" && !storageMissing(root)) {
+                    val item=Uri.parse(location.uri)
+                    try {
+                        resolver.openFileDescriptor(item,"r")?.use { } ?: throw FileNotFoundException()
+                        location.copy(available=true,status=Availability.AVAILABLE)
+                    } catch(error:Exception) {location.copy(available=false,status=reason(item,error))}
+                } else location.copy(available=false,status=status)
+            }
+            val sourceStatus=if(checked.isNotEmpty() && checked.all {it.status==Availability.MISSING})Availability.MISSING else status
+            db.withTransaction { dao.locations(checked);dao.source(source.copy(status=Availability.label(sourceStatus))) }
             return false
         }
         val portableRecords=manifests.mapNotNull { d -> portable.read(d.uri)?.let { d to it } }.groupBy { it.second.hash }
@@ -308,15 +334,17 @@ class Repository(val context: Context, val db: MusicDatabase) {
         return candidates.filter { it.sha256 == hash }.map { it.trackId }.filter { it.isNotBlank() }.distinct().singleOrNull()
     }
     suspend fun refreshVisibility() {
+        db.withTransaction {
         val enabled=dao.allSources().filter { it.enabled }.map { it.id }.toSet()
         val locations=dao.locations().filter { it.sourceId in enabled }.groupBy { it.trackId }
         val changes=dao.allTracks().filter { it.availability!=Availability.ALIAS }.mapNotNull { track ->
             val membership=locations[track.id].orEmpty();val usable=membership.firstOrNull { it.available && it.uri==track.uri } ?: membership.firstOrNull { it.available }
             val state=if(usable!=null) Availability.AVAILABLE else if(dao.state("relocation:${track.id}")?.value?.let { it!="[]" }==true) Availability.AMBIGUOUS else membership.map { it.status }.firstOrNull { it!=Availability.MISSING } ?: Availability.MISSING
-            val next=track.copy(active=membership.isNotEmpty(),available=usable!=null,uri=usable?.uri ?: track.uri,availability=state)
+            val next=track.copy(active=membership.isNotEmpty() && state!=Availability.MISSING,available=usable!=null,uri=usable?.uri ?: track.uri,availability=state)
             next.takeIf { it!=track }
         }
         if(changes.isNotEmpty())dao.upsert(changes)
+        }
     }
     suspend fun relink(id: String, uri: Uri): String = withContext(Dispatchers.IO) {
         scanMutex.withLock {

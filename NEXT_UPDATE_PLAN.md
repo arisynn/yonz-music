@@ -1,3 +1,7 @@
+# Status terbaru · 1.4.0
+
+Pembaruan ini sudah diimplementasikan: tinjauan/pilihan persisten, playlist opsional, nama otomatis, satu lagu langsung di tujuan, sampul tersembunyi, antrean gestur, visual Home dan foto artis lokal. Sinkronisasi menyembunyikan lokasi yang terkonfirmasi hilang dari Library. Koneksi metadata Spotify PKCE memerlukan konfigurasi resmi dan belum diuji login langsung. Lihat [cakupan aktual](docs/UPDATE_1_4_0.md) dan [pengujian](TEST_REPORT.md). Rencana lama di bawah dipertahankan sebagai konteks historis.
+
 # Rencana pembaruan Yono Music
 
 Pemilik produk: Karisyono. Rencana awal berasal dari 1.2.0 Preview 2 dan kini dilanjutkan oleh 1.3.0; playback native, identitas YONO, pustaka dari sumber pilihan, format audio asli, koleksi lokal, dan signing tetap dipertahankan. Prioritas: fungsi, keamanan data, stabilitas, kejelasan UX, lalu tampilan.

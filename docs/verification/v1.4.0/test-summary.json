@@ -1,8 +1,9 @@
 {
-  "android_distinct_latest_passed": 15,
+  "android_distinct_latest_passed": 16,
   "android_latest_failed": [],
   "android_cases": {
     "com.yonzmusic.app.Review14Test#oauthUsesEncryptedSingleUseStateAndRejectsUnsolicitedCallback": 0,
+    "com.yonzmusic.app.Review14Test#deletedFilesAndFoldersDisappearAfterSyncAndReturnWithCollectionIdentity": 0,
     "com.yonzmusic.app.Review14Test#hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan": 0,
     "com.yonzmusic.app.Review14Test#optionalPlaylistHonorsAcceptedSubsetAndDoesNotCreateEmptyCollection": 0,
     "com.yonzmusic.app.QueueGesture14Test#keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession": 0,

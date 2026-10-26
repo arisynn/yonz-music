@@ -84,7 +84,7 @@ import kotlinx.coroutines.withContext
     var sortOpen by remember { mutableStateOf(false) }
     val sorted = remember(tracks, sort) { sortedTracks(tracks, sort) }
     val groups = remember(tracks, tab) {
-        when (tab) { "Albums" -> tracks.filter { MetadataPolicy.known(it.album).isNotBlank() }.groupBy(::albumKey); "Artists" -> tracks.groupBy { it.artist }; "Folders" -> tracks.groupBy { it.folder }; else -> emptyMap() }.entries.sortedBy { it.value.firstOrNull()?.let { t -> if (tab == "Albums") t.album.lowercase() else it.key.lowercase() } }
+        when (tab) { "Albums" -> tracks.filter { MetadataPolicy.known(it.album).isNotBlank() }.groupBy(::albumKey); "Artists" -> tracks.groupBy { it.artist }; "Folders" -> tracks.filter { it.available }.groupBy { it.folder }; else -> emptyMap() }.entries.sortedBy { it.value.firstOrNull()?.let { t -> if (tab == "Albums") t.album.lowercase() else it.key.lowercase() } }
     }
     LazyColumn(contentPadding = PaddingValues(bottom = Design.page)) {
         item {
@@ -100,6 +100,12 @@ import kotlinx.coroutines.withContext
         }
         if (scanning) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = Design.page, vertical = Design.sm)) }
         if (tracks.isEmpty() && !scanning) item { EmptyState("Your collection lives here", "Choose your music files or folders in Import. Only your selections appear here.", action = { Button(onImport) { Text("Choose music") } }) }
+        if(tab=="Folders" && tracks.any { !it.available }) item {
+            TextButton(onImport,Modifier.padding(horizontal=Design.page)) { Text("Sumber belum tersedia · kelola atau hubungkan ulang") }
+        }
+        if(tab=="Folders" && tracks.isNotEmpty() && groups.isEmpty() && !scanning) item {
+            Text("Belum ada folder dengan audio yang tersedia. Periksa sumber atau sinkronkan kembali.",Modifier.padding(Design.page),style=MaterialTheme.typography.bodyMedium)
+        }
         if (tracks.isNotEmpty() && tab == "Songs") {
             item { Row(Modifier.fillMaxWidth().padding(start = Design.page, end = Design.md), verticalAlignment = Alignment.CenterVertically) {
                 TextButton({ sorted.firstOrNull { it.available }?.let { onPlay(sorted, it.id) } }) { Icon(Icons.Rounded.PlayArrow, null); Spacer(Modifier.width(Design.xs)); Text("Play all") }

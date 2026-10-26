@@ -54,3 +54,5 @@ A separate Preview 1 was published early at the owner's request. Stable delivery
 ## 1.0.0 — historical
 
 Initial native offline music player. Its reports are preserved in `docs/history/v1.0.0/` and at tag v1.0.0.
+
+Sinkronisasi menyembunyikan track dengan semua lokasi terkonfirmasi hilang; folder Library tanpa track aktif ikut menghilang. ID/favorit/playlist/riwayat tetap disimpan untuk pemulihan. Izin hilang dan penyimpanan sementara tidak tersedia tetap dapat dihubungkan ulang.

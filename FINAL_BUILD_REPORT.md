@@ -11,3 +11,5 @@ SDK: min26, target/compile35, JDK17, Gradle8.11.1, AGP8.9.1, Kotlin2.1.20, Media
 Actual tests and limits: TEST_REPORT.md, docs/verification/v1.4.0 and screenshot evidence. Install replacement preserved the existing nonempty Dev collection. Source archives exclude private signing files, local configuration, tokens, build caches and APKs. Production signing uses the existing external owner key; no private key is distributed. Google Play Protect and physical HyperOS are external/unverified. Final measured APK size/hash/signature, commit and compilation results accompany distribution.
 
 Debug/release compilation, JVM tests and both lint variants passed. See available verification logs for warnings and actual checks.
+
+Final regression: 156 host, 106 JVM and 16 Android cases passed. Actual UI drag/swipe/Undo and final panel/footer/contrast recheck passed on API29. Deleted files/folders stop forming Library groups after sync; permission/storage failures remain reconnectable, and stable collection identities survive restoration. Lint reports 0 errors and 109 warnings.

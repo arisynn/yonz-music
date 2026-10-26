@@ -86,7 +86,11 @@ class SpotifyConnection(private val context: Context) {
             val tokens=exchange(mapOf("client_id" to saved.getString("client_id"),"grant_type" to "authorization_code","code" to code,"redirect_uri" to redirect,"code_verifier" to verifier))
             saved.put("tokens",tokens).put("expires",System.currentTimeMillis()+tokens.optLong("expires_in",3600).coerceIn(60,86400)*1000)
             write(saved);message.value="Spotify terhubung untuk metadata playlist yang diizinkan."
-        }catch(e:Exception){message.value=e.message?.take(180) ?: "Koneksi Spotify belum berhasil."}
+        }catch(e:Exception){
+            val safe=e.message.orEmpty()
+            message.value=if(listOf("Sesi koneksi tidak cocok","Izin Spotify dibatalkan","Koneksi Spotify ditolak").any(safe::startsWith))safe.take(180)
+                else "Koneksi Spotify belum berhasil. Periksa koneksi dan konfigurasi Developer."
+        }
         return true
     }
     /** IO thread only, and only for an explicit Spotify operation; tokens never enter Room or plans. */
