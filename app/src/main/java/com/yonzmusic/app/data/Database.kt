@@ -5,7 +5,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 
-@Entity(tableName = "tracks", indices = [Index("uri", unique = true), Index("source"), Index("title")])
+@Entity(tableName = "tracks", indices = [Index("uri"), Index("source"), Index("title")])
 data class Track(
     @PrimaryKey val id: String,
     val uri: String,
@@ -19,7 +19,15 @@ data class Track(
     val artUri: String = "",
     val source: String = "media",
     val available: Boolean = true,
-    @ColumnInfo(defaultValue = "1") val active: Boolean = true
+    @ColumnInfo(defaultValue = "1") val active: Boolean = true,
+    @ColumnInfo(defaultValue = "''") val sha256: String = "",
+    @ColumnInfo(defaultValue = "0") val fileSize: Long = 0,
+    @ColumnInfo(defaultValue = "0") val modified: Long = 0,
+    @ColumnInfo(defaultValue = "'available'") val availability: String = Availability.AVAILABLE,
+    @ColumnInfo(defaultValue = "''") val sourceIdentity: String = "",
+    @ColumnInfo(defaultValue = "''") val sourceUrl: String = "",
+    @ColumnInfo(defaultValue = "'tags'") val metadataOrigin: String = "tags",
+    @ColumnInfo(defaultValue = "0") val artRevision: Long = 0
 )
 @Entity(tableName = "favorites")
 data class Favorite(@PrimaryKey val trackId: String)
@@ -44,6 +52,11 @@ interface MusicDao {
     @Query("SELECT * FROM tracks WHERE active = 1 ORDER BY title COLLATE NOCASE") fun tracks(): Flow<List<Track>>
     @Query("SELECT * FROM tracks ORDER BY title COLLATE NOCASE") fun collectionTracks(): Flow<List<Track>>
     @Query("SELECT * FROM tracks") suspend fun allTracks(): List<Track>
+    @Query("SELECT * FROM app_state WHERE name LIKE :prefix") suspend fun states(prefix: String): List<AppState>
+    @Query("SELECT * FROM listens") suspend fun allListens(): List<ListenEvent>
+    @Query("SELECT trackId, COUNT(*) AS playCount, MAX(startedAt) AS lastPlayed FROM listens GROUP BY trackId") fun listenStats(): Flow<List<ListenStats>>
+    @Insert suspend fun listen(event: ListenEvent)
+    @Query("UPDATE listens SET trackId = :target WHERE trackId = :old") suspend fun rebindListens(old: String, target: String)
     @Query("SELECT * FROM tracks WHERE id = :id") suspend fun track(id: String): Track?
     @Upsert suspend fun upsert(tracks: List<Track>)
     @Query("UPDATE tracks SET available = 0 WHERE source = :source") suspend fun unavailableSource(source: String)
@@ -105,7 +118,8 @@ data class MusicSource(@PrimaryKey val id: String, val uri: String, val name: St
 /** Separate memberships mean overlapping trees and file selections never own/delete audio. */
 @Entity(tableName = "locations", primaryKeys = ["sourceId", "identity"], indices = [Index("trackId"), Index("identity")])
 data class TrackLocation(val sourceId: String, val identity: String, val trackId: String, val uri: String,
-    val size: Long = 0, val modified: Long = 0, val available: Boolean = true)
+    val size: Long = 0, val modified: Long = 0, val available: Boolean = true,
+    @ColumnInfo(defaultValue = "'available'") val status: String = Availability.AVAILABLE)
 @Entity(tableName = "app_state") data class AppState(@PrimaryKey val name: String, val value: String)
 @Entity(tableName = "download_jobs", indices = [Index("batchId"), Index("sourceId")])
 data class DownloadJob(@PrimaryKey val id: String, val batchId: String, val ordinal: Int, val playlistId: Long,
@@ -116,11 +130,36 @@ data class DownloadJob(@PrimaryKey val id: String, val batchId: String, val ordi
     val uri: String = "", val trackId: String = "", val sha256: String = "", val error: String = "",
     val created: Long = System.currentTimeMillis())
 
+@Entity(tableName = "listens", indices = [Index("trackId"), Index("startedAt")])
+data class ListenEvent(@PrimaryKey(autoGenerate = true) val id: Long = 0, val trackId: String, val startedAt: Long, val listenedMs: Long)
+data class ListenStats(val trackId: String, val playCount: Int, val lastPlayed: Long)
+
 @Database(entities = [Track::class, Favorite::class, History::class, Playlist::class, PlaylistEntry::class,
-    ImportLog::class, ImportDetail::class, MusicSource::class, TrackLocation::class, AppState::class, DownloadJob::class], version = 2, exportSchema = true)
+    ImportLog::class, ImportDetail::class, MusicSource::class, TrackLocation::class, AppState::class, DownloadJob::class, ListenEvent::class], version = 3, exportSchema = true)
 abstract class MusicDatabase : RoomDatabase() {
     abstract fun music(): MusicDao
     companion object {
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE tracks ADD COLUMN sha256 TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE tracks ADD COLUMN fileSize INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE tracks ADD COLUMN modified INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE tracks ADD COLUMN availability TEXT NOT NULL DEFAULT 'available'")
+                db.execSQL("ALTER TABLE tracks ADD COLUMN sourceIdentity TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE tracks ADD COLUMN sourceUrl TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE tracks ADD COLUMN metadataOrigin TEXT NOT NULL DEFAULT 'tags'")
+                db.execSQL("ALTER TABLE tracks ADD COLUMN artRevision INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("UPDATE tracks SET availability = 'location_missing' WHERE available = 0")
+                db.execSQL("ALTER TABLE locations ADD COLUMN status TEXT NOT NULL DEFAULT 'available'")
+                db.execSQL("UPDATE locations SET status = 'location_missing' WHERE available = 0")
+                // Retain alias rows as inactive history; reconciliation must never delete track records.
+                db.execSQL("DROP INDEX IF EXISTS index_tracks_uri")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_tracks_uri ON tracks(uri)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS listens (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, trackId TEXT NOT NULL, startedAt INTEGER NOT NULL, listenedMs INTEGER NOT NULL)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_listens_trackId ON listens(trackId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_listens_startedAt ON listens(startedAt)")
+            }
+        }
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE tracks ADD COLUMN active INTEGER NOT NULL DEFAULT 1")

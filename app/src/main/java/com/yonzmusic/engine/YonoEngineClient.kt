@@ -35,6 +35,9 @@ class YonoEngineClient(
         internal val completion: CompletableDeferred<JSONObject>,
         private val stopAction: () -> Unit,
     ) {
+        @Volatile internal var currentEntry=""
+        internal val cancelledEntries = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+        fun cancelEntry(id: String) { cancelledEntries.add(id) }
         val events: StateFlow<JSONObject> = mutableEvents.asStateFlow()
         val result: Deferred<JSONObject> = completion
 
@@ -57,8 +60,13 @@ class YonoEngineClient(
     @Keep
     class Events internal constructor(private val task: Task) {
         @Keep fun isCancelled(): Boolean = task.stopped.get()
+        @Keep fun isEntryCancelled(id: String): Boolean = id in task.cancelledEntries
         @Keep fun onEvent(json: String) {
-            if (!task.stopped.get()) task.mutableEvents.value = JSONObject(json)
+            if (!task.stopped.get()) {
+                val value=JSONObject(json)
+                if(value.optString("stage")=="track_started")task.currentEntry=value.optString("entry_id")
+                task.mutableEvents.value=value
+            }
         }
     }
 
@@ -75,7 +83,7 @@ class YonoEngineClient(
         val input = payload.toString() // Freeze before crossing threads.
         worker.execute {
             try {
-                storage.setCancellation { task.stopped.get() }
+                storage.setCancellation { task.stopped.get() || task.currentEntry in task.cancelledEntries }
                 synchronized(PYTHON_START) {
                     if (!Python.isStarted()) Python.start(AndroidPlatform(app))
                 }

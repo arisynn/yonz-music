@@ -19,6 +19,7 @@ class EngineWorker(context: Context, params: WorkerParameters) : CoroutineWorker
                 .setContentText("Progres dan pembatalan tersedia di Unduh musik").setOngoing(true).build()
             setForeground(if (android.os.Build.VERSION.SDK_INT >= 29) ForegroundInfo(4300, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC) else ForegroundInfo(4300, notification))
             app.acquisition.execute(inputData.getString("request")!!); Result.success()
-        } finally { app.acquisition.busy.value = false }
+        } catch(e:Exception) { app.acquisition.message.value=e.message?.take(200) ?: "Pekerjaan gagal dimulai";Result.failure() }
+        finally { app.acquisition.busy.value = false }
     }
 }

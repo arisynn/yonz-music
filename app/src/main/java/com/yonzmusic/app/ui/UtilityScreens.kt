@@ -29,7 +29,7 @@ import java.util.Date
 
 @Composable fun SettingsScreen(preferences: UserPreferences, tracks: List<Track>, scanning: Boolean, sleepEnd: Long,
     theme: (String) -> Unit, motion: (Boolean) -> Unit, glass: (Boolean) -> Unit, scan: () -> Unit, timer: (Int) -> Unit,
-    equalizer: () -> Unit, onImport: () -> Unit, appSettings: () -> Unit
+    equalizer: () -> Unit, onImport: () -> Unit, appSettings: () -> Unit, smartMix: (Boolean) -> Unit = {}
 ) {
     val c = MaterialTheme.colorScheme
     var licenses by remember { mutableStateOf(false) }
@@ -51,6 +51,7 @@ import java.util.Date
                 }
             }
         }
+        item { ToggleSetting("Smart Mix", "Koleksi otomatis dari waktu dengar lokal. Tidak mengubah album atau playlist buatanmu.", preferences.smartMix, smartMix) }
         item { ToggleSetting("Glass surfaces", "Softly blurred artwork on Android 12+. Translucent surfaces on earlier versions.", preferences.glass, glass) }
         item { ToggleSetting("Reduce motion", "Keep interactions calm. Android's system animation setting is also respected.", preferences.reduceMotion, motion) }
         item { SectionTitle("Listen your way", "Playback") }

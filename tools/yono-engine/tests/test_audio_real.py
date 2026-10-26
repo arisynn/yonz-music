@@ -103,4 +103,35 @@ class RealAudioTests(unittest.TestCase):
         self.assertTrue(report['javascript'])
         self.assertFalse(report['live_youtube_verified'])
 
+    def _direct_tagged_fixture(self):
+        from mutagen.easyid3 import EasyID3
+        target = self.work / 'Artist - filename guess.mp3'
+        subprocess.run(['ffmpeg','-hide_banner','-loglevel','error','-i',str(self.source),str(target)],check=True)
+        tags=EasyID3(target);tags['title']=['All I Ask'];tags['artist']=['Adele','Second fixture credit'];tags['album']=['Fixture tag album'];tags.save()
+        return target
+
+    def test_direct_transfer_keeps_verified_source_fields_over_conflicting_tags(self):
+        target=self._direct_tagged_fixture();before=file_hash(target)
+        song=Song('Verified recording',['Verified artist','Verified second credit'],4,album='Verified album',source_url='https://example.test/owned.mp3',direct_audio=True)
+        with patch('yono_engine.transfer',return_value=json.dumps({'path':str(target)})):
+            result=self.media.transfer(song,self.work)
+        self.assertEqual(result,target);self.assertEqual(file_hash(target),before)
+        self.assertEqual(song.title,'Verified recording');self.assertEqual(song.artists,['Verified artist','Verified second credit']);self.assertEqual(song.album,'Verified album')
+
+    def test_direct_filename_fallback_yields_to_real_tags_and_keeps_all_artists(self):
+        target=self._direct_tagged_fixture()
+        song=Song('Artist - filename guess',[],4,source_url='https://example.test/owned.mp3',direct_audio=True,metadata_origin='filename')
+        with patch('yono_engine.transfer',return_value=json.dumps({'path':str(target)})):
+            self.media.transfer(song,self.work)
+        self.assertEqual(song.title,'All I Ask');self.assertEqual(song.artists,['Adele','Second fixture credit']);self.assertEqual(song.album,'Fixture tag album')
+        self.assertEqual(song.metadata_origin,'verified')
+
+    def test_artist_filename_fallback_never_splits_or_replaces_a_correct_title_tag(self):
+        from mutagen.easyid3 import EasyID3
+        target=self._direct_tagged_fixture();tags=EasyID3(target);del tags['artist'];tags['title']=['Intro - a correct tag title'];tags.save()
+        song=Song('Filename artist - Filename title',[],4,source_url='https://example.test/owned.mp3',direct_audio=True,metadata_origin='filename')
+        with patch('yono_engine.transfer',return_value=json.dumps({'path':str(target)})):
+            self.media.transfer(song,self.work)
+        self.assertEqual(song.title,'Intro - a correct tag title');self.assertEqual(song.artists,['Filename artist'])
+
 if __name__ == '__main__': unittest.main()

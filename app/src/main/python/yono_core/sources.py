@@ -207,8 +207,9 @@ class Sources:
                     # parser still rejects video/corrupt bytes before publication.
                     standalone = standalone or (row.get("ext") in {"mp3", "flac", "m4a", "wav", "ogg", "opus", "aac", "webm", "weba"} and row.get("vcodec") in {None, "none"} and data.get("_type") not in {"playlist", "multi_video"})
                     if standalone:
-                        song = Song(title or "Audio", artists or [row.get("creator") or "Unknown artist"], row.get("duration") or 0,
-                                    album=row.get("album") or "", source_url=source, artwork_url=row.get("thumbnail") or "", direct_audio=True)
+                        song = Song(title or "Audio", artists, row.get("duration") or 0,
+                                    album=row.get("album") or "", source_url=source, artwork_url=row.get("thumbnail") or "", direct_audio=True,
+                                    metadata_origin="source" if row.get("track") or artists or row.get("album") else "filename")
                         rows.append({"song": song.to_dict(), "input": source})
                     else:
                         raise EngineError("SOURCE_AUDIO_METADATA", "Aliran audio asli pada tautan ini belum dapat diverifikasi. Gunakan tautan audio langsung; rekaman lain tidak dipilih otomatis.")

@@ -160,14 +160,29 @@ class Media:
             info = probe(path, token, self.ffprobe, self.host)
             import mutagen
             song.artwork_url = song.artwork_url or record.get("metadata", {}).get("artUrl", "")
+            fallback_title = song.title if song.metadata_origin == "filename" else ""
             embedded = mutagen.File(path, easy=True)
+            has_title_tag = embedded is not None and bool(embedded.get("title"))
             if embedded is not None:
-                if embedded.get("title"):
+                from_filename = song.metadata_origin == "filename"
+                # A generic extractor title can be a filename. Actual tags outrank that
+                # fallback, but must not overwrite known source credits/album/title.
+                if embedded.get("title") and (from_filename or not song.title):
                     song.title = str(embedded["title"][0])[:512]
-                if embedded.get("artist"):
+                if embedded.get("artist") and (from_filename or not song.artists):
                     song.artists = [str(a)[:512] for a in embedded["artist"]]
-                if embedded.get("album"):
+                if embedded.get("album") and (from_filename or not song.album):
                     song.album = str(embedded["album"][0])[:512]
+                if from_filename and any(embedded.get(field) for field in ("title", "artist", "album")):
+                    song.metadata_origin = "verified"
+            if not song.artists and fallback_title:
+                import re
+                parts = re.split(r"\s+[-–—]\s+", fallback_title, maxsplit=1)
+                if len(parts) == 2 and all(p.strip() for p in parts):
+                    song.artists = [parts[0].strip()]
+                    if not has_title_tag:
+                        song.title = parts[1].strip()
+                    song.metadata_origin = "filename"
             if not song.duration:
                 song.duration = info["duration"]
             return path

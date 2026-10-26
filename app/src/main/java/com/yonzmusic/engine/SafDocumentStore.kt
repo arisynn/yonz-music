@@ -118,6 +118,9 @@ class SafDocumentStore(context: Context, private val destination: Uri) {
 
     private fun folder(name: String): Uri {
         val parent = documentTreeRoot()
+        // Choosing Music/english as destination must not create another english/english layer.
+        val rootName=displayName(parent)
+        if(rootName.equals(name,true)) return parent
         val found = children(parent).filter { it.name == name }
         if (found.isNotEmpty()) {
             require(found.size == 1 && found[0].mime == DocumentsContract.Document.MIME_TYPE_DIR) { "Ambiguous destination folder" }
@@ -218,6 +221,10 @@ class SafDocumentStore(context: Context, private val destination: Uri) {
         } } ?: throw IOException("Cannot read selected audio")
         return output.canonicalPath
     }
+
+    @Keep fun displayName(value: String): String = displayName(Uri.parse(value))
+    private fun displayName(value: Uri): String = resolver.query(value,arrayOf(OpenableColumns.DISPLAY_NAME),null,null,null)?.use { if(it.moveToFirst())it.getString(0).orEmpty() else "" }.orEmpty()
+    @Keep fun hash(value: String): String { require(Uri.parse(value).scheme=="content");return digest(Uri.parse(value)) }
 
     @Keep fun probe(path: String): String {
         val file = File(path).canonicalFile

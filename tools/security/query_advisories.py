@@ -1,9 +1,12 @@
 """Query OSV for the exact resolved inventory; absence of advisories is not a security guarantee."""
-import argparse,datetime,json,pathlib,urllib.request
+import argparse,datetime,json,pathlib,urllib.request,re
 p=argparse.ArgumentParser();p.add_argument('inventory');p.add_argument('--output',required=True);a=p.parse_args()
 rows=json.loads(pathlib.Path(a.inventory).read_text())
 packages=[{'package':{'ecosystem':'Maven','name':x['group']+':'+x['artifact']},'version':x['version']} for x in rows]
-packages += [{'package':{'ecosystem':'PyPI','name':name},'version':version} for name,version in [('yt-dlp','2026.10.21'),('yt-dlp-ejs','0.8.0'),('mutagen','1.48.1'),('certifi','2026.10.19')]]
+lock=pathlib.Path(__file__).resolve().parents[2]/'app/requirements-android.lock'
+for line in lock.read_text().splitlines():
+ match=re.fullmatch(r'([A-Za-z0-9_-]+)==([A-Za-z0-9_.+!-]+)',line.strip())
+ if match:packages.append({'package':{'ecosystem':'PyPI','name':match[1]},'version':match[2]})
 report={'checkedAt':datetime.datetime.now(datetime.timezone.utc).isoformat(),'service':'https://api.osv.dev/v1/querybatch','scope':'Exact resolved Maven runtime + installed PyPI packages; native libraries separately inventoried','queries':packages}
 try:
  request=urllib.request.Request(report['service'],data=json.dumps({'queries':packages}).encode(),headers={'Content-Type':'application/json','User-Agent':'Yono-Music-Dependency-Audit'})

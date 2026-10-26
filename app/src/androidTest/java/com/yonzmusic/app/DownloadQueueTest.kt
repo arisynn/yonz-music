@@ -40,10 +40,13 @@ class DownloadQueueTest {
         val config = JSONObject().put("localFixture", true)
         val stamp = System.nanoTime().toString(); val a = "queue-a-$stamp"; val b = "queue-b-$stamp"; val c = "queue-c-$stamp"
         val playlist = app.repository.create("Yono original queue fixture $stamp")
+        val tree = android.net.Uri.parse(destination)
+        val root = android.provider.DocumentsContract.buildDocumentUriUsingTree(tree, android.provider.DocumentsContract.getTreeDocumentId(tree))
+        val destinationName = app.contentResolver.query(root, arrayOf(android.provider.DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)!!.use { it.moveToFirst(); it.getString(0) }
         fun source(n: Int) = "http://127.0.0.1:${server.localPort}/owned-tone.mp3?record=$stamp-$n"
         fun job(n: Int, batch: String, ordinal: Int): DownloadJob {
             val candidate = EmbeddedEngine.inspect(app, source(n), false, config)
-            return DownloadJob("$stamp-$n", batch, ordinal, playlist, "Yono original queue fixture $stamp", destination!!,
+            return DownloadJob("$stamp-$n", batch, ordinal, playlist, destinationName, destination!!,
                 "Original fixture $n", "Karisyono Test Signal", "Original fixture", candidate.id, source(n), "Original generated signal", "", 12000, data.size.toLong())
         }
         try {
@@ -54,6 +57,7 @@ class DownloadQueueTest {
             repeat(3) { engine.run(dao.nextTransfer()!!) {} }
             assertNull(dao.nextTransfer()); assertEquals("Failed", dao.download(first.id)!!.status)
             assertEquals("Complete", dao.download(second.id)!!.status); assertEquals("Cancelled", dao.download(cancelled.id)!!.status)
+            assertEquals("Legacy publication must not repeat the chosen folder name", android.provider.DocumentsContract.getTreeDocumentId(tree), android.provider.DocumentsContract.getDocumentId(android.net.Uri.parse(dao.download(second.id)!!.uri)).substringBeforeLast('/'))
             assertEquals("Complete", dao.download(following.id)!!.status); assertNull(dao.state("publish:${cancelled.id}"))
             val secondId = dao.download(second.id)!!.trackId; val followingId = dao.download(following.id)!!.trackId
             // User edits made while a failed first item waits for retry must survive.

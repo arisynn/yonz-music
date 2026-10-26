@@ -10,7 +10,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 
 class YonzApp : Application() {
     val persistenceScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO.limitedParallelism(1))
-    val database by lazy { Room.databaseBuilder(this, MusicDatabase::class.java, "yonz-music.db").addMigrations(MusicDatabase.MIGRATION_1_2).build() }
+    val database by lazy { Room.databaseBuilder(this, MusicDatabase::class.java, "yonz-music.db").addMigrations(MusicDatabase.MIGRATION_1_2, MusicDatabase.MIGRATION_2_3).build() }
     val repository by lazy { Repository(this, database) }
     val preferences by lazy { Preferences(this) }
     val acquisition by lazy { com.yonzmusic.engine.AcquisitionRepository(this) }

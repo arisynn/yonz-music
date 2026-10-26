@@ -40,6 +40,7 @@ import androidx.compose.foundation.lazy.LazyColumn
     var authorized by rememberSaveable { mutableStateOf(false) }
     var editing by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(plan?.optString("id")) { if (plan != null) editing = false }
+    var downloadsOpen by remember { mutableStateOf(false) }
     var details by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val folder = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
@@ -61,7 +62,10 @@ import androidx.compose.foundation.lazy.LazyColumn
         }
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = Design.page), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
-        Text("Unduh musik", style = MaterialTheme.typography.headlineSmall)
+        Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+            Text("Unduh musik",Modifier.weight(1f),style=MaterialTheme.typography.headlineSmall)
+            TextButton({downloadsOpen=true}){Text("Daftar")}
+        }
         if (editing || plan == null) {
         SmartSongListField(text, { text = it; kind = PasteListFormatter.detectKind(it) }, artists,
             modifier = Modifier.fillMaxWidth(), enabled = !busy, onTooLarge = { vm.notify("Masukan melebihi 2 MiB") })
@@ -100,6 +104,7 @@ import androidx.compose.foundation.lazy.LazyColumn
             }
         }
     }
+    if(downloadsOpen) DownloadSheet(vm){downloadsOpen=false}
     if (details) AlertDialog(onDismissRequest = { details = false }, title = { Text("Hasil pemeriksaan") }, text = {
         val rows = plan?.optJSONArray("entries") ?: JSONArray()
         LazyColumn(Modifier.heightIn(max = 420.dp)) {

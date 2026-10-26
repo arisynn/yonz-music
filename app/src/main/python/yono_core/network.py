@@ -215,8 +215,8 @@ def fetch_picture(url, control, source_url=""):
         response = client.get(url)
         response.raise_for_status()
         image = response.content
-    if not 0 < len(image) <= 1024 * 1024:
-        raise EngineError("ARTWORK_SIZE", "Sampul melampaui 1 MiB.")
+    if not 0 < len(image) <= 4 * 1024 * 1024:
+        raise EngineError("ARTWORK_SIZE", "Sampul melampaui 4 MiB.")
     if not (image.startswith(b"\x89PNG\r\n\x1a\n") or image.startswith(b"\xff\xd8\xff")):
         raise EngineError("ARTWORK_FORMAT", "Sampul harus berupa JPEG/PNG.")
     return image

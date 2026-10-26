@@ -33,6 +33,10 @@ class DownloadEngine(private val app: YonzApp, private val testTransport: JSONOb
         require(DocumentsContract.isTreeUri(root))
         val parent = DocumentsContract.buildDocumentUriUsingTree(root, DocumentsContract.getTreeDocumentId(root))
         val safe = RecordingMatch.safeName(name)
+        val selectedName = resolver.query(parent, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)?.use {
+            if (it.moveToFirst()) it.getString(0).orEmpty() else ""
+        }.orEmpty()
+        if (selectedName.equals(safe, ignoreCase = true)) return parent
         val existing = children(parent).find { it.first == safe }?.second
         if (existing != null) {
             resolver.query(existing, arrayOf(DocumentsContract.Document.COLUMN_MIME_TYPE), null, null, null)?.use {

@@ -1,0 +1,14 @@
+NetworkFactories for: TelephonyNetworkFactory[0] WifiNetworkFactory UntrustedWifiNetworkFactory PhoneSwitcherNetworkRequstListener
+
+Active default network: none
+
+Current Networks:
+
+Restrict background: false
+
+Status for known UIDs:
+  
+Network Requests:
+  uid/pid:1000/1891 NetworkRequest [ REQUEST id=1, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN] ]
+  uid/pid:1000/1891 NetworkRequest [ BACKGROUND_REQUEST id=2, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN] ]
+  uid/pid:1000/1891 NetworkRequest [ LISTEN id=4, [] ]

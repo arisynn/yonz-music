@@ -1,0 +1,16 @@
+{
+  "debug": {
+    "bytes": 43307089,
+    "sha256": "cc22fe7759a8e7dfff0b09f14df9494abc494c31be739790617fc0741bc39f03",
+    "applicationId": "com.yonzmusic.app.dev",
+    "versionCode": 6,
+    "versionName": "1.3.0-dev"
+  },
+  "release": {
+    "bytes": 29818374,
+    "sha256": "aadfea705d8b23819dfb20f7dec4d751e5d1473471a73fe8b3082325905798c9",
+    "applicationId": "com.yonzmusic.app",
+    "versionCode": 6,
+    "versionName": "1.3.0"
+  }
+}

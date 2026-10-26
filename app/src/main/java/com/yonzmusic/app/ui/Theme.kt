@@ -1,9 +1,12 @@
 package com.yonzmusic.app.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -46,7 +49,21 @@ private val Type = Typography(
     labelMedium = TextStyle(fontWeight = FontWeight.Medium, fontSize = 12.sp, lineHeight = 16.sp, letterSpacing = .2.sp),
     labelSmall = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 10.sp, lineHeight = 14.sp, letterSpacing = 1.5.sp)
 )
-@Composable fun YonzTheme(theme: String, content: @Composable () -> Unit) {
+internal val LocalReducedMotion = staticCompositionLocalOf { false }
+@Composable fun YonzTheme(theme: String, reduceMotion: Boolean = false, content: @Composable () -> Unit) {
     val dark = when (theme) { "Dark" -> true; "Light" -> false; else -> isSystemInDarkTheme() }
-    MaterialTheme(colorScheme = if (dark) Dark else Light, typography = Type, shapes = Shapes(small = Design.small, medium = Design.card, large = Design.large), content = content)
+    CompositionLocalProvider(LocalReducedMotion provides (reduceMotion || !android.animation.ValueAnimator.areAnimatorsEnabled())) {
+        MaterialTheme(colorScheme = if (dark) Dark else Light, typography = Type, shapes = Shapes(small = Design.small, medium = Design.card, large = Design.large), content = content)
+    }
+}
+
+/** Small entry transition; the native dialog supplies dismissal. No artwork/decoder work on animation frames. */
+@Composable internal fun PlayerReveal(content:@Composable ()->Unit) {
+    val reduced=LocalReducedMotion.current
+    val view=androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.SideEffect { if(reduced)(view.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window?.setWindowAnimations(0) }
+    val visible=androidx.compose.runtime.remember { androidx.compose.animation.core.MutableTransitionState(reduced).apply { targetState=true } }
+    androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
+        androidx.compose.animation.AnimatedVisibility(visibleState=visible,enter=androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(if(reduced)0 else 160)),exit=androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(0))) { content() }
+    }
 }

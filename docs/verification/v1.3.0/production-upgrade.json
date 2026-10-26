@@ -1,0 +1,42 @@
+{
+  "before_version_code": 3,
+  "after_version_code": 6,
+  "before_schema": 2,
+  "after_schema": 3,
+  "same_owner_certificate": true,
+  "adb_install_replace": true,
+  "uninstall_or_clear_used": false,
+  "qa_root_used_only_for_database_snapshot": true,
+  "initial_ui_wait_blocked_by_emulator_systemui_anr": true,
+  "tracks": {
+    "before": 1,
+    "after": 1,
+    "original_keys_preserved": true
+  },
+  "playlists": {
+    "before": 1,
+    "after": 1,
+    "original_keys_preserved": true
+  },
+  "favorites": {
+    "before": 0,
+    "after": 0,
+    "original_keys_preserved": true
+  },
+  "playlist_entries": {
+    "before": 0,
+    "after": 0,
+    "original_keys_preserved": true
+  },
+  "history": {
+    "before": 1,
+    "after": 1,
+    "original_keys_preserved": true
+  },
+  "optimized_release_native_mp3_playback": true,
+  "screen_off_playback": true,
+  "offline_no_active_default_network": true,
+  "paused_on_reopen_before_manual_play": true,
+  "physical_device": false,
+  "production_live_acquisition_tested": false
+}

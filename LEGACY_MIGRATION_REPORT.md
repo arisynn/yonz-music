@@ -1,3 +1,5 @@
+> 1.3.0 continues the embedded engine migration: original-format audio, full source credits, portable hash-bound metadata/cover companions, selected-scope deduplication, persistent item controls and playlist ordering on retry. See [the current implementation/scope](docs/UPDATE_1_3_0.md) and [actual verification](TEST_REPORT.md). This does not add Spotify OAuth or assert universal extractor/live-download support.
+
 # Spoti Termux 1.2.1 → Yono Music 1.1.0
 
 The provided handoff prompt and nested ZIP were read before implementation. Nested archive SHA-256 was verified as `89dcf50a24829e3bdd07310afa8b838028f9a50e449afd87b16b782392b8a56b`. Paths, counts, sizes and archive integrity were checked before isolated extraction. `spoti.py`, `spoti_sources.py`, `spoti_folders.py`, README, VALIDATION, requirements and relevant tests were reviewed. No legacy installer, shell script or downloaded binary was executed.

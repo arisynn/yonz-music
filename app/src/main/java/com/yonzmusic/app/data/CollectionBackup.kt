@@ -15,7 +15,7 @@ class CollectionBackup(private val app: YonzApp) {
     private val dao get() = app.repository.dao
     suspend fun export(uri: Uri) = withContext(Dispatchers.IO) {
         val document = app.database.withTransaction {
-            val tracks = JSONArray().apply { dao.allTracks().forEach { t -> put(JSONObject().put("id", t.id).put("uri", t.uri).put("title", t.title).put("artist", t.artist).put("album", t.album).put("folder", t.folder).put("fileName", t.fileName).put("duration", t.duration).put("added", t.added)) } }
+            val tracks = JSONArray().apply { dao.allTracks().forEach { t -> put(JSONObject().put("id", t.id).put("uri", t.uri).put("title", t.title).put("artist", t.artist).put("album", t.album).put("folder", t.folder).put("fileName", t.fileName).put("duration", t.duration).put("added", t.added).put("sha256",t.sha256).put("fileSize",t.fileSize).put("sourceIdentity",t.sourceIdentity).put("sourceUrl",t.sourceUrl).put("metadataOrigin",t.metadataOrigin)) } }
             val playlists = JSONArray().apply { dao.playlists().first().forEach { p -> put(JSONObject().put("name", p.name).put("ids", JSONArray(dao.entries(p.id).map { it.trackId }))) } }
             val history = JSONArray().apply { dao.history().first().forEach { h -> put(JSONObject().put("id", h.trackId).put("playedAt", h.playedAt).put("position", h.position)) } }
             JSONObject().put("schemaVersion", 1).put("applicationId", "com.yonzmusic.app").put("tracks", tracks).put("playlists", playlists)
@@ -26,7 +26,7 @@ class CollectionBackup(private val app: YonzApp) {
             document.put("playback", JSONObject().put("ids", JSONArray(ids)).put("index", snapshot.index).put("position", snapshot.position).put("shuffle", snapshot.shuffle).put("repeat", snapshot.repeat))
         }
         val preferences = app.preferences.flow.first()
-        document.put("preferences", JSONObject().put("theme", preferences.theme).put("sort", preferences.sort).put("reduceMotion", preferences.reduceMotion).put("glass", preferences.glass))
+        document.put("preferences", JSONObject().put("theme", preferences.theme).put("sort", preferences.sort).put("reduceMotion", preferences.reduceMotion).put("glass", preferences.glass).put("smartMix",preferences.smartMix))
         val text = document.toString(2); require(text.toByteArray().size <= LIMIT) { "Collection backup exceeds 10 MB." }
         app.contentResolver.openOutputStream(uri, "wt")?.bufferedWriter(Charsets.UTF_8)?.use { it.write(text) } ?: error("Backup could not be saved.")
     }
@@ -41,7 +41,7 @@ class CollectionBackup(private val app: YonzApp) {
         require(tracks.length() <= 10000 && playlists.length() <= 1000 && favorites.length() <= 10000 && history.length() <= 1000)
         val mapping = mutableMapOf<String, String>()
         app.database.withTransaction {
-            val existing = dao.allTracks().associateBy { it.uri }
+            val existing = dao.allTracks().filter { it.availability!=Availability.ALIAS }.associateBy { it.uri }
             val new = mutableListOf<Track>()
             repeat(tracks.length()) { n ->
                 val item = tracks.getJSONObject(n)
@@ -51,7 +51,9 @@ class CollectionBackup(private val app: YonzApp) {
                 val known = existing[reference]
                 val id = known?.id ?: app.repository.stable("backup:$reference")
                 mapping[oldId] = id
-                if (known == null) new += Track(id, reference, field("title"), field("artist"), field("album"), field("folder"), field("fileName"), item.optLong("duration").coerceAtLeast(0), item.optLong("added"), source = "restored", available = false, active = false)
+                if (known == null) new += Track(id, reference, field("title"), field("artist"), field("album"), field("folder"), field("fileName"), item.optLong("duration").coerceAtLeast(0), item.optLong("added"), source = "restored", available = false, active = false,availability=Availability.MISSING,
+                    sha256=item.optString("sha256").takeIf { it.matches(Regex("[a-f0-9]{64}")) }.orEmpty(),fileSize=item.optLong("fileSize"),
+                    sourceIdentity=field("sourceIdentity"),sourceUrl=field("sourceUrl",4096),metadataOrigin=item.optString("metadataOrigin","tags"))
             }
             dao.upsert(new.distinctBy { it.uri })
             repeat(playlists.length()) { n ->
@@ -71,7 +73,7 @@ class CollectionBackup(private val app: YonzApp) {
         root.optJSONObject("preferences")?.let { p ->
             p.optString("theme").takeIf { it in setOf("System", "Dark", "Light") }?.let { app.preferences.theme(it) }
             p.optString("sort").takeIf { it in setOf("Title", "Artist", "Album", "Recently added", "Duration") }?.let { app.preferences.sort(it) }
-            app.preferences.motion(p.optBoolean("reduceMotion")); app.preferences.glass(p.optBoolean("glass", true))
+            app.preferences.motion(p.optBoolean("reduceMotion")); app.preferences.glass(p.optBoolean("glass", true));app.preferences.smartMix(p.optBoolean("smartMix",true))
         }
         "Collections restored. Choose music sources to reconnect unavailable tracks. Original audio was not changed."
     }

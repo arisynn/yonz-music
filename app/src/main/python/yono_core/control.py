@@ -12,6 +12,10 @@ class Stopped(BaseException):
         self.code = code
 
 
+class ItemCancelled(Stopped):
+    pass
+
+
 class Control:
     def __init__(self, job_id, callback=None, timeout=900, clock=time.monotonic):
         self.job_id, self.callback, self.clock = job_id, callback, clock
@@ -19,6 +23,7 @@ class Control:
         self.cancel_event = threading.Event()
         self.sequence = 0
         self._last_transfer = 0
+        self.current_entry = ""
 
     def cancel(self):
         self.cancel_event.set()
@@ -28,6 +33,8 @@ class Control:
             self.cancel_event.set()
         if self.cancel_event.is_set():
             raise Stopped()
+        if self.current_entry and self.callback and hasattr(self.callback, "isEntryCancelled") and self.callback.isEntryCancelled(self.current_entry):
+            raise ItemCancelled("ITEM_CANCELLED")
         if self.clock() >= self.deadline:
             raise Stopped("TIMEOUT")
 

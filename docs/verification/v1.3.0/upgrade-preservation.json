@@ -1,0 +1,29 @@
+{
+  "before_schema": 2,
+  "after_schema": 3,
+  "tracks": {
+    "old": 15,
+    "after": 36,
+    "original_keys_preserved": true
+  },
+  "playlists": {
+    "old": 13,
+    "after": 23,
+    "original_keys_preserved": true
+  },
+  "favorites": {
+    "old": 0,
+    "after": 0,
+    "original_keys_preserved": true
+  },
+  "playlist_entries": {
+    "old": 18,
+    "after": 36,
+    "original_keys_preserved": true
+  },
+  "history": {
+    "old": 2,
+    "after": 10,
+    "original_keys_preserved": true
+  }
+}

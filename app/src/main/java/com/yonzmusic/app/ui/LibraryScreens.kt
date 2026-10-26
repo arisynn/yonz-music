@@ -27,75 +27,45 @@ import kotlinx.coroutines.withContext
 @Composable fun HomeScreen(
     tracks: List<Track>, favorites: Set<String>, history: List<History>, current: Track?, activeId: String?,
     onPlay: (Pair<List<Track>, String>) -> Unit, onMenu: (Track) -> Unit, onFavorites: () -> Unit, onHistory: () -> Unit,
-    onAlbum: (String, String) -> Unit, onImport: () -> Unit, onLibrary: () -> Unit, onContinue: () -> Unit = {}
+    onAlbum: (String, String) -> Unit, onImport: () -> Unit, onLibrary: () -> Unit, onContinue: () -> Unit = {},
+    scrollState: LazyListState = rememberLazyListState(), mixes: List<SmartMix.Mix> = emptyList()
 ) {
-    val c = MaterialTheme.colorScheme
-    val recent = remember(tracks, history) { val map = tracks.associateBy { it.id }; history.mapNotNull { map[it.trackId] }.take(4) }
-    val added = remember(tracks) { tracks.filter { it.available }.sortedByDescending { it.added }.take(10) }
-    val albums = remember(tracks) { tracks.filter { it.available }.distinctBy(::albumKey).take(6) }
-    LazyColumn(contentPadding = PaddingValues(bottom = Design.page)) {
-        item {
-            Column(Modifier.padding(horizontal = Design.page).padding(top = Design.md, bottom = Design.gap)) {
-                Text("YOUR MUSIC. YOUR SPACE.", style = MaterialTheme.typography.labelSmall, color = c.primary)
-                Spacer(Modifier.height(Design.md))
-                Text("A little closer\nto your music.", style = MaterialTheme.typography.displaySmall)
-                Spacer(Modifier.height(Design.sm))
-                Text("All yours. Always offline.", style = MaterialTheme.typography.bodyMedium, color = c.onSurfaceVariant)
+    val recent=remember(tracks,history) { val map=tracks.filter { it.available }.associateBy { it.id };history.mapNotNull { map[it.trackId] }.take(2) }
+    val added=remember(tracks) { tracks.filter { it.available }.sortedByDescending { it.added }.take(6) }
+    val albums=remember(tracks) { tracks.filter { it.available && MetadataPolicy.known(it.album).isNotBlank() }.distinctBy(::albumKey).take(5) }
+    var mix by remember { mutableStateOf<SmartMix.Mix?>(null) }
+    LazyColumn(state=scrollState,contentPadding=PaddingValues(bottom=Design.page)) {
+        item { Text("Musikmu, ruangmu.",Modifier.padding(horizontal=Design.page,vertical=Design.sm),style=MaterialTheme.typography.titleMedium,color=MaterialTheme.colorScheme.onSurfaceVariant) }
+        if(tracks.isEmpty()) item { EmptyState("Mulai dari musikmu", "Pilih file atau folder. Koleksi dan playback tetap bekerja offline.",action={ Button(onImport) { Text("Pilih musik") } }) }
+        if(recent.isNotEmpty()) {
+            item { SectionTitle("Terakhir diputar",action={ TextButton(onHistory) { Text("Semua") } }) }
+            items(recent,key={ "recent_${it.id}" }) { t -> TrackRow(t,t.id==activeId,t.id in favorites,{onPlay(recent to t.id)},{onMenu(t)}) }
+        }
+        if(mixes.isNotEmpty()) {
+            item { SectionTitle("Smart Mix","Dari pemutaran lokal yang bermakna") }
+            items(mixes,key={ "mix_${it.key}" }) { m ->
+                ListItem(headlineContent={ Text(m.title) },supportingContent={ Text("${m.tracks.size} lagu · ketuk untuk aturan dan daftar",maxLines=2) },
+                    leadingContent={ Artwork(m.tracks.firstOrNull(),Modifier.size(48.dp)) },modifier=Modifier.clickable { mix=m }.padding(horizontal=Design.md))
             }
         }
-        item {
-            Surface(onClick = if (current != null) onContinue else onImport, modifier = Modifier.padding(horizontal = Design.page).fillMaxWidth(), color = c.primaryContainer, shape = Design.card) {
-                if (LocalDensity.current.fontScale > 1.3f) Column(Modifier.padding(Design.gap), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
-                        if (current != null) Artwork(current, Modifier.size(56.dp)) else BrandMark(Modifier.size(56.dp))
-                        Text(if (current != null) "CONTINUE LISTENING" else "YOUR COLLECTION", Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, color = c.onPrimaryContainer)
-                        Icon(if (current != null) Icons.AutoMirrored.Rounded.ArrowForward else Icons.Rounded.Add, null, tint = c.onPrimaryContainer)
-                    }
-                    Text(current?.title ?: "Bring your music home", style = MaterialTheme.typography.titleMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                    Text(current?.artist ?: "Choose files. Find your rhythm.", style = MaterialTheme.typography.bodySmall, color = c.onPrimaryContainer, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                } else Row(Modifier.padding(Design.gap), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.gap)) {
-                    if (current != null) Artwork(current, Modifier.size(88.dp)) else BrandMark(Modifier.size(72.dp).clip(Design.small).background(c.onPrimaryContainer.copy(alpha = .08f)))
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Design.xs)) {
-                        Text(if (current != null) "CONTINUE LISTENING" else "MADE FOR YOUR COLLECTION", style = MaterialTheme.typography.labelSmall, color = c.onPrimaryContainer)
-                        Text(current?.title ?: "Bring your music home", style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        Text(current?.artist ?: "Choose files. Find your rhythm.", style = MaterialTheme.typography.bodySmall, color = c.onPrimaryContainer, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    }
-                    Icon(if (current != null) Icons.AutoMirrored.Rounded.ArrowForward else Icons.Rounded.Add, null, tint = c.onPrimaryContainer)
-                }
-            }
-        }
-        item {
-            Row(Modifier.padding(horizontal = Design.page, vertical = Design.gap), horizontalArrangement = Arrangement.spacedBy(Design.md)) {
-                Shortcut("Favorites", songCount(favorites.size), Icons.Rounded.FavoriteBorder, Modifier.weight(1f), onFavorites)
-                Shortcut("Library", "${tracks.count { it.available }} songs", Icons.Rounded.LibraryMusic, Modifier.weight(1f), onLibrary)
-            }
-        }
-        if (tracks.isEmpty()) item { EmptyState("The start of something good", "Your local songs will appear here. No account, connection, or subscription needed.", action = { FilledTonalButton(onImport) { Icon(Icons.Rounded.LibraryAdd, null); Spacer(Modifier.width(Design.sm)); Text("Import music") } }) }
-        if (recent.isNotEmpty()) {
-            item { SectionTitle("Recently played", action = { TextButton(onHistory) { Text("See all") } }) }
-            items(recent, key = { "recent_${it.id}" }) { t -> TrackRow(t, t.id == activeId, t.id in favorites, { onPlay(recent to t.id) }, { onMenu(t) }) }
-        }
-        if (added.isNotEmpty()) {
-            item { SectionTitle("Fresh in your library", "Recently added") }
-            item { LazyRow(contentPadding = PaddingValues(horizontal = Design.page), horizontalArrangement = Arrangement.spacedBy(Design.gap)) {
-                items(added, key = { it.id }) { t -> ArtworkCard(t, t.title, t.artist) { onPlay(added to t.id) } }
+        if(added.isNotEmpty()) {
+            item { SectionTitle("Baru ditambahkan") }
+            item { LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+                items(added,key={it.id}) { t -> ArtworkCard(t,t.title,t.artist) { onPlay(added to t.id) } }
             } }
         }
-        if (albums.isNotEmpty()) {
-            item { SectionTitle("Made to be heard together", "Album highlights") }
-            item { LazyRow(contentPadding = PaddingValues(horizontal = Design.page), horizontalArrangement = Arrangement.spacedBy(Design.gap)) { items(albums, key = ::albumKey) { t -> ArtworkCard(t, t.album, t.artist) { onAlbum(albumKey(t), t.album) } } } }
-        }
-        item { Row(Modifier.fillMaxWidth().padding(Design.section), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Rounded.OfflineBolt, null, Modifier.size(14.dp), tint = c.onSurfaceVariant); Spacer(Modifier.width(Design.xs)); Text("Private by design. Play it your way.", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant) } }
-    }
-}
-@Composable private fun Shortcut(title: String, subtitle: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier, action: () -> Unit) {
-    Surface(onClick = action, modifier = modifier, color = MaterialTheme.colorScheme.surface, shape = Design.small, border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))) {
-        Column(Modifier.padding(Design.gap), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if(albums.isNotEmpty()) {
+            item { SectionTitle("Album pilihan") }
+            item { LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+                items(albums,key=::albumKey) { t -> ArtworkCard(t,t.album,t.artist) { onAlbum(albumKey(t),t.album) } }
+            } }
         }
     }
+    mix?.let { m -> AlertDialog(onDismissRequest={mix=null},title={Text(m.title)},text={ LazyColumn(Modifier.heightIn(max=400.dp)) {
+        item { Text(m.reason,style=MaterialTheme.typography.bodySmall) }
+        item { Text("Pemutaran bermakna: 30 detik atau setengah durasi (minimal 5 detik, maksimal durasi lagu). Seek dan jeda tidak menambah waktu dengar.",style=MaterialTheme.typography.bodySmall) }
+        items(m.tracks,key={it.id}) { t -> ListItem(headlineContent={Text(t.title,maxLines=1,overflow=TextOverflow.Ellipsis)},supportingContent={Text(t.artist,maxLines=1)},modifier=Modifier.clickable { onPlay(m.tracks to t.id);mix=null }) }
+    } },confirmButton={TextButton({onPlay(m.tracks to m.tracks.first().id);mix=null}){Text("Putar")}},dismissButton={TextButton({mix=null}){Text("Tutup")}}) }
 }
 @Composable private fun ArtworkCard(track: Track, title: String, subtitle: String, action: () -> Unit) {
     Column(Modifier.width(144.dp).clip(Design.small).clickable(onClick = action).padding(bottom = Design.sm)) {
@@ -114,7 +84,7 @@ import kotlinx.coroutines.withContext
     var sortOpen by remember { mutableStateOf(false) }
     val sorted = remember(tracks, sort) { sortedTracks(tracks, sort) }
     val groups = remember(tracks, tab) {
-        when (tab) { "Albums" -> tracks.groupBy(::albumKey); "Artists" -> tracks.groupBy { it.artist }; "Folders" -> tracks.groupBy { it.folder }; else -> emptyMap() }.entries.sortedBy { it.value.firstOrNull()?.let { t -> if (tab == "Albums") t.album.lowercase() else it.key.lowercase() } }
+        when (tab) { "Albums" -> tracks.filter { MetadataPolicy.known(it.album).isNotBlank() }.groupBy(::albumKey); "Artists" -> tracks.groupBy { it.artist }; "Folders" -> tracks.groupBy { it.folder }; else -> emptyMap() }.entries.sortedBy { it.value.firstOrNull()?.let { t -> if (tab == "Albums") t.album.lowercase() else it.key.lowercase() } }
     }
     LazyColumn(contentPadding = PaddingValues(bottom = Design.page)) {
         item {

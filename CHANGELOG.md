@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0 — 2026-10-26 · 2026-10-26
+
+- Add non-destructive Room 2→3 migration, exact-byte relocation/rename reconciliation, typed availability and explicit relink. Retain collection IDs and rebind the shared queue.
+- Publish portable SHA-bound metadata/cover manifests, preserve all artist credits, and add old-collection metadata/cover repair without audio redownload.
+- Size artwork requests for thumbnail/Now Playing, invalidate by revision and expire negative cache entries.
+- Consolidate persistent download list/history, per-item cancellation, retry and verified publication receipts; retain playlist order and manual edits on retry.
+- Compact Home, hide unknown albums, retain scroll state and add optional explainable offline Smart Mix based on qualified listening.
+- Respect reduced motion in page/player/action/download-status transitions.
+- Preserve application IDs and existing Dev/owner signing identities; increase versionCode to 6. See [implementation, scope and limitations](docs/UPDATE_1_3_0.md).
+
 ## 1.2.0 — Preview 3
 
 - Share one compact smart-paste editor between Downloads and local song-list import.

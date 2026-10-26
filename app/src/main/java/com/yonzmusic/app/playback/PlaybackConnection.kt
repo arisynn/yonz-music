@@ -23,7 +23,7 @@ class PlaybackConnection(context: Context) {
     }
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) = refresh()
-        override fun onPlayerError(error: PlaybackException) { state.value = state.value.copy(error = "This file could not be played. It may be missing, damaged, or unsupported.") }
+        override fun onPlayerError(error: PlaybackException) { state.value = state.value.copy(error = "Audio belum dapat diputar. Periksa lokasi file, izin folder, atau penyimpanan; rescan untuk menghubungkan ulang.") }
     }
     init { Choreographer.getInstance().postFrameCallback(firstFrame) }
     private fun connect(context: Context) {

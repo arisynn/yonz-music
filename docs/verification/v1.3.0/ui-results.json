@@ -1,0 +1,21 @@
+{
+  "home_scroll_restored": true,
+  "metadata_save_above_actual_ime": true,
+  "screen_dp": 320,
+  "font_scale_tested": [
+    1,
+    1.5
+  ],
+  "themes": [
+    "dark",
+    "light"
+  ],
+  "actual_emulator": true,
+  "physical_device": false,
+  "now_playing_original_webm_companion_cover": true,
+  "metadata_and_relink_dialogs_opened": true,
+  "download_history_list_opened_and_scrolled": true,
+  "smart_mix_from_actual_owned_fixture_listening_opened": true,
+  "smart_mix_off_hides_collection": true,
+  "smart_mix_enabled_preference_restored": true
+}

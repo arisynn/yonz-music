@@ -29,7 +29,7 @@ class SourceMigrationTest {
         }
         helper.runMigrationsAndValidate(name, 2, true, MusicDatabase.MIGRATION_1_2).close()
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val db = Room.databaseBuilder(context, MusicDatabase::class.java, name).addMigrations(MusicDatabase.MIGRATION_1_2).build()
+        val db = Room.databaseBuilder(context, MusicDatabase::class.java, name).addMigrations(MusicDatabase.MIGRATION_1_2,MusicDatabase.MIGRATION_2_3).build()
         try {
             val dao = db.music(); val repo = Repository(context, db)
             assertTrue(dao.tracks().first().isEmpty()); assertEquals(2, dao.allTracks().size)
@@ -68,7 +68,7 @@ class SourceMigrationTest {
         repo.mergeIdentities("media", listOf("saf"))
         assertEquals(listOf("media", "other"), dao.entries(id).map { it.trackId })
         assertEquals("media", dao.favorites().first().single().trackId); assertEquals(3000L, dao.historyRow("media")!!.position)
-        assertNull(dao.track("saf")); assertEquals("media", dao.state("track_alias:saf")!!.value)
+        assertEquals(Availability.ALIAS,dao.track("saf")!!.availability);assertFalse(dao.track("saf")!!.active); assertEquals("media", dao.state("track_alias:saf")!!.value)
         repo.mergeIdentities("other", listOf("media"))
         assertEquals("other", dao.state("track_alias:saf")!!.value)
     } }

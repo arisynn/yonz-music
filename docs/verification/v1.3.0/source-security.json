@@ -1,0 +1,6 @@
+{
+  "files_scanned": 533,
+  "credential_pattern_findings": [],
+  "production_contains_qa_provider": false,
+  "private_signing_files_ignored": true
+}

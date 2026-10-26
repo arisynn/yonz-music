@@ -9,7 +9,7 @@ import shutil
 import time
 import uuid
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
-from .control import Stopped
+from .control import Stopped, ItemCancelled
 from .inputs import MAX_ENTRIES
 from .model import EngineError, Song, safe_name
 
@@ -105,7 +105,7 @@ class Engine:
             for row in plan["entries"]:
                 self.control.check()
                 original = row["request"]
-                self.control.emit("matching", completed=row["position"] - 1, total=plan["total"], input=original.get("input", ""))
+                self.control.emit("matching", completed=row["position"] - 1, total=plan["total"], input=original.get("input", ""), entry_id=row["id"], plan_id=plan["id"])
                 try:
                     if original.get("error"):
                         raise EngineError(original.get("code", "INVALID_ENTRY"), original["error"])
@@ -151,6 +151,40 @@ class Engine:
         self.control.emit("review", total=plan["total"], counts=plan["counts"], plan_id=plan["id"])
         return plan
 
+    def persist_manifest(self, plan, row, workspace):
+        """Portable, hash-bound metadata; contains no Android URI or private signing/config secrets."""
+        from urllib.parse import urlsplit, urlunsplit
+        song = Song.from_dict(row["song"])
+        audio = row.get("audio") or {}
+        digest = audio.get("sha256") or row.get("pending_sha256")
+        if not digest and hasattr(self.storage, "hash"):
+            digest = str(self.storage.hash(row["uri"]))
+            row.setdefault("audio", {})["sha256"] = digest
+        if not digest:
+            return
+        def name(uri, fallback):
+            return str(self.storage.displayName(uri)) if hasattr(self.storage, "displayName") else fallback
+        p = urlsplit(song.source_url)
+        source_url = f"https://music.youtube.com/watch?v={song.youtube_id}" if song.youtube_id else urlunsplit((p.scheme, p.netloc, p.path, "", "")) if p.scheme == "https" else ""
+        artist = [a for a in song.artists if a.casefold() not in {"unknown artist", "unspecified credits"}]
+        meta = {"type": "yono.music.metadata", "schema": 1, "revision": row.setdefault("metadata_revision", int(time.time()*1000)),
+            "audio": {"sha256": digest, "size": audio.get("size", 0), "duration_ms": int(song.duration * 1000),
+                      "file_name": name(row["uri"], row.get("file_name", ""))},
+            "metadata": {"title": song.title, "artists": artist, "album": song.album,
+                "source_identity": "youtube:" + song.youtube_id if song.youtube_id else "sha256:" + digest,
+                "source_url": source_url, "isrc": song.isrc, "origin": song.metadata_origin if artist else "filename"},
+            "artwork": {"file_name": name(row["artwork_uri"], row.get("cover_name", "")) if row.get("artwork_uri") else "",
+                        "sha256": audio.get("artwork_sha256", "")}}
+        path = workspace / "metadata.yono.json"
+        path.write_text(json.dumps(meta, ensure_ascii=False, allow_nan=False, indent=2), encoding="utf-8")
+        from .media import file_hash
+        filename = safe_name(meta["audio"]["file_name"] or song.title) + ".yono.json"
+        uri = str(self.storage.commit(str(path), plan["folder"], filename, "application/json",
+                  f"{plan['id']}-{row['id']}-metadata", file_hash(path, self.control)))
+        if not uri or not self.storage.exists(uri):
+            raise EngineError("METADATA_COMMIT", "Audio tersimpan tetapi manifest metadata belum berhasil. Coba ulang tanpa mengunduh audio lagi.", retryable=True)
+        row["metadata_uri"] = uri
+
     def acquire(self, plan_id, selected, *, output_format="original", bitrate=192):
         plan = self.load_plan(plan_id)
         selected = set(selected)
@@ -165,76 +199,93 @@ class Engine:
         consecutive_failures = 0
         try:
             for row in plan["entries"]:
+                self.control.current_entry = ""
                 self.control.check()
-                if row["id"] not in selected or row["status"] not in {"ready", "failed", "saving"} or "song" not in row:
+                if row["id"] not in selected or row["status"] not in {"ready", "failed", "saving", "cancelled"} or "song" not in row:
                     continue
                 song = Song.from_dict(row["song"])
-                self.control.emit("track_started", completed=done, total=len(selected), title=song.title, position=row["position"])
+                self.control.emit("track_started", completed=done, total=len(selected), title=song.title, position=row["position"], entry_id=row["id"], plan_id=plan["id"])
                 workspace = self.root / "work" / (plan["id"] + "-" + row["id"])
                 workspace.mkdir(parents=True, exist_ok=True)
+                self.control.current_entry = row["id"]
                 try:
-                    key = f"{plan['id']}-{row['id']}"
-                    if row.get("pending_sha256") and hasattr(self.storage, "lookup"):
-                        previous = self.storage.lookup(key, row["pending_sha256"])
-                        if previous and self.storage.exists(str(previous)):
-                            uri = str(previous)
-                            self.index.add("download", song, uri, row["pending_sha256"])
-                            row.update(status="downloaded", uri=uri, reason="tanda terima penyimpanan dipulihkan")
-                            self.save(plan)
-                            done += 1
-                            self.control.emit("item_result", completed=done, total=len(selected), entry=row)
-                            continue
-                    existing, reason = self.index.find(song)
-                    if existing:
-                        row.update(status="exists", uri=existing["uri"], reason=reason)
-                    else:
-                        # Re-check at actual transfer time; a review is not permanent source verification.
-                        verified, candidate = self.catalogue.resolve(song)
-                        source = self.media.transfer(verified, workspace)
-                        result = self.media.finish(source, verified, workspace, output_format=output_format, bitrate=bitrate)
-                        row.update(status="saving", pending_sha256=result["sha256"],
-                                   audio={k: v for k, v in result.items() if k not in {"path", "artwork_path"}})
-                        self.save(plan)
-                        if result.get("artwork_path"):
-                            cover_name = safe_name(f"{verified.artists[0] if verified.artists else 'Unknown artist'} - {verified.title}") + ".cover." + result["artwork_extension"]
-                            artwork_uri = str(self.storage.commit(result["artwork_path"], plan["folder"], cover_name,
-                                result["artwork_mime"], key + "-cover", result["artwork_sha256"]))
-                            if not artwork_uri or not self.storage.exists(artwork_uri):
-                                raise EngineError("ARTWORK_COMMIT", "Sampul belum tersimpan. Coba ulang; audio asli tidak diubah.", retryable=True)
-                            row["artwork_uri"] = artwork_uri
-                            self.save(plan)
+                    try:
                         self.control.check()
-                        self.control.emit("saving", title=song.title, message="Menyimpan ke folder pilihan…")
-                        filename = safe_name(f"{verified.artists[0] if verified.artists else 'Unknown artist'} - {verified.title}") + "." + result["extension"]
-                        receipt = self.storage.commit(result["path"], plan["folder"], filename, result["mime"],
-                            key, result["sha256"])
-                        # Once publication succeeds, persist its receipt even when cancellation arrives now.
-                        if not receipt or not self.storage.exists(str(receipt)):
-                            raise EngineError("STORAGE_COMMIT", "Penyimpanan tidak mengembalikan berkas yang dapat dibaca.")
-                        uri = str(receipt)
-                        self.index.add("download", verified, uri, result["sha256"])
-                        row.update(status="downloaded", song=verified.to_dict(), uri=uri,
-                                   audio={k: v for k, v in result.items() if k not in {"path", "artwork_path"}})
-                        row.pop("error", None)
-                    self.save(plan)
-                    done += 1
-                    consecutive_failures = 0
-                    self.control.emit("item_result", completed=done, total=len(selected), entry=row)
-                except EngineError as error:
-                    consecutive_failures = consecutive_failures + 1 if error.retryable else 0
-                    row.update(status="failed", error=error.as_dict())
-                    self.save(plan)
-                    done += 1
-                    self.control.emit("item_result", completed=done, total=len(selected), entry=row)
-                except Exception:
-                    self.control.check()
-                    consecutive_failures += 1
-                    row.update(status="failed", error={"code": "TRANSFER_FAILED", "message": "Unduhan/pemrosesan gagal. Berkas asli tidak diubah.", "retryable": True})
+                        key = f"{plan['id']}-{row['id']}"
+                        if row.get("pending_sha256") and hasattr(self.storage, "lookup"):
+                            previous = self.storage.lookup(key, row["pending_sha256"])
+                            if previous and self.storage.exists(str(previous)):
+                                uri = str(previous)
+                                self.index.add("download", song, uri, row["pending_sha256"])
+                                row.update(uri=uri, reason="tanda terima penyimpanan dipulihkan")
+                                self.persist_manifest(plan, row, workspace)
+                                row["status"] = "downloaded"
+                                self.save(plan)
+                                done += 1
+                                self.control.emit("item_result", completed=done, total=len(selected), entry=row)
+                                continue
+                        existing, reason = self.index.find(song)
+                        if existing:
+                            row.update(status="exists", uri=existing["uri"], reason=reason)
+                        else:
+                            # Re-check at actual transfer time; a review is not permanent source verification.
+                            verified, candidate = self.catalogue.resolve(song)
+                            source = self.media.transfer(verified, workspace)
+                            result = self.media.finish(source, verified, workspace, output_format=output_format, bitrate=bitrate)
+                            row.update(status="saving", pending_sha256=result["sha256"], song=verified.to_dict(),
+                                       audio={k: v for k, v in result.items() if k not in {"path", "artwork_path"}})
+                            self.save(plan)
+                            if result.get("artwork_path"):
+                                cover_name = safe_name(f"{verified.artists[0] if verified.artists else 'Unknown artist'} - {verified.title}") + ".cover." + result["artwork_extension"]
+                                artwork_uri = str(self.storage.commit(result["artwork_path"], plan["folder"], cover_name,
+                                    result["artwork_mime"], key + "-cover", result["artwork_sha256"]))
+                                if not artwork_uri or not self.storage.exists(artwork_uri):
+                                    raise EngineError("ARTWORK_COMMIT", "Sampul belum tersimpan. Coba ulang; audio asli tidak diubah.", retryable=True)
+                                row["artwork_uri"] = artwork_uri
+                                row["cover_name"] = cover_name
+                                self.save(plan)
+                            self.control.check()
+                            self.control.emit("saving", title=song.title, message="Menyimpan ke folder pilihan…")
+                            filename = safe_name(f"{verified.artists[0] if verified.artists else 'Unknown artist'} - {verified.title}") + "." + result["extension"]
+                            receipt = self.storage.commit(result["path"], plan["folder"], filename, result["mime"],
+                                key, result["sha256"])
+                            # Once publication succeeds, persist its receipt even when cancellation arrives now.
+                            if not receipt or not self.storage.exists(str(receipt)):
+                                raise EngineError("STORAGE_COMMIT", "Penyimpanan tidak mengembalikan berkas yang dapat dibaca.")
+                            uri = str(receipt)
+                            self.index.add("download", verified, uri, result["sha256"])
+                            row.update(song=verified.to_dict(), uri=uri, file_name=filename,
+                                       audio={k: v for k, v in result.items() if k not in {"path", "artwork_path"}})
+                            self.save(plan)
+                            self.persist_manifest(plan, row, workspace)
+                            row["status"] = "downloaded"
+                            row.pop("error", None)
+                        self.save(plan)
+                        done += 1
+                        consecutive_failures = 0
+                        self.control.emit("item_result", completed=done, total=len(selected), entry=row)
+                    except EngineError as error:
+                        consecutive_failures = consecutive_failures + 1 if error.retryable else 0
+                        row.update(status="failed", error=error.as_dict())
+                        self.save(plan)
+                        done += 1
+                        self.control.emit("item_result", completed=done, total=len(selected), entry=row)
+                    except Exception:
+                        self.control.check()
+                        consecutive_failures += 1
+                        row.update(status="failed", error={"code": "TRANSFER_FAILED", "message": "Unduhan/pemrosesan gagal. Berkas asli tidak diubah.", "retryable": True})
+                        self.save(plan)
+                        done += 1
+                        self.control.emit("item_result", completed=done, total=len(selected), entry=row)
+                    finally:
+                        shutil.rmtree(workspace, ignore_errors=True)
+                except ItemCancelled:
+                    row.update(status="cancelled", error={"code": "ITEM_CANCELLED", "message": "Dibatalkan untuk lagu ini.", "retryable": True})
                     self.save(plan)
                     done += 1
                     self.control.emit("item_result", completed=done, total=len(selected), entry=row)
                 finally:
-                    shutil.rmtree(workspace, ignore_errors=True)
+                    self.control.current_entry = ""
                 if consecutive_failures >= 3:
                     plan["state"] = "paused_network"
                     break
@@ -246,16 +297,18 @@ class Engine:
                     if parent.get("uri"):
                         row["uri"] = parent["uri"]
             if plan["state"] != "paused_network":
-                plan["state"] = "complete_with_errors" if any(r["status"] in {"failed", "saving"} for r in plan["entries"] if r["id"] in selected) else "complete"
+                plan["state"] = "complete_with_errors" if any(r["status"] in {"failed", "saving", "cancelled"} for r in plan["entries"] if r["id"] in selected) else "complete"
         except Stopped as stop:
+            self.control.current_entry = ""
             plan["state"] = stop.code.lower()
             for row in plan["entries"]:
-                if row["status"] == "saving":
-                    row["status"] = "failed"
-                    row["error"] = {"code": "INTERRUPTED_SAVE", "message": "Periksa tanda terima penyimpanan sebelum mengulangi.", "retryable": True}
+                if row["id"] in selected and row["status"] in {"ready", "saving"}:
+                    row["status"] = "cancelled" if stop.code == "CANCELLED" else "failed"
+                    row["error"] = {"code": stop.code, "message": "Dibatalkan." if stop.code == "CANCELLED" else "Batas waktu tercapai. Coba ulang.", "retryable": True}
             raise
         finally:
             self.save(plan)
+        self.control.current_entry = ""
         self.control.emit("finished", counts=plan["counts"], plan_id=plan["id"], total=plan["total"])
         return plan
 
@@ -310,7 +363,10 @@ class Engine:
             if not uri or not self.storage.exists(uri):
                 raise EngineError("ARTWORK_COMMIT", "Sampul belum tersimpan. Coba lagi.", retryable=True)
             row["artwork_uri"] = uri
-            row.setdefault("audio", {})["artwork_downloaded"] = True
+            row.setdefault("audio", {}).update(artwork_downloaded=True, artwork_sha256=file_hash(path, self.control))
+            row["cover_name"] = filename
+            row["metadata_revision"] = int(time.time()*1000)
+            self.persist_manifest(plan, row, workspace)
             self.save(plan)
             return plan
         finally:

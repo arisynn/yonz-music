@@ -173,7 +173,7 @@ def source_record(info, requested_url):
         raise EngineError("Live/upcoming sources cannot be validated as complete recordings")
     if info.get('has_drm') or info.get('availability') in {'private', 'premium_only', 'subscriber_only', 'needs_auth'}:
         raise EngineError("This source is restricted. No access or DRM bypass is provided")
-    artists = info.get('artists') or info.get('creators') or [info.get('artist') or info.get('creator') or 'Unspecified credits']
+    artists = info.get('artists') or ([info['artist']] if info.get('artist') else [])
     if isinstance(artists, str):
         artists = [artists]
     extractor = str(info.get('extractor_key') or info.get('extractor') or 'Generic')

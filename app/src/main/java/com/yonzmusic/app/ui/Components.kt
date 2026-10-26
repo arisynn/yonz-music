@@ -1,5 +1,10 @@
 package com.yonzmusic.app.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -31,18 +36,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import com.yonzmusic.app.R
 import com.yonzmusic.app.data.Track
+import com.yonzmusic.app.data.Availability
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Semaphore
 
-private object ArtCache {
+internal object ArtCache {
     private val cache = object : LruCache<String, Bitmap>(12 * 1024 * 1024) { override fun sizeOf(key: String, value: Bitmap) = value.allocationByteCount }
-    private val misses = object : LruCache<String, Boolean>(2048) {}
+    private val misses = object : LruCache<String, Long>(1024) {}
     private val permits = Semaphore(2)
-    fun load(context: Context, track: Track): Bitmap? {
-        val key = track.uri + track.artUri
+    fun load(context: Context, track: Track, requestedPixels: Int): Bitmap? {
+        val bucket=when { requestedPixels<=128 -> 128;requestedPixels<=256 -> 256;requestedPixels<=512 -> 512;requestedPixels<=1024 -> 1024;else -> 1536 }
+        val key = "${track.uri}|${track.artUri}|${track.sha256}|${track.artRevision}|$bucket"
         cache.get(key)?.let { return it }
-        if (misses.get(key) == true) return null
+        if (misses.get(key)?.let { android.os.SystemClock.uptimeMillis()-it<2000 }==true) return null
         permits.acquire()
         return try {
             cache.get(key) ?: run {
@@ -53,14 +60,14 @@ private object ArtCache {
                         out.toByteArray()
                     } else null
                 }.getOrNull() ?: runCatching { MediaMetadataRetriever().let { r -> try { r.setDataSource(context, Uri.parse(track.uri)); r.embeddedPicture } finally { r.release() } } }.getOrNull()
-                if (bytes == null || bytes.size > 8 * 1024 * 1024) { misses.put(key, true); null }
+                if (bytes == null || bytes.size > 8 * 1024 * 1024) { misses.put(key, android.os.SystemClock.uptimeMillis()); null }
                 else {
                     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
                     var sample = 1
-                    while (bounds.outWidth / sample > 640 || bounds.outHeight / sample > 640) sample *= 2
+                    while (bounds.outWidth / (sample*2) >= bucket || bounds.outHeight / (sample*2) >= bucket) sample *= 2
                     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
-                    if (bitmap != null) cache.put(key, bitmap) else misses.put(key, true)
+                    if (bitmap != null) cache.put(key, bitmap) else misses.put(key, android.os.SystemClock.uptimeMillis())
                     bitmap
                 }
             }
@@ -69,13 +76,15 @@ private object ArtCache {
 }
 
 @Composable fun Artwork(track: Track?, modifier: Modifier = Modifier, description: String? = null) {
-    val context = LocalContext.current.applicationContext
-    val bitmap by produceState<Bitmap?>(null, track?.uri, track?.artUri) {
-        value = if (track != null) withContext(Dispatchers.IO) { runCatching { ArtCache.load(context, track) }.getOrNull() } else null
-    }
-    Box(modifier.clip(Design.small).semantics { if (description != null) contentDescription = description }) {
-        if (bitmap != null) Image(bitmap!!.asImageBitmap(), contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-        else DefaultArt(Modifier.fillMaxSize(), track?.album ?: "")
+    val context=LocalContext.current.applicationContext
+    val density=androidx.compose.ui.platform.LocalDensity.current
+    BoxWithConstraints(modifier.clip(Design.small).semantics { if(description!=null)contentDescription=description }) {
+        val pixels=with(density) { maxWidth.takeIf { it.value.isFinite() }?.roundToPx() ?: 512 }.coerceIn(64,1536)
+        val bitmap by produceState<Bitmap?>(null,track?.uri,track?.artUri,track?.sha256,track?.artRevision,pixels) {
+            value=if(track!=null) withContext(Dispatchers.IO) { runCatching { ArtCache.load(context,track,pixels) }.getOrNull() } else null
+        }
+        if(bitmap!=null)Image(bitmap!!.asImageBitmap(),contentDescription=null,modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
+        else DefaultArt(Modifier.fillMaxSize(),track?.album ?: "")
     }
 }
 @Composable fun DefaultArt(modifier: Modifier = Modifier, seed: String = "") {
@@ -94,7 +103,12 @@ private object ArtCache {
 @Composable fun BrandMark(modifier: Modifier = Modifier) { Image(painterResource(R.drawable.brand_symbol), "Yono Music symbol", modifier.clip(Design.small).background(Design.brandMist)) }
 
 @Composable fun ActionIcon(icon: ImageVector, label: String, onClick: () -> Unit, modifier: Modifier = Modifier, tint: Color = LocalContentColor.current, enabled: Boolean = true) {
-    IconButton(onClick, modifier.sizeIn(minWidth = Design.touch, minHeight = Design.touch), enabled = enabled) { Icon(icon, label, tint = if (enabled) tint else tint.copy(alpha = .38f), modifier = Modifier.size(Design.icon)) }
+    val duration=if(LocalReducedMotion.current)0 else 160
+    IconButton(onClick, modifier.sizeIn(minWidth = Design.touch, minHeight = Design.touch), enabled = enabled) {
+        AnimatedContent(icon,transitionSpec={ fadeIn(tween(duration)) togetherWith fadeOut(tween(duration)) },label="control icon") { value ->
+            Icon(value,label,tint=if(enabled)tint else tint.copy(alpha=.38f),modifier=Modifier.size(Design.icon))
+        }
+    }
 }
 @Composable fun SectionTitle(title: String, subtitle: String? = null, action: (@Composable () -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().padding(horizontal = Design.page, vertical = Design.md), verticalAlignment = Alignment.CenterVertically) {
@@ -132,7 +146,7 @@ private object ArtCache {
         }
         Column(Modifier.weight(1f)) {
             Text(track.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium, color = if (active) c.primary else c.onSurface)
-            Text(if (track.available) track.artist else "File unavailable · rescan to retry", maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = if (track.available) c.onSurfaceVariant else c.error)
+            Text(if (track.available) track.artist.ifBlank { "Artis belum diketahui" } else Availability.label(track.availability), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = if (track.available) c.onSurfaceVariant else c.error)
         }
         if (favorite) Icon(Icons.Rounded.Favorite, "Favorite", Modifier.size(14.dp), tint = c.primary)
         if (trailing != null) trailing() else ActionIcon(Icons.Rounded.MoreHoriz, "Options for ${track.title}", onMenu)

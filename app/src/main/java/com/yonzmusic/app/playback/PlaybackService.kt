@@ -12,6 +12,9 @@ import com.google.common.util.concurrent.SettableFuture
 import com.yonzmusic.app.MainActivity
 import com.yonzmusic.app.YonzApp
 import com.yonzmusic.app.data.History
+import com.yonzmusic.app.data.ListenAccumulator
+import com.yonzmusic.app.data.ListenEvent
+import kotlinx.coroutines.flow.collectLatest
 import com.yonzmusic.app.data.PlaybackSnapshot
 import com.yonzmusic.app.data.Track
 import kotlinx.coroutines.*
@@ -29,6 +32,17 @@ class PlaybackService : MediaSessionService() {
     private var sleepJob: Job? = null
     private val app get() = application as YonzApp
     private var consecutiveErrors = 0
+    private val listens=ListenAccumulator()
+    private fun listenTick(restart: Boolean = false) {
+        val result=listens.tick(player.currentMediaItem?.mediaId,player.duration.coerceAtLeast(0),player.isPlaying,android.os.SystemClock.elapsedRealtime(),restart)
+        result?.let { q -> app.persistenceScope.launch {
+            val canonical=app.repository.dao.state("track_alias:${q.trackId}")?.value ?: q.trackId
+            if(app.repository.dao.track(canonical)!=null) {
+                app.repository.dao.listen(ListenEvent(trackId=canonical,startedAt=System.currentTimeMillis(),listenedMs=q.listenedMs))
+                app.repository.dao.remember(History(canonical,System.currentTimeMillis(),0))
+            }
+        } }
+    }
     companion object { const val TIMER = "com.yonzmusic.app.SLEEP_TIMER"; const val AUDIO_SESSION = "com.yonzmusic.app.AUDIO_SESSION" }
 
     override fun onCreate() {
@@ -64,26 +78,46 @@ class PlaybackService : MediaSessionService() {
         }).build()
         session?.setSessionExtras(Bundle().apply { putInt(AUDIO_SESSION, player.audioSessionId) })
         player.addListener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) { listenTick(reason==Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) }
             override fun onAudioSessionIdChanged(audioSessionId: Int) { session?.setSessionExtras(Bundle().apply { putInt(AUDIO_SESSION, audioSessionId) }) }
             override fun onEvents(player: Player, events: Player.Events) {
+                listenTick()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED)) persist()
             }
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                listenTick()
                 snapshotJob?.cancel()
                 if (isPlaying) {
                     consecutiveErrors = 0
                     persist()
-                    snapshotJob = scope.launch { while (isActive) { delay(10000); persist() } }
+                    snapshotJob = scope.launch { while (isActive) { delay(5000);listenTick();persist() } }
                 }
             }
             override fun onPlayerError(error: PlaybackException) {
                 val failed = player.currentMediaItem?.mediaId
-                if (failed != null) scope.launch(Dispatchers.IO) { app.repository.dao.unavailable(failed) }
+                if (failed != null) scope.launch(Dispatchers.IO) { app.repository.playbackFailure(failed,error.errorCode) }
                 consecutiveErrors++
                 if (player.hasNextMediaItem() && consecutiveErrors < player.mediaItemCount) { player.seekToNextMediaItem(); player.prepare() }
                 else player.pause()
             }
         })
+        // Rebind queue items after a committed relocation, keeping position and paused/playing state.
+        scope.launch {
+            app.repository.dao.collectionTracks().collectLatest { rows ->
+                val byId=rows.associateBy { it.id }
+                val aliases=withContext(Dispatchers.IO){app.repository.dao.states("track_alias:%").associate { it.name.substringAfter("track_alias:") to it.value }}
+                for(index in 0 until player.mediaItemCount) {
+                    val old=player.getMediaItemAt(index);val track=byId[aliases[old.mediaId] ?: old.mediaId] ?: continue
+                    if(!track.available)continue
+                    val updated=track.mediaItem()
+                    if(old.mediaId!=updated.mediaId || old.localConfiguration?.uri!=updated.localConfiguration?.uri || old.mediaMetadata!=updated.mediaMetadata) {
+                        val current=index==player.currentMediaItemIndex;val position=player.currentPosition;val wasPlaying=player.playWhenReady
+                        player.replaceMediaItem(index,updated)
+                        if(current) { player.seekTo(index,position.coerceAtLeast(0));if(player.playbackState==Player.STATE_IDLE)player.prepare();player.playWhenReady=wasPlaying }
+                    }
+                }
+            }
+        }
         scope.launch {
             val saved = app.preferences.snapshot() ?: return@launch
             val restoredIds = withContext(Dispatchers.IO) { saved.ids.map { app.repository.dao.state("track_alias:$it")?.value ?: it } }
@@ -107,12 +141,13 @@ class PlaybackService : MediaSessionService() {
         app.persistenceScope.launch {
             app.preferences.save(snapshot)
             val id = snapshot.ids.getOrNull(snapshot.index)
-            if (played && id != null) app.repository.dao.remember(History(id, System.currentTimeMillis(), snapshot.position))
+            if(id!=null) app.repository.dao.historyRow(id)?.let { old -> app.repository.dao.remember(old.copy(position=snapshot.position)) }
         }
     }
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
     override fun onTaskRemoved(rootIntent: Intent?) { if (!player.playWhenReady || player.mediaItemCount == 0 || player.playbackState == Player.STATE_ENDED) stopSelf() }
     override fun onDestroy() {
+        listenTick()
         snapshotJob?.cancel(); sleepJob?.cancel(); app.sleepEnd.value = 0
         session?.release(); player.release(); scope.cancel()
         super.onDestroy()

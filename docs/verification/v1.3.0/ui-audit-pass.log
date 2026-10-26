@@ -1,0 +1,11 @@
+Rendered home-dark-320dp
+Rendered library-dark-320dp
+Rendered now-playing-webm-cover
+Rendered metadata-editor-ime
+Rendered relink-dialog
+Rendered download-list-dark
+Rendered home-dark-font150
+Rendered playlists-dark-font150
+Rendered home-light-font150
+Rendered home-light-320dp
+{"home_scroll_restored": true, "metadata_save_above_actual_ime": true, "screen_dp": 320, "font_scale_tested": [1, 1.5], "themes": ["dark", "light"], "actual_emulator": true, "physical_device": false, "now_playing_original_webm_companion_cover": true, "metadata_and_relink_dialogs_opened": true, "download_history_list_opened_and_scrolled": true}

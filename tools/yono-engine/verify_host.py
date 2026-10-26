@@ -10,11 +10,16 @@ import subprocess
 import sys
 import time
 import unittest
+import argparse
 from zoneinfo import ZoneInfo
 
 
 def main():
+    sys.dont_write_bytecode=True  # Do not pollute resolved Android package folders during host checks.
     root=Path(__file__).resolve().parents[2]
+    args=argparse.ArgumentParser()
+    args.add_argument('--output', default='docs/verification/v1.3.0', help='Report directory relative to repository')
+    options=args.parse_args()
     sys.path.insert(0,str(root/'app/src/main/python'))
     sys.path.insert(0,str(root/'tools/yono-engine/tests'))
     output=io.StringIO()
@@ -43,7 +48,7 @@ def main():
         'android_compiled':False,'android_runtime_tested':False,'live_youtube_download_tested':False,
         'live_spotify_api_tested':False,'hyperos_tested':False,'play_protect_tested':False,
     }
-    target=root/'docs/verification/engine-1.2'; target.mkdir(exist_ok=True)
+    target=root/options.output; target.mkdir(parents=True,exist_ok=True)
     (target/'host-tests.log').write_text(output.getvalue(),encoding='utf-8')
     (target/'host-results.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({k:report[k] for k in ('tests_run','failures','errors','skipped','successful','seconds')},ensure_ascii=False))

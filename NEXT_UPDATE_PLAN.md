@@ -1,6 +1,14 @@
 # Rencana pembaruan Yono Music
 
-Pemilik produk: Karisyono. Rencana ini melanjutkan 1.2.0 Preview 2; playback native, identitas YONO, pustaka dari sumber pilihan, format audio asli, koleksi lokal, dan signing tetap dipertahankan. Prioritas: fungsi, keamanan data, stabilitas, kejelasan UX, lalu tampilan.
+Pemilik produk: Karisyono. Rencana awal berasal dari 1.2.0 Preview 2 dan kini dilanjutkan oleh 1.3.0; playback native, identitas YONO, pustaka dari sumber pilihan, format audio asli, koleksi lokal, dan signing tetap dipertahankan. Prioritas: fungsi, keamanan data, stabilitas, kejelasan UX, lalu tampilan.
+
+## Status implementasi 1.3.0
+
+- Input pintar Preview 3 tetap dipertahankan.
+- Rekonsiliasi relokasi/hash dan status lokasi, migrasi database 3, metadata/sampul portabel dan editor tanpa audio ulang sudah diimplementasikan.
+- Daftar unduhan persisten, batal per item, retry dengan urutan playlist tetap, Home ringkas dan Smart Mix lokal yang dapat dimatikan sudah diimplementasikan.
+- Rincian serta hasil pengujian yang benar-benar tersedia ada di [laporan pembaruan](docs/UPDATE_1_3_0.md) dan [TEST_REPORT](TEST_REPORT.md).
+- Masih menjadi prioritas pengujian lanjutan: perangkat HyperOS/Android modern, proses OS mematikan transfer aktif, penyimpanan fisik dilepas, pustaka sangat besar, dan unduhan HTTPS berizin langsung pada rilis yang dioptimalkan. OAuth Spotify tetap membutuhkan konfigurasi developer resmi; belum tersedia.
 
 ## 1. Input daftar pintar — Preview 3
 
@@ -35,7 +43,7 @@ Referensi resmi: [Get Playlist Items](https://developer.spotify.com/documentatio
 - Tingkatkan pemulihan sampul yang gagal tanpa mengunduh ulang audio. Pertahankan WebM dengan sampul pendamping dan embedding Opus yang sudah bekerja. Jangan menambahkan konversi MP3.
 - Uji duplikasi berdasarkan identitas sumber/hash dalam sumber pilihan dan riwayat aplikasi; jangan memperluas scan ke seluruh penyimpanan.
 
-## 4. Kandidat stabil 1.2.0
+## 4. Kandidat stabil setelah 1.3.0
 
 - Audit ringkas 320 dp, font 1.3–1.5, tema terang/gelap, keyboard, dialog, rotasi dan landscape. Perbaiki temuan sebelum menyebutnya lulus.
 - Jalankan pengujian pipeline engine pada build release dengan R8, izin notifikasi/foreground service di Android modern, serta instalasi pembaruan produksi yang mempertahankan koleksi 1.1.0.

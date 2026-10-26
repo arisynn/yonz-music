@@ -36,6 +36,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val sourceBusy = MutableStateFlow(false)
     private var sourceJob: Job? = null
     val favorites = dao.favorites().map { it.map(Favorite::trackId).toSet() }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
+    val listenStats = dao.listenStats().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val history = dao.history().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val playlists = dao.playlists().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val entries = dao.entries().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -58,6 +59,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         try { block() } catch (e: CancellationException) { throw e } catch (e: Exception) { messages.emit(e.message?.take(240) ?: "Something went wrong. Try again.") }
     }
     fun notify(message: String) { messages.tryEmit(message) }
+    fun smartMix(enabled: Boolean) { action { app.preferences.smartMix(enabled) } }
+    fun relink(id: String, uri: Uri) { action { messages.emit(repository.relink(id,uri)) } }
+    fun editMetadata(id:String,title:String,artists:String,album:String,art:Uri?) { action { messages.emit(repository.editMetadata(id,title,artists,album,art)) } }
+    fun importMetadata(id:String,uri:Uri) { action { messages.emit(repository.importMetadata(id,uri)) } }
+    fun exportMetadata(id:String,uri:Uri) { action { repository.exportMetadata(id,uri);messages.emit("Manifest disimpan. Salin juga berkas sampul yang dirujuk saat memindahkan koleksi.") } }
     fun scan() { action { messages.emit(repository.scan()) } }
     fun files(uris: List<Uri>) { action { messages.emit(repository.importAudio(uris)) } }
     fun folder(uri: Uri) { action { messages.emit(repository.importFolder(uri)) } }

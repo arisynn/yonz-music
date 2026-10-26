@@ -102,6 +102,13 @@ def execute(action, payload_json, config_json, callback, storage):
                 plan["folder"] = safe_name(plan["name"])
                 engine.save(plan)
             result = engine.acquire(payload["plan_id"], payload["entry_ids"], output_format=payload.get("format", "original"), bitrate=payload.get("bitrate", 192))
+        elif action == "cancel_entries":
+            result = engine.load_plan(payload["plan_id"])
+            ids = set(payload["entry_ids"])
+            for row in result["entries"]:
+                if row["id"] in ids and row["status"] not in {"downloaded", "exists", "duplicate"}:
+                    row.update(status="cancelled", error={"code": "ITEM_CANCELLED", "message": "Dibatalkan untuk lagu ini.", "retryable": True})
+            engine.save(result)
         elif action == "get_plan":
             result = engine.load_plan(payload["plan_id"])
         elif action == "get_last":
@@ -119,6 +126,14 @@ def execute(action, payload_json, config_json, callback, storage):
             engine.sources = RetrySources()
             result = engine.prepare({"kind": "retry", "name": data["name"]})
         elif action == "repair_artwork":
+            if payload.get("local_uri"):
+                plan = engine.load_plan(payload["plan_id"])
+                row = next((r for r in plan["entries"] if r["id"] == payload["entry_id"]), None)
+                expected = ((row or {}).get("audio") or {}).get("sha256") or payload.get("sha256")
+                if not row or not expected or not storage.matches(payload["local_uri"], expected):
+                    raise EngineError("SOURCE_MISMATCH", "Lokasi baru belum cocok dengan hash rekaman lama.")
+                row["uri"] = payload["local_uri"]
+                engine.save(plan)
             result = engine.repair_artwork(payload["plan_id"], payload["entry_id"])
         elif action == "export_m3u":
             result = {"content": engine.export_m3u(payload["plan_id"])}

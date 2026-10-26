@@ -87,6 +87,7 @@ class Song:
     youtube_id: str = ""
     source_url: str = ""
     direct_audio: bool = False
+    metadata_origin: str = "source"
 
     def __post_init__(self):
         if not isinstance(self.direct_audio, bool):

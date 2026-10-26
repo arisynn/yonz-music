@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Test APK only. Serves generated fixture audio, never target-app/user files. -->
+        <provider android:name="com.yonzmusic.app.QaFixtureProvider" android:authorities="com.yonzmusic.qa.fixture"
+            android:exported="true" android:grantUriPermissions="true">
+            <intent-filter><action android:name="android.content.action.DOCUMENTS_PROVIDER" /></intent-filter>
+        </provider>
+    </application>
+</manifest>

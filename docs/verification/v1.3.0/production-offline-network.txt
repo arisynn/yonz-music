@@ -1,0 +1,10 @@
+NetworkFactories for: PhoneSwitcherNetworkRequstListener TelephonyNetworkFactory[0] WifiNetworkFactory UntrustedWifiNetworkFactory
+
+Active default network: none
+
+Current Networks:
+
+Restrict background: false
+
+Status for known UIDs:
+  
