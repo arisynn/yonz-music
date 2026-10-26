@@ -34,3 +34,7 @@ A tool such as yt-dlp is not labelled illegal as a whole. Technical compatibilit
 No existing audio is migrated, renamed, retagged or deleted. New downloads use sanitized names, collision-safe new documents, owned staging markers, post-copy hashes and source/license sidecars. Removing a playlist removes database references only. Failed/partial output is never presented as successful playback.
 
 Mutagen is GPL-2.0-or-later; this combined first-party application is released under GPL-3.0-or-later. MIT/Apache/Unlicense/PSF/MPL dependencies retain their licenses and source directions. No unknown Termux native binaries or credentials are copied. See THIRD_PARTY_NOTICES.md, SECURITY.md and TEST_REPORT.md. This is a substantial embedded-engine migration, **not a claim that the entire CLI or all its streaming-source automation has been reproduced**.
+
+## 1.4.0 continuation
+
+Adds durable review/selection, optional playlist creation, original-audio destination rules and hidden covers. Existing CLI-inspired conservative matching remains. Spotify now has configurable official PKCE access; this is not universal public-playlist support or Spotify audio acquisition. Live catalog availability remains unverified where this environment cannot connect; fixture metadata checks are reported separately.

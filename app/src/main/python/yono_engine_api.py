@@ -94,12 +94,15 @@ def execute(action, payload_json, config_json, callback, storage):
         engine = Engine(root, index, sources, catalogue, media, storage, token)
         if action == "prepare":
             result = engine.prepare(payload)
+        elif action == "review":
+            from yono_core.review import update_review
+            result = update_review(engine.load_plan(payload["plan_id"]), payload)
+            engine.save(result)
         elif action == "acquire":
-            if payload.get("name"):
-                from yono_core.model import safe_name
+            if "create_playlist" in payload or payload.get("name"):
+                from yono_core.review import update_review
                 plan = engine.load_plan(payload["plan_id"])
-                plan["name"] = str(payload["name"])[:100]
-                plan["folder"] = safe_name(plan["name"])
+                update_review(plan, payload)
                 engine.save(plan)
             result = engine.acquire(payload["plan_id"], payload["entry_ids"], output_format=payload.get("format", "original"), bitrate=payload.get("bitrate", 192))
         elif action == "cancel_entries":
@@ -117,14 +120,7 @@ def execute(action, payload_json, config_json, callback, storage):
         elif action == "choose":
             result = engine.choose(payload["plan_id"], payload["entry_id"], payload["youtube_id"])
         elif action == "retry":
-            data = engine.retry_request(payload["plan_id"])
-            if not data["entries"]:
-                raise EngineError("NOTHING_TO_RETRY", "Tidak ada entri gagal/tertunda untuk dicoba ulang.")
-            class RetrySources:
-                def load(self, request):
-                    return data if request.get("kind") == "retry" else sources.load(request)
-            engine.sources = RetrySources()
-            result = engine.prepare({"kind": "retry", "name": data["name"]})
+            result = engine.retry(payload["plan_id"])
         elif action == "repair_artwork":
             if payload.get("local_uri"):
                 plan = engine.load_plan(payload["plan_id"])

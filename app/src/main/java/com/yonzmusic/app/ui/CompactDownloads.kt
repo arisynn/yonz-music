@@ -36,12 +36,29 @@ import androidx.compose.foundation.lazy.LazyColumn
     val artists = remember(tracks) { tracks.filter { it.available }.flatMap { it.artist.split(';') }.distinct() }
     var text by rememberSaveable { mutableStateOf("") }
     var kind by rememberSaveable { mutableStateOf("auto") }
-    var name by rememberSaveable { mutableStateOf("Playlist saya") }
+    val savedDraft by repo.reviewDraft.collectAsStateWithLifecycle()
+    var name by rememberSaveable { mutableStateOf("") }
+    var createPlaylist by rememberSaveable { mutableStateOf(false) }
+    var selected by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
+    val planId=plan?.optString("id").orEmpty()
+    LaunchedEffect(planId,savedDraft?.optString("plan_id")) {
+        plan?.let { p ->
+            val draft=savedDraft?.takeIf { it.optString("plan_id")==planId } ?: p
+            name=draft.optString("name",p.optString("name"))
+            createPlaylist=draft.optBoolean("create_playlist",false)
+            val ids=draft.optJSONArray("entry_ids") ?: p.optJSONArray("selected_ids")
+            val rows=p.optJSONArray("entries") ?: JSONArray()
+            selected=if(ids!=null)(0 until ids.length()).map { ids.getString(it) }else (0 until rows.length()).map { rows.getJSONObject(it).getString("id") }
+        }
+    }
+    fun draft(): JSONObject = JSONObject().put("plan_id",planId).put("name",name).put("create_playlist",createPlaylist).put("entry_ids",JSONArray(selected))
+    fun persistReview() { if(planId.isNotBlank())repo.saveReview(draft()) }
     var authorized by rememberSaveable { mutableStateOf(false) }
     var editing by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(plan?.optString("id")) { if (plan != null) editing = false }
     var downloadsOpen by remember { mutableStateOf(false) }
     var details by remember { mutableStateOf(false) }
+    var spotifyOpen by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val folder = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         val data = r.data
@@ -66,6 +83,7 @@ import androidx.compose.foundation.lazy.LazyColumn
             Text("Unduh musik",Modifier.weight(1f),style=MaterialTheme.typography.headlineSmall)
             TextButton({downloadsOpen=true}){Text("Daftar")}
         }
+        TextButton({spotifyOpen=true},enabled=!busy){Text("Koneksi playlist Spotify")}
         if (editing || plan == null) {
         SmartSongListField(text, { text = it; kind = PasteListFormatter.detectKind(it) }, artists,
             modifier = Modifier.fillMaxWidth(), enabled = !busy, onTooLarge = { vm.notify("Masukan melebihi 2 MiB") })
@@ -76,7 +94,7 @@ import androidx.compose.foundation.lazy.LazyColumn
         if (destination.isNotBlank()) Text("Simpan ke: ${Uri.decode(destination.substringAfterLast('/')).substringAfter(':')}", style = MaterialTheme.typography.bodySmall, maxLines = 2)
         } else TextButton({ editing = true }) { Text("Ubah masukan / tujuan") }
         Row { Checkbox(authorized, { authorized = it }, enabled = !busy); Text("Saya berhak mengunduh audio ini dan sumber/layanannya mengizinkan.", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall) }
-        if (!busy && (editing || plan == null)) Button({ repo.submit("prepare", JSONObject().put("kind", kind).put("content", text).put("name", name)) }, enabled = authorized && text.isNotBlank() && destination.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Periksa daftar") }
+        if (!busy && (editing || plan == null)) Button({ repo.submit("prepare", JSONObject().put("kind", kind).put("content", text).put("resume_existing",true)) }, enabled = authorized && text.isNotBlank() && destination.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Periksa daftar") }
         else if (busy) {
             val stage = event.optString("stage")
             Text(when(stage) { "cancelling" -> "Membatalkan…"; "matching", "verifying" -> "Memeriksa rekaman…"; "downloading" -> "Mengunduh audio…"; "saving" -> "Menyimpan…"; "snapshot" -> "Memeriksa koleksi pilihan…"; else -> event.optString("message", "Membaca daftar…") }, style = MaterialTheme.typography.bodyMedium)
@@ -90,39 +108,37 @@ import androidx.compose.foundation.lazy.LazyColumn
         if (message.isNotBlank()) Text(message, style = MaterialTheme.typography.bodySmall)
         if (!editing) plan?.let { p ->
             val counts = p.optJSONObject("counts") ?: JSONObject()
-            Text("${p.optInt("total")} lagu · ${counts.optInt("ready")} siap · ${counts.optInt("exists") + counts.optInt("duplicate")} sudah ada", style = MaterialTheme.typography.titleSmall)
+            if(p.optString("reuse_reason").isNotBlank())Text(p.optString("reuse_reason"),style=MaterialTheme.typography.bodySmall)
+            Text("${p.optInt("total")} lagu · ${counts.optInt("ready")} siap · ${counts.optInt("exists") + counts.optInt("duplicate")} sudah ada · ${counts.optInt("downloaded")} selesai", style = MaterialTheme.typography.titleSmall)
             Text("${counts.optInt("ambiguous")} perlu dipilih · ${counts.optInt("unmatched") + counts.optInt("invalid") + counts.optInt("failed") + counts.optInt("pending")} belum cocok", style = MaterialTheme.typography.bodySmall)
-            OutlinedTextField(name, { name = it.take(100) }, label = { Text("Nama playlist") }, singleLine = true, modifier = Modifier.fillMaxWidth(), enabled = !busy)
-            if (counts.optInt("ready") + counts.optInt("exists") > 0) Button({
-                val rows = p.getJSONArray("entries"); val ids = JSONArray()
-                for (i in 0 until rows.length()) { val row = rows.getJSONObject(i); if (row.optString("status") in setOf("ready", "exists")) ids.put(row.getString("id")) }
-                repo.submit("acquire", JSONObject().put("plan_id", p.getString("id")).put("entry_ids", ids).put("format", "original").put("name", name))
-            }, enabled = !busy && authorized, modifier = Modifier.fillMaxWidth()) { Text(if (counts.optInt("ready") > 0) "Unduh ${counts.optInt("ready")} · format asli" else "Buat playlist dari lagu lokal") }
+            val rows=p.getJSONArray("entries")
+            val chosen=(0 until rows.length()).map { rows.getJSONObject(it) }.filter { it.getString("id") in selected && it.optString("status") in setOf("ready","exists") }
+            val ready=chosen.count { it.optString("status")=="ready" }
+            Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                Checkbox(createPlaylist,{createPlaylist=it;persistReview()},enabled=!busy && !p.optBoolean("layout_locked"))
+                Text("Buat playlist di aplikasi",Modifier.weight(1f),style=MaterialTheme.typography.bodyMedium)
+            }
+            if(createPlaylist) OutlinedTextField(name,{name=it.take(100);persistReview()},label={Text("Nama playlist · otomatis jika kosong")},singleLine=true,modifier=Modifier.fillMaxWidth(),enabled=!busy && !p.optBoolean("layout_locked"))
+            Text(if(chosen.size<=1 || !createPlaylist) "Audio langsung di folder tujuan · sampul di .cover" else "Audio di subfolder ${name.ifBlank { p.optString("name") }} · sampul di .cover",style=MaterialTheme.typography.bodySmall)
+            Button({
+                persistReview()
+                repo.submit("acquire",draft().put("entry_ids",JSONArray(chosen.map { it.getString("id") })).put("format","original"))
+            },enabled=!busy && authorized && chosen.isNotEmpty() && (ready>0 || createPlaylist),modifier=Modifier.fillMaxWidth()) {
+                Text(if(ready>0) "Unduh $ready · format asli" else if(createPlaylist) "Buat playlist · ${chosen.size} lagu lokal" else "Lagu pilihan sudah tersedia")
+            }
+
             Row {
-                TextButton({ details = true }) { Text("Lihat rincian") }
+                TextButton({ details = true }) { Text("Tinjau & pilih · ${chosen.size}") }
                 TextButton({ repo.submit("retry", JSONObject().put("plan_id", p.getString("id"))) }, enabled = !busy) { Text("Coba gagal lagi") }
             }
         }
     }
     if(downloadsOpen) DownloadSheet(vm){downloadsOpen=false}
-    if (details) AlertDialog(onDismissRequest = { details = false }, title = { Text("Hasil pemeriksaan") }, text = {
-        val rows = plan?.optJSONArray("entries") ?: JSONArray()
-        LazyColumn(Modifier.heightIn(max = 420.dp)) {
-            items(rows.length()) { i -> val row = rows.getJSONObject(i)
-                Text("${i+1}. ${row.optJSONObject("song")?.optString("title") ?: row.optJSONObject("request")?.optString("input")} · ${row.optString("status")}", style = MaterialTheme.typography.bodyMedium)
-                row.optJSONObject("audio")?.let {
-                    Text(if (row.optString("artwork_uri").isNotBlank()) "Format asli · sampul tersimpan" else "Format asli · sampul tidak tersedia dari sumber", style = MaterialTheme.typography.bodySmall)
-                }
-                if (row.optString("uri").isNotBlank() && row.optString("artwork_uri").isBlank()) {
-                    TextButton({ repo.submit("repair_artwork", JSONObject().put("plan_id", plan!!.getString("id")).put("entry_id", row.getString("id"))); details = false }, enabled = !busy && authorized) { Text("Ambil sampul") }
-                }
-                row.optJSONObject("error")?.let { error -> Text(error.optString("message"), style = MaterialTheme.typography.bodySmall)
-                    error.optJSONArray("choices")?.let { choices -> for (j in 0 until choices.length()) { val c = choices.getJSONObject(j); TextButton({ repo.submit("choose", JSONObject().put("plan_id", plan!!.getString("id")).put("entry_id", row.getString("id")).put("youtube_id", c.getString("youtube_id"))); details = false }, enabled = !busy) { Text("Pilih: ${c.optString("title")} · ${c.optJSONArray("artists")}") } } }
-                }
-                HorizontalDivider()
-            }
-        }
-    }, confirmButton = { TextButton({ details = false }) { Text("Tutup") } })
+    if(spotifyOpen) SpotifyConnectionDialog {spotifyOpen=false}
+    if(details) plan?.let { p -> PlaylistReviewSheet(p,selected,!busy,{ selected=it;persistReview() },{ row,choice ->
+        persistReview();repo.submit("choose",JSONObject().put("plan_id",p.getString("id")).put("entry_id",row.getString("id")).put("youtube_id",choice));details=false
+    },{details=false}) }
+
 }
 private fun java.io.InputStream.readBytesBounded(limit: Int): ByteArray {
     val out = java.io.ByteArrayOutputStream(); val buffer = ByteArray(8192)

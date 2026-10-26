@@ -35,7 +35,7 @@ import kotlinx.coroutines.withContext
     val albums=remember(tracks) { tracks.filter { it.available && MetadataPolicy.known(it.album).isNotBlank() }.distinctBy(::albumKey).take(5) }
     var mix by remember { mutableStateOf<SmartMix.Mix?>(null) }
     LazyColumn(state=scrollState,contentPadding=PaddingValues(bottom=Design.page)) {
-        item { Text("Musikmu, ruangmu.",Modifier.padding(horizontal=Design.page,vertical=Design.sm),style=MaterialTheme.typography.titleMedium,color=MaterialTheme.colorScheme.onSurfaceVariant) }
+        item { HomeIdentity(tracks.firstOrNull { it.available }) }
         if(tracks.isEmpty()) item { EmptyState("Mulai dari musikmu", "Pilih file atau folder. Koleksi dan playback tetap bekerja offline.",action={ Button(onImport) { Text("Pilih musik") } }) }
         if(recent.isNotEmpty()) {
             item { SectionTitle("Terakhir diputar",action={ TextButton(onHistory) { Text("Semua") } }) }
@@ -111,7 +111,7 @@ import kotlinx.coroutines.withContext
             val t = songs.first()
             val label = when (tab) { "Albums" -> t.album; "Folders" -> key.substringAfterLast('/').ifBlank { key }; else -> key }
             Row(Modifier.fillMaxWidth().clickable { onGroup(when (tab) { "Albums" -> "album"; "Artists" -> "artist"; else -> "folder" }, key, label) }.padding(horizontal = Design.page, vertical = Design.md), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.gap)) {
-                if (tab == "Albums") Artwork(t, Modifier.size(64.dp)) else Box(Modifier.size(56.dp).clip(if (tab == "Artists") CircleShape else Design.small).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) { Icon(if (tab == "Artists") Icons.Rounded.Person else Icons.Rounded.Folder, null, tint = MaterialTheme.colorScheme.primary) }
+                if (tab == "Albums") Artwork(t, Modifier.size(64.dp)) else if(tab == "Artists") ArtistPortrait(label, Modifier.size(56.dp)) else Box(Modifier.size(56.dp).clip(Design.small).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) { Icon(Icons.Rounded.Folder, null, tint = MaterialTheme.colorScheme.primary) }
                 Column(Modifier.weight(1f)) { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium); Text(if (tab == "Folders") "$key · ${songs.size} songs" else "${songCount(songs.size)}${if (tab == "Albums") " · ${t.artist}" else ""}", maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Icon(Icons.Rounded.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }

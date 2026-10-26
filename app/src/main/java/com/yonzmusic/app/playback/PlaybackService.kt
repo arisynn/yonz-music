@@ -21,6 +21,7 @@ import kotlinx.coroutines.*
 
 fun Track.mediaItem(): MediaItem = MediaItem.Builder().setMediaId(id).setUri(uri)
     .setMediaMetadata(MediaMetadata.Builder().setTitle(title).setArtist(artist).setAlbumTitle(album)
+        .setExtras(Bundle().apply { putString("yono.queue.key", java.util.UUID.randomUUID().toString()) })
         .setArtworkUri(artUri.takeIf { it.isNotBlank() }?.let(android.net.Uri::parse)).build()).build()
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -61,7 +62,13 @@ class PlaybackService : MediaSessionService() {
                 val result = SettableFuture.create<MutableList<MediaItem>>()
                 scope.launch {
                     try {
-                        val local = withContext(Dispatchers.IO) { mediaItems.take(10000).mapNotNull { app.repository.dao.track(it.mediaId)?.takeIf { t -> t.active && t.available && android.net.Uri.parse(t.uri).scheme == "content" }?.mediaItem() }.toMutableList() }
+                        val local = withContext(Dispatchers.IO) { mediaItems.take(10000).mapNotNull { requested ->
+                            app.repository.dao.track(requested.mediaId)?.takeIf { t -> t.active && t.available && android.net.Uri.parse(t.uri).scheme == "content" }?.mediaItem()?.let { resolved ->
+                                val key=requested.mediaMetadata.extras?.getString("yono.queue.key")?.takeIf { it.matches(Regex("[a-fA-F0-9-]{36}")) }
+                                if(key==null)resolved else resolved.buildUpon().setMediaMetadata(resolved.mediaMetadata.buildUpon()
+                                    .setExtras(Bundle().apply {putString("yono.queue.key",key)}).build()).build()
+                            }
+                        }.toMutableList() }
                         result.set(local)
                     } catch (e: Exception) { result.setException(e) }
                 }
@@ -109,7 +116,8 @@ class PlaybackService : MediaSessionService() {
                 for(index in 0 until player.mediaItemCount) {
                     val old=player.getMediaItemAt(index);val track=byId[aliases[old.mediaId] ?: old.mediaId] ?: continue
                     if(!track.available)continue
-                    val updated=track.mediaItem()
+                    val fresh=track.mediaItem()
+                    val updated=fresh.buildUpon().setMediaMetadata(fresh.mediaMetadata.buildUpon().setExtras(old.mediaMetadata.extras).build()).build()
                     if(old.mediaId!=updated.mediaId || old.localConfiguration?.uri!=updated.localConfiguration?.uri || old.mediaMetadata!=updated.mediaMetadata) {
                         val current=index==player.currentMediaItemIndex;val position=player.currentPosition;val wasPlaying=player.playWhenReady
                         player.replaceMediaItem(index,updated)

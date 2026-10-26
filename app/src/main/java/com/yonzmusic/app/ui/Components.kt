@@ -142,7 +142,7 @@ internal object ArtCache {
     Row(modifier.fillMaxWidth().clickable(onClick = onPlay).padding(start = Design.page, end = Design.md, top = Design.sm, bottom = Design.sm), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.md)) {
         Box {
             Artwork(track, Modifier.size(52.dp))
-            if (active) Box(Modifier.size(52.dp).clip(Design.small).background(c.surface.copy(alpha = .6f)), contentAlignment = Alignment.Center) { Icon(Icons.Rounded.GraphicEq, "Current track", tint = c.primary, modifier = Modifier.size(24.dp)) }
+            if (active) Box(Modifier.size(52.dp).clip(Design.small).background(c.surface.copy(alpha = .6f)), contentAlignment = Alignment.Center) { PlayingBars(Modifier.size(28.dp)) }
         }
         Column(Modifier.weight(1f)) {
             Text(track.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium, color = if (active) c.primary else c.onSurface)

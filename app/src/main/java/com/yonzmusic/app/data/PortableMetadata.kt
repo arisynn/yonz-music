@@ -21,8 +21,9 @@ class PortableMetadata(private val context: Context) {
         fun bounded(value: String, max: Int = 512) = value.also { require(it.length <= max && '\u0000' !in it) }
         val names = (0 until artists.length()).map { bounded(artists.getString(it)) }
         val artwork = root.optJSONObject("artwork") ?: JSONObject()
-        val artName = bounded(artwork.optString("file_name"),220)
-        require(artName.none { it == '/' || it == '\\' } && artName !in setOf(".",".."))
+        val artName = bounded(artwork.optString("file_name"),227)
+        val leaf = artName.removePrefix(".cover/")
+        require(leaf.none { it == '/' || it == '\\' } && leaf !in setOf(".","..") && (!artName.startsWith(".cover/") || leaf.isNotBlank()))
         val artHash = artwork.optString("sha256"); require(artHash.isBlank() || artHash.matches(Regex("[a-f0-9]{64}")))
         val source = bounded(meta.optString("source_url"),4096)
         require(source.isBlank() || Uri.parse(source).scheme == "https")
@@ -52,7 +53,9 @@ class PortableMetadata(private val context: Context) {
         if(track.artUri.isNotBlank()) {
             val imageUri=Uri.parse(track.artUri)
             val sameParent=runCatching { imageUri.authority==uri.authority && DocumentsContract.getDocumentId(imageUri).substringBeforeLast('/')==id.substringBeforeLast('/') }.getOrDefault(false)
-            if(!sameParent) {
+            val hiddenParent=runCatching { imageUri.authority==uri.authority && DocumentsContract.getDocumentId(imageUri).substringBeforeLast('/')==id.substringBeforeLast('/')+"/.cover" }.getOrDefault(false)
+            if(hiddenParent) root.getJSONObject("artwork").put("file_name",".cover/"+displayName(imageUri))
+            if(!sameParent && !hiddenParent) {
                 val bytes=context.contentResolver.openInputStream(imageUri)!!.use { input ->
                     val out=java.io.ByteArrayOutputStream();val buffer=ByteArray(8192)
                     while(true){val n=input.read(buffer);if(n<0)break;require(out.size()+n<=8*1024*1024);out.write(buffer,0,n)};out.toByteArray()
@@ -60,10 +63,11 @@ class PortableMetadata(private val context: Context) {
                 val bounds=android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds=true };android.graphics.BitmapFactory.decodeByteArray(bytes,0,bytes.size,bounds)
                 require(bounds.outWidth>0 && bounds.outHeight>0)
                 val mime=bounds.outMimeType ?: "image/jpeg";val ext=when(mime){"image/png"->"png";"image/webp"->"webp";else->"jpg"}
-                val copy=DocumentsContract.createDocument(context.contentResolver,parent,mime,track.fileName+".cover."+ext) ?: error("Tidak dapat menyalin sampul")
+                val hidden=com.yonzmusic.engine.CoverDirectory.obtain(context.contentResolver,uri,parent)
+                val copy=DocumentsContract.createDocument(context.contentResolver,hidden,mime,track.fileName+".cover."+ext) ?: error("Tidak dapat menyalin sampul")
                 try { context.contentResolver.openOutputStream(copy,"w")!!.use { it.write(bytes) } }
                 catch(e:Exception){runCatching { DocumentsContract.deleteDocument(context.contentResolver,copy) };throw e}
-                root.put("artwork",JSONObject().put("file_name",displayName(copy)).put("sha256",java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString(""){"%02x".format(it)}))
+                root.put("artwork",JSONObject().put("file_name",".cover/"+displayName(copy)).put("sha256",java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString(""){"%02x".format(it)}))
             }
         }
         val created=DocumentsContract.createDocument(context.contentResolver,parent,"application/json",track.fileName+".yono.json") ?: return null

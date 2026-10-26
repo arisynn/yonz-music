@@ -143,26 +143,3 @@ import kotlinx.coroutines.delay
     LaunchedEffect(end, lifecycle) { lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { while (true) { remaining = (end - System.currentTimeMillis()).coerceAtLeast(0); delay(1000) } } }
     Text("Sleep timer · ${time(remaining)} remaining", modifier, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
 }
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable fun QueueSheet(tracks: List<Track>, state: PlaybackUi, connection: PlaybackConnection, close: () -> Unit) {
-    val map = remember(tracks) { tracks.associateBy { it.id } }
-    ModalBottomSheet(onDismissRequest = close) {
-        LazyColumn(Modifier.fillMaxWidth().fillMaxHeight(.85f).navigationBarsPadding(), contentPadding = PaddingValues(bottom = Design.page)) {
-            item { SectionTitle("Your queue", if (state.shuffle) "Shuffle on · playback is randomized" else "${state.queue.size} songs · arrows change the order") }
-            if (state.queue.isEmpty()) item { EmptyState("The next song is yours", "Play music or add a song to your queue.", "playlist") }
-            itemsIndexed(state.queue, key = { index, id -> "$index:$id" }) { index, id ->
-                val t = map[id]
-                Column(Modifier.fillMaxWidth()) {
-                    if (t != null) TrackRow(t, index == state.index, false, { connection.jump(index) }, {}, trailing = { ActionIcon(Icons.Rounded.Close, "Remove ${t.title} from queue", { connection.remove(index) }) })
-                    else ListItem(headlineContent = { Text("Unavailable song") }, trailingContent = { ActionIcon(Icons.Rounded.Close, "Remove unavailable song", { connection.remove(index) }) })
-                    Row(Modifier.fillMaxWidth().padding(start = Design.page, end = Design.md), verticalAlignment = Alignment.CenterVertically) {
-                        Text(when { index == state.index -> "NOW PLAYING"; state.shuffle -> "${index + 1} · Queued"; index < state.index -> "${index + 1} · Played"; else -> "${index + 1} · Up next" }, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
-                        ActionIcon(Icons.Rounded.KeyboardArrowUp, "Move queue song up", { connection.move(index, index - 1) }, enabled = index > 0)
-                        ActionIcon(Icons.Rounded.KeyboardArrowDown, "Move queue song down", { connection.move(index, index + 1) }, enabled = index < state.queue.lastIndex)
-                    }
-                    HorizontalDivider(Modifier.padding(horizontal = Design.page), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))
-                }
-            }
-        }
-    }
-}

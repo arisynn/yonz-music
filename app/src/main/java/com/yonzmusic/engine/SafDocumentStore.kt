@@ -163,11 +163,20 @@ class SafDocumentStore(context: Context, private val destination: Uri) {
 
     @Keep @Synchronized
     fun commit(localPath: String, folderName: String, fileName: String, mime: String, key: String, expectedHash: String): String {
+        return commitInternal(localPath,folderName,fileName,mime,key,expectedHash,false)
+    }
+    @Keep @Synchronized
+    fun commitCover(localPath: String, folderName: String, fileName: String, mime: String, key: String, expectedHash: String): String {
+        require(mime in setOf("image/jpeg","image/png","image/webp"))
+        return commitInternal(localPath,folderName,fileName,mime,key,expectedHash,true)
+    }
+    private fun commitInternal(localPath: String, folderName: String, fileName: String, mime: String, key: String, expectedHash: String, cover: Boolean): String {
         lookup(key, expectedHash).takeIf { it.isNotEmpty() }?.let { return it }
         val source = File(localPath).canonicalFile
         require(source.toPath().startsWith(File(root, "work").toPath()) && source.isFile)
         require(expectedHash.matches(Regex("[a-f0-9]{64}")))
-        val parent = folder(component(folderName))
+        val albumParent = if (folderName.isBlank()) documentTreeRoot() else folder(component(folderName))
+        val parent = if(cover) CoverDirectory.obtain(resolver,destination,albumParent) else albumParent
         val finalName = uniqueName(parent, component(fileName))
         var created: Uri? = null
         var published = false

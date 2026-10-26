@@ -14,6 +14,7 @@ class YonzApp : Application() {
     val repository by lazy { Repository(this, database) }
     val preferences by lazy { Preferences(this) }
     val acquisition by lazy { com.yonzmusic.engine.AcquisitionRepository(this) }
+    val spotify by lazy { com.yonzmusic.app.network.SpotifyConnection(this) }
     val sleepEnd = MutableStateFlow(0L)
     val updates by lazy { com.yonzmusic.app.update.UpdateManager(this) }
     override fun onCreate() {

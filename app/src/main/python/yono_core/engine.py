@@ -12,6 +12,7 @@ from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 from .control import Stopped, ItemCancelled
 from .inputs import MAX_ENTRIES
 from .model import EngineError, Song, safe_name
+from .review import suggested_name, update_review
 
 
 def atomic_json(path, value):
@@ -91,13 +92,27 @@ class Engine:
         if not flattened:
             raise EngineError("EMPTY_INPUT", "Playlist tidak memuat lagu.")
         plan = {"schema": 1, "engine": "Yono Engine", "id": uuid.uuid4().hex,
-                "name": str(request.get("name") or data["name"])[:512], "state": "preparing",
+                "name": str(request.get("name") or suggested_name(data, flattened))[:100], "state": "preparing",
                 "origin": data.get("origin", ""), "completeness": data.get("completeness", "complete"),
                 "total": len(flattened), "entries": []}
         plan["collection_id"] = identity(plan["origin"], flattened)
+        revision = hashlib.sha256(json.dumps(flattened, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+        plan["source_revision"] = revision
+        if request.get("resume_existing"):
+            # Compare actual enumerated content, not the display name or only a playlist URL.
+            candidates = sorted((self.root / "plans").glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)[:100]
+            for path in candidates:
+                try:
+                    previous = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    continue
+                if previous.get("collection_id") == plan["collection_id"] and previous.get("source_revision") == revision:
+                    previous["reuse_reason"] = "Daftar yang sama sudah diperiksa. Pilihan sebelumnya dipulihkan; gunakan Coba gagal lagi untuk entri yang belum cocok."
+                    return previous
         plan["folder"] = safe_name(plan["name"])
         plan["entries"] = [{"id": uuid.uuid4().hex, "position": i, "status": "pending", "request": row}
                            for i, row in enumerate(flattened, 1)]
+        update_review(plan, {"create_playlist": request.get("create_playlist", False)})
         self.save(plan)
         self.control.emit("playlist_ready", completed=0, total=plan["total"], name=plan["name"], plan_id=plan["id"], message="Daftar lengkap siap diperiksa.")
         seen, network_failures = {}, 0
@@ -173,7 +188,7 @@ class Engine:
             "metadata": {"title": song.title, "artists": artist, "album": song.album,
                 "source_identity": "youtube:" + song.youtube_id if song.youtube_id else "sha256:" + digest,
                 "source_url": source_url, "isrc": song.isrc, "origin": song.metadata_origin if artist else "filename"},
-            "artwork": {"file_name": name(row["artwork_uri"], row.get("cover_name", "")) if row.get("artwork_uri") else "",
+            "artwork": {"file_name": (row.get("cover_directory", "") + name(row["artwork_uri"], row.get("cover_name", ""))) if row.get("artwork_uri") else "",
                         "sha256": audio.get("artwork_sha256", "")}}
         path = workspace / "metadata.yono.json"
         path.write_text(json.dumps(meta, ensure_ascii=False, allow_nan=False, indent=2), encoding="utf-8")
@@ -193,6 +208,12 @@ class Engine:
             raise EngineError("INVALID_SELECTION", "Pilihan lagu tidak termasuk rencana ini.")
         if output_format != "original":
             raise EngineError("ORIGINAL_ONLY", "Unduhan selalu memakai format audio asli; konversi dinonaktifkan.")
+        # Old plans retain their layout and playlist behavior. New reviewed plans freeze here.
+        if "create_playlist" in plan:
+            update_review(plan, {"entry_ids": list(selected)})
+        plan["layout_locked"] = True
+        accepted = set(plan.get("accepted_ids", [])) | selected
+        plan["accepted_ids"] = [r["id"] for r in plan["entries"] if r["id"] in accepted]
         plan["state"] = "downloading"
         self.save(plan)
         done = 0
@@ -237,11 +258,13 @@ class Engine:
                             self.save(plan)
                             if result.get("artwork_path"):
                                 cover_name = safe_name(f"{verified.artists[0] if verified.artists else 'Unknown artist'} - {verified.title}") + ".cover." + result["artwork_extension"]
-                                artwork_uri = str(self.storage.commit(result["artwork_path"], plan["folder"], cover_name,
+                                save_cover = getattr(self.storage, "commitCover", self.storage.commit)
+                                artwork_uri = str(save_cover(result["artwork_path"], plan["folder"], cover_name,
                                     result["artwork_mime"], key + "-cover", result["artwork_sha256"]))
                                 if not artwork_uri or not self.storage.exists(artwork_uri):
                                     raise EngineError("ARTWORK_COMMIT", "Sampul belum tersimpan. Coba ulang; audio asli tidak diubah.", retryable=True)
                                 row["artwork_uri"] = artwork_uri
+                                row["cover_directory"] = ".cover/" if hasattr(self.storage, "commitCover") else ""
                                 row["cover_name"] = cover_name
                                 self.save(plan)
                             self.control.check()
@@ -317,6 +340,44 @@ class Engine:
         entries = [r["request"] for r in plan["entries"] if r["status"] in {"failed", "pending", "unmatched", "ambiguous", "saving"}]
         return {"name": plan["name"], "entries": entries, "count": len(entries), "completeness": "complete", "origin": plan["origin"]}
 
+    def retry(self, plan_id):
+        """Refresh failed metadata in place: IDs, choices, destination and collection stay stable."""
+        plan = self.load_plan(plan_id)
+        for row in plan["entries"]:
+            self.control.check()
+            if row["status"] not in {"failed", "pending", "unmatched", "ambiguous", "saving", "cancelled"}:
+                continue
+            original = row["request"]
+            try:
+                if original.get("error"):
+                    raise EngineError(original.get("code", "INVALID_ENTRY"), original["error"])
+                if original.get("local_path"):
+                    record = self.index.relative(original["local_path"])
+                    if not record:
+                        raise EngineError("LOCAL_NOT_FOUND", "Jalur M3U belum cocok di folder pilihan.")
+                    song = Song.from_dict(record)
+                    existing, reason = record, "jalur relatif folder pilihan"
+                else:
+                    song = Song.from_dict(original["song"])
+                    existing, reason = self.index.find(song)
+                    if not existing:
+                        song, candidate = self.catalogue.resolve(song)
+                        existing, reason = self.index.find(song)
+                        row["candidate"] = candidate
+                row.update(song=song.to_dict(), status="exists" if existing else "ready")
+                if existing:
+                    row.update(uri=existing["uri"], reason=reason)
+                    self.index.bind(song, existing)
+                row.pop("error", None)
+            except EngineError as error:
+                row.update(status="ambiguous" if error.code == "AMBIGUOUS" else "unmatched" if error.code == "NO_OFFICIAL_MATCH" else "failed", error=error.as_dict())
+            finally:
+                self.save(plan)
+            self.control.emit("item_result", entry=row, completed=row["position"], total=plan["total"])
+        plan["state"] = "review"
+        self.save(plan)
+        return plan
+
     def choose(self, plan_id, entry_id, youtube_id):
         plan = self.load_plan(plan_id)
         row = next((r for r in plan["entries"] if r["id"] == entry_id), None)
@@ -358,11 +419,13 @@ class Engine:
             path.write_bytes(picture)
             key = f"{plan['id']}-{row['id']}-cover"
             filename = safe_name(f"{song.artists[0] if song.artists else 'Unknown artist'} - {song.title}") + ".cover." + extension
-            uri = str(self.storage.commit(str(path), plan["folder"], filename,
+            save_cover = getattr(self.storage, "commitCover", self.storage.commit)
+            uri = str(save_cover(str(path), plan["folder"], filename,
                 "image/png" if extension == "png" else "image/jpeg", key, file_hash(path, self.control)))
             if not uri or not self.storage.exists(uri):
                 raise EngineError("ARTWORK_COMMIT", "Sampul belum tersimpan. Coba lagi.", retryable=True)
             row["artwork_uri"] = uri
+            row["cover_directory"] = ".cover/" if hasattr(self.storage, "commitCover") else ""
             row.setdefault("audio", {}).update(artwork_downloaded=True, artwork_sha256=file_hash(path, self.control))
             row["cover_name"] = filename
             row["metadata_revision"] = int(time.time()*1000)

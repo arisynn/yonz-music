@@ -179,8 +179,10 @@ class Repository(val context: Context, val db: MusicDatabase) {
                         DocumentsContract.Document.COLUMN_MIME_TYPE,DocumentsContract.Document.COLUMN_SIZE,DocumentsContract.Document.COLUMN_LAST_MODIFIED),null,null,null)?.use { cursor ->
                         while(cursor.moveToNext()) {
                             val child=cursor.getString(0);val name=cursor.getString(1).orEmpty();val mime=cursor.getString(2).orEmpty()
-                            if(mime==DocumentsContract.Document.MIME_TYPE_DIR) { if(source.recursive)pending.add(child to "$path/$name");continue }
+                            val inCovers=path.substringAfterLast('/')==".cover"
+                            if(mime==DocumentsContract.Document.MIME_TYPE_DIR) { if(!inCovers && (source.recursive || name==".cover"))pending.add(child to "$path/$name");continue }
                             val doc=Document(DocumentsContract.buildDocumentUriUsingTree(root,child),name,path,cursor.getLong(3),cursor.getLong(4))
+                            if(inCovers) { if(mime.startsWith("image/") && pictures.size<2000 && doc.size<=8*1024*1024)pictures+=doc;continue }
                             if(name.endsWith(".json",true) && doc.size<=128*1024) { if(manifests.size<10000)manifests+=doc }
                             else if(mime.startsWith("image/") && pictures.size<2000 && doc.size<=8*1024*1024) pictures+=doc
                             else if(!name.startsWith(".yono-part-") && !name.endsWith(".part") && (mime.startsWith("audio/") || name.substringAfterLast('.').lowercase() in AUDIO_EXT)) { check(documents.size<10000);documents+=doc }
@@ -235,7 +237,8 @@ class Repository(val context: Context, val db: MusicDatabase) {
                     prior?.let { MetadataPolicy.Fields(it.title,it.artist,it.album,it.metadataOrigin) } ?: record?.second?.fields)
                 var art=previous?.artUri.orEmpty()
                 record?.second?.let { portable ->
-                    val covers=pictures.filter { it.folder==record.first.folder && it.name==portable.artName }
+                    val coverFolder=record.first.folder+if(portable.artName.startsWith(".cover/"))"/.cover"else ""
+                    val covers=pictures.filter { it.folder==coverFolder && it.name==portable.artName.substringAfterLast('/') }
                     val candidate=covers.firstOrNull { portable.artHash.isNotBlank() && pictureHash(it.uri)==portable.artHash }
                     val recovered=candidate ?: if(portable.artHash.isNotBlank()) pictures.firstOrNull { pictureHash(it.uri)==portable.artHash } else null
                     if(recovered!=null)art=recovered.uri.toString()

@@ -1,0 +1,10 @@
+{
+  "type": "live public playlist metadata only",
+  "android": false,
+  "audio_downloaded": false,
+  "fixture": false,
+  "ok": false,
+  "error_type": "EngineError",
+  "code": "CATALOGUE_NETWORK",
+  "message": "Katalog belum dapat dibaca. Coba lagi atau gunakan daftar lokal."
+}

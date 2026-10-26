@@ -1,0 +1,17 @@
+{
+  "actual_emulator": true,
+  "api": 29,
+  "width_dp": 320,
+  "captures": [
+    "downloads.png",
+    "artists.png",
+    "home-dark.png",
+    "home.png",
+    "home-light-font150.png"
+  ],
+  "font_scale": [
+    1,
+    1.5
+  ],
+  "physical_hyperos": false
+}

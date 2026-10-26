@@ -160,6 +160,8 @@ def parse(content, name="Playlist", kind="text"):
         except ValueError as error:
             raise EngineError("INVALID_JSON", "JSON tidak valid.") from error
         if isinstance(data, dict):
+            if name in {"", "Playlist", "Playlist saya"} and isinstance(data.get("name"), str):
+                name = data["name"].strip()[:100] or name
             data = data.get("tracks", data.get("songs"))
         if not isinstance(data, list):
             raise EngineError("INVALID_JSON", "JSON harus berupa array atau objek tracks/songs.")

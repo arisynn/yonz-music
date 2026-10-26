@@ -1,0 +1,25 @@
+{
+  "android_distinct_latest_passed": 15,
+  "android_latest_failed": [],
+  "android_cases": {
+    "com.yonzmusic.app.Review14Test#oauthUsesEncryptedSingleUseStateAndRejectsUnsolicitedCallback": 0,
+    "com.yonzmusic.app.Review14Test#hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan": 0,
+    "com.yonzmusic.app.Review14Test#optionalPlaylistHonorsAcceptedSubsetAndDoesNotCreateEmptyCollection": 0,
+    "com.yonzmusic.app.QueueGesture14Test#keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession": 0,
+    "com.yonzmusic.app.CollectionRecoveryTest#realSafRelocationRenamePortableWebmAndCollectionIdentity": 0,
+    "com.yonzmusic.app.CollectionRecoveryTest#artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource": 0,
+    "com.yonzmusic.app.AcquisitionRecoveryTest#persistedPlanRetryPreservesOrderUserEditsAndRejectsUnreadablePublication": 0,
+    "com.yonzmusic.app.QueueRelocationTest#realSessionRebindsPausedQueueUriAndKeepsPosition": 0,
+    "com.yonzmusic.app.QueueRelocationTest#selectedPlaylistDestinationDoesNotGainDuplicateFolderLayer": 0,
+    "com.yonzmusic.app.SourceMigrationTest#overlappingSourcesKeepOneTrackAndPreserveCollectionsWhenRemoved": 0,
+    "com.yonzmusic.app.SourceMigrationTest#exactIdentityRemappingIsTransactionalAndPreservesOrderFavoritesAndLatestHistory": 0,
+    "com.yonzmusic.app.SourceMigrationTest#versionOneMigrationKeepsCollectionsAndHidesAllUnselectedGlobalAudio": 0,
+    "com.yonzmusic.app.SourceMigrationTest#revokedSourceDoesNotDropItsMembershipOrOriginalIndexContext": 0,
+    "com.yonzmusic.app.AudioContainerTest#flacM4aOggAndWavRemainValidAndKeepIdenticalAudioPacketsAfterTagging": 0,
+    "com.yonzmusic.app.AudioContainerTest#invalidTruncatedAndVideoFilesAreRejectedBeforePublication": 0
+  },
+  "jvm_tests": 106,
+  "jvm_failures": 0,
+  "emulator_api": 29,
+  "physical_device": false
+}

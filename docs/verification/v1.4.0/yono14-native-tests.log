@@ -1,0 +1,343 @@
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.Review14Test
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.Review14Test:
+INSTRUMENTATION_STATUS: test=oauthUsesEncryptedSingleUseStateAndRejectsUnsolicitedCallback
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.Review14Test
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=oauthUsesEncryptedSingleUseStateAndRejectsUnsolicitedCallback
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.Review14Test
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.Review14Test
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stack=java.lang.SecurityException: Permission Denial: reading com.android.externalstorage.ExternalStorageProvider uri content://com.android.externalstorage.documents/tree/primary%3AMusic%2FYonoEngineGate%2FYono14-427681645759/document/primary%3AMusic%2FYonoEngineGate%2FYono14-427681645759/children from pid=3229, uid=10118 requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createException(Parcel.java:2071)
+	at android.os.Parcel.readException(Parcel.java:2039)
+	at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:188)
+	at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:140)
+	at android.content.ContentProviderProxy.query(ContentProviderNative.java:423)
+	at android.content.ContentResolver.query(ContentResolver.java:944)
+	at android.content.ContentResolver.query(ContentResolver.java:880)
+	at android.content.ContentResolver.query(ContentResolver.java:836)
+	at com.yonzmusic.engine.SafDocumentStore.children(SafDocumentStore.kt:103)
+	at com.yonzmusic.engine.SafDocumentStore.uniqueName(SafDocumentStore.kt:134)
+	at com.yonzmusic.engine.SafDocumentStore.commitInternal(SafDocumentStore.kt:180)
+	at com.yonzmusic.engine.SafDocumentStore.commit(SafDocumentStore.kt:166)
+	at com.yonzmusic.app.Review14Test$hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan$1.invokeSuspend(Review14Test.kt:33)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.Review14Test.hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan(Review14Test.kt:24)
+
+INSTRUMENTATION_STATUS: stream=
+Error in hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan(com.yonzmusic.app.Review14Test):
+java.lang.SecurityException: Permission Denial: reading com.android.externalstorage.ExternalStorageProvider uri content://com.android.externalstorage.documents/tree/primary%3AMusic%2FYonoEngineGate%2FYono14-427681645759/document/primary%3AMusic%2FYonoEngineGate%2FYono14-427681645759/children from pid=3229, uid=10118 requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createException(Parcel.java:2071)
+	at android.os.Parcel.readException(Parcel.java:2039)
+	at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:188)
+	at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:140)
+	at android.content.ContentProviderProxy.query(ContentProviderNative.java:423)
+	at android.content.ContentResolver.query(ContentResolver.java:944)
+	at android.content.ContentResolver.query(ContentResolver.java:880)
+	at android.content.ContentResolver.query(ContentResolver.java:836)
+	at com.yonzmusic.engine.SafDocumentStore.children(SafDocumentStore.kt:103)
+	at com.yonzmusic.engine.SafDocumentStore.uniqueName(SafDocumentStore.kt:134)
+	at com.yonzmusic.engine.SafDocumentStore.commitInternal(SafDocumentStore.kt:180)
+	at com.yonzmusic.engine.SafDocumentStore.commit(SafDocumentStore.kt:166)
+	at com.yonzmusic.app.Review14Test$hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan$1.invokeSuspend(Review14Test.kt:33)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.Review14Test.hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan(Review14Test.kt:24)
+
+INSTRUMENTATION_STATUS: test=hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.Review14Test
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=optionalPlaylistHonorsAcceptedSubsetAndDoesNotCreateEmptyCollection
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.Review14Test
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=optionalPlaylistHonorsAcceptedSubsetAndDoesNotCreateEmptyCollection
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.QueueGesture14Test:
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Reorder under shuffle updates physical queue: PlaybackUi(id=f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, playing=false, queue=[f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, 2b1eeab2689e891a6462c2b783e2b20bbd795b45fe6c0e1be441719b20504d28, aed562beb835025d975024db65a6492fa6a1833778779c8175c621eb047b1afe], index=1, shuffle=true, repeat=0, error=null, ready=true, queueKeys=[dddd5f6a-7006-4d23-80d8-99c53302d5a3, a0a4da46-c178-4d45-89cd-c9e1272945fe, 54722022-47d8-4f4d-a273-4d6153dc40be, a5fd4d9c-fd23-45e2-8a4e-f702b054b3b9])
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend$await(QueueGesture14Test.kt:25)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend(QueueGesture14Test.kt:48)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.QueueGesture14Test.keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(QueueGesture14Test.kt:15)
+
+INSTRUMENTATION_STATUS: stream=
+Error in keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(com.yonzmusic.app.QueueGesture14Test):
+java.lang.AssertionError: Reorder under shuffle updates physical queue: PlaybackUi(id=f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, playing=false, queue=[f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, 2b1eeab2689e891a6462c2b783e2b20bbd795b45fe6c0e1be441719b20504d28, aed562beb835025d975024db65a6492fa6a1833778779c8175c621eb047b1afe], index=1, shuffle=true, repeat=0, error=null, ready=true, queueKeys=[dddd5f6a-7006-4d23-80d8-99c53302d5a3, a0a4da46-c178-4d45-89cd-c9e1272945fe, 54722022-47d8-4f4d-a273-4d6153dc40be, a5fd4d9c-fd23-45e2-8a4e-f702b054b3b9])
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend$await(QueueGesture14Test.kt:25)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend(QueueGesture14Test.kt:48)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.QueueGesture14Test.keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(QueueGesture14Test.kt:15)
+
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.CollectionRecoveryTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.CollectionRecoveryTest:
+INSTRUMENTATION_STATUS: test=realSafRelocationRenamePortableWebmAndCollectionIdentity
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.CollectionRecoveryTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=realSafRelocationRenamePortableWebmAndCollectionIdentity
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.CollectionRecoveryTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.CollectionRecoveryTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AcquisitionRecoveryTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.AcquisitionRecoveryTest:
+INSTRUMENTATION_STATUS: test=persistedPlanRetryPreservesOrderUserEditsAndRejectsUnreadablePublication
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AcquisitionRecoveryTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=persistedPlanRetryPreservesOrderUserEditsAndRejectsUnreadablePublication
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueRelocationTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.QueueRelocationTest:
+INSTRUMENTATION_STATUS: test=realSessionRebindsPausedQueueUriAndKeepsPosition
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueRelocationTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=realSessionRebindsPausedQueueUriAndKeepsPosition
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueRelocationTest
+INSTRUMENTATION_STATUS: current=9
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=selectedPlaylistDestinationDoesNotGainDuplicateFolderLayer
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueRelocationTest
+INSTRUMENTATION_STATUS: current=9
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=selectedPlaylistDestinationDoesNotGainDuplicateFolderLayer
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=10
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.SourceMigrationTest:
+INSTRUMENTATION_STATUS: test=overlappingSourcesKeepOneTrackAndPreserveCollectionsWhenRemoved
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=10
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=overlappingSourcesKeepOneTrackAndPreserveCollectionsWhenRemoved
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=11
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=exactIdentityRemappingIsTransactionalAndPreservesOrderFavoritesAndLatestHistory
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=11
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=exactIdentityRemappingIsTransactionalAndPreservesOrderFavoritesAndLatestHistory
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=12
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=versionOneMigrationKeepsCollectionsAndHidesAllUnselectedGlobalAudio
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=12
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=versionOneMigrationKeepsCollectionsAndHidesAllUnselectedGlobalAudio
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=13
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=revokedSourceDoesNotDropItsMembershipOrOriginalIndexContext
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.SourceMigrationTest
+INSTRUMENTATION_STATUS: current=13
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=revokedSourceDoesNotDropItsMembershipOrOriginalIndexContext
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AudioContainerTest
+INSTRUMENTATION_STATUS: current=14
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.AudioContainerTest:
+INSTRUMENTATION_STATUS: test=flacM4aOggAndWavRemainValidAndKeepIdenticalAudioPacketsAfterTagging
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AudioContainerTest
+INSTRUMENTATION_STATUS: current=14
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=flacM4aOggAndWavRemainValidAndKeepIdenticalAudioPacketsAfterTagging
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AudioContainerTest
+INSTRUMENTATION_STATUS: current=15
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=invalidTruncatedAndVideoFilesAreRejectedBeforePublication
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.AudioContainerTest
+INSTRUMENTATION_STATUS: current=15
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=15
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=invalidTruncatedAndVideoFilesAreRejectedBeforePublication
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 143.618
+There were 2 failures:
+1) hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan(com.yonzmusic.app.Review14Test)
+java.lang.SecurityException: Permission Denial: reading com.android.externalstorage.ExternalStorageProvider uri content://com.android.externalstorage.documents/tree/primary%3AMusic%2FYonoEngineGate%2FYono14-427681645759/document/primary%3AMusic%2FYonoEngineGate%2FYono14-427681645759/children from pid=3229, uid=10118 requires that you obtain access using ACTION_OPEN_DOCUMENT or related APIs
+	at android.os.Parcel.createException(Parcel.java:2071)
+	at android.os.Parcel.readException(Parcel.java:2039)
+	at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:188)
+	at android.database.DatabaseUtils.readExceptionFromParcel(DatabaseUtils.java:140)
+	at android.content.ContentProviderProxy.query(ContentProviderNative.java:423)
+	at android.content.ContentResolver.query(ContentResolver.java:944)
+	at android.content.ContentResolver.query(ContentResolver.java:880)
+	at android.content.ContentResolver.query(ContentResolver.java:836)
+	at com.yonzmusic.engine.SafDocumentStore.children(SafDocumentStore.kt:103)
+	at com.yonzmusic.engine.SafDocumentStore.uniqueName(SafDocumentStore.kt:134)
+	at com.yonzmusic.engine.SafDocumentStore.commitInternal(SafDocumentStore.kt:180)
+	at com.yonzmusic.engine.SafDocumentStore.commit(SafDocumentStore.kt:166)
+	at com.yonzmusic.app.Review14Test$hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan$1.invokeSuspend(Review14Test.kt:33)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.Review14Test.hiddenCoverOriginalWebmManifestReimportsWithoutRecursiveAudioScan(Review14Test.kt:24)
+2) keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(com.yonzmusic.app.QueueGesture14Test)
+java.lang.AssertionError: Reorder under shuffle updates physical queue: PlaybackUi(id=f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, playing=false, queue=[f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, 2b1eeab2689e891a6462c2b783e2b20bbd795b45fe6c0e1be441719b20504d28, aed562beb835025d975024db65a6492fa6a1833778779c8175c621eb047b1afe], index=1, shuffle=true, repeat=0, error=null, ready=true, queueKeys=[dddd5f6a-7006-4d23-80d8-99c53302d5a3, a0a4da46-c178-4d45-89cd-c9e1272945fe, 54722022-47d8-4f4d-a273-4d6153dc40be, a5fd4d9c-fd23-45e2-8a4e-f702b054b3b9])
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend$await(QueueGesture14Test.kt:25)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend(QueueGesture14Test.kt:48)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.QueueGesture14Test.keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(QueueGesture14Test.kt:15)
+
+FAILURES!!!
+Tests run: 15,  Failures: 2
+
+
+INSTRUMENTATION_CODE: -1

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.0 — 2026-10-26
+
+- Tambah tinjauan per lagu, pencarian, pilihan tersimpan, pemulihan daftar sama, dan retry metadata dengan ID rencana tetap.
+- Nama daftar mengikuti metadata sumber; pembuatan playlist opsional. Satu lagu langsung di folder tujuan; banyak lagu tanpa playlist juga langsung di tujuan.
+- Sampul pendamping baru di `.cover/.nomedia`, manifest portabel mendukung referensi relatif terbatas dan hash. Sampul lama tetap dibaca.
+- Home memakai visual berukuran sedang; bar status bergerak hanya saat audio diputar; antrean drag/swipe/undo dengan aksi aksesibel. Pengurutan memerlukan shuffle dimatikan.
+- Avatar artis berupa inisial atau foto lokal pilihan pengguna.
+- Koneksi metadata Spotify resmi melalui OAuth PKCE opsional dengan Client ID yang dikonfigurasi pengguna. Token dienkripsi Android Keystore. Belum diuji login Spotify langsung; akses playlist mengikuti kebijakan API.
+
 ## 1.3.0 — 2026-10-26 · 2026-10-26
 
 - Add non-destructive Room 2→3 migration, exact-byte relocation/rename reconciliation, typed availability and explicit relink. Retain collection IDs and rebind the shared queue.

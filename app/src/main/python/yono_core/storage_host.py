@@ -47,13 +47,25 @@ class DirectoryStore:
         return ""
 
     def commit(self, path, folder, filename, mime, key, digest):
+        return self._commit(path, folder, filename, mime, key, digest)
+
+    def commitCover(self, path, folder, filename, mime, key, digest):
+        parent = self.root / safe_name(folder) if folder else self.root
+        cover = parent / ".cover"
+        cover.mkdir(parents=True, exist_ok=True)
+        (cover / ".nomedia").touch(exist_ok=True)
+        return self._commit(path, folder, filename, mime, key, digest, cover=True)
+
+    def _commit(self, path, folder, filename, mime, key, digest, cover=False):
         prior = self.lookup(key, digest)
         if prior:
             return prior
         path = Path(path)
         if file_hash(path) != digest:
             raise ValueError("input checksum differs")
-        parent = self.root / safe_name(folder)
+        parent = self.root / safe_name(folder) if folder else self.root
+        if cover:
+            parent = parent / ".cover"
         parent.mkdir(parents=True, exist_ok=True)
         name = Path(safe_name(filename, 180))
         for i in range(1, 10001):

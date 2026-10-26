@@ -8,6 +8,8 @@ import android.media.audiofx.AudioEffect
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
@@ -39,11 +41,19 @@ import org.json.JSONArray
 @Composable fun YonzRoot(vm: MusicViewModel) {
     val preferences by vm.preferences.collectAsStateWithLifecycle()
     YonzTheme(preferences.theme,preferences.reduceMotion) {
+        CompositionLocalProvider(LocalPlayingState provides vm.playback.state) {
         UpdateDialogs()
         val context = LocalContext.current
         val colors = MaterialTheme.colorScheme
         val light = colors.background.luminance() > .5f
-        SideEffect { (context as? Activity)?.window?.let { WindowCompat.getInsetsController(it, it.decorView).apply { isAppearanceLightStatusBars = light; isAppearanceLightNavigationBars = light } } }
+        SideEffect {
+            val activity=generateSequence(context) { (it as? android.content.ContextWrapper)?.baseContext }.filterIsInstance<androidx.activity.ComponentActivity>().firstOrNull()
+            activity?.let {
+                val style=if(light)SystemBarStyle.light(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)else SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+                it.enableEdgeToEdge(statusBarStyle=style,navigationBarStyle=style)
+                WindowCompat.getInsetsController(it.window,it.window.decorView).apply {isAppearanceLightStatusBars=light;isAppearanceLightNavigationBars=light}
+            }
+        }
         val tracks by vm.tracks.collectAsStateWithLifecycle()
         val collectionTracks by vm.collectionTracks.collectAsStateWithLifecycle()
         val migrationNotice by vm.migrationNotice.collectAsStateWithLifecycle()
@@ -242,6 +252,7 @@ import org.json.JSONArray
                 LazyColumn(Modifier.fillMaxWidth().fillMaxHeight(.8f).navigationBarsPadding(), contentPadding = PaddingValues(bottom = Design.page)) { item { SectionTitle(report.name, "Import history") }; itemsIndexed(rows) { _, row -> ImportResultRow(row) } }
             }
         }
+    }
     }
 }
 

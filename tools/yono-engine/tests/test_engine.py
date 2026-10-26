@@ -73,7 +73,7 @@ class EngineTests(unittest.TestCase):
         plan = self.prepare()
         result = self.engine.acquire(plan['id'], [plan['entries'][0]['id']])
         path = self.storage.path(result['entries'][0]['uri'])
-        self.assertEqual(path.parent.name, 'Playlist uji')
+        self.assertEqual(path.parent, self.storage.root)
         self.assertEqual(path.name, 'Artis - Lagu 0.mp3')
     def test_repeat_acquisition_skips_existing(self):
         plan = self.prepare(); ids = [plan['entries'][0]['id']]
@@ -147,7 +147,7 @@ class EngineTests(unittest.TestCase):
         self.assertEqual(again['entries'][0]['artwork_uri'],repaired['entries'][0]['artwork_uri'])
     def test_storage_collision_never_overwrites(self):
         plan = self.prepare()
-        folder = self.storage.root / plan['folder']; folder.mkdir()
+        folder = self.storage.root / plan['folder']; folder.mkdir(exist_ok=True)
         old = folder / 'Artis - Lagu 0.mp3'; old.write_bytes(b'keep old data')
         self.engine.acquire(plan['id'], [plan['entries'][0]['id']])
         self.assertEqual(old.read_bytes(), b'keep old data')

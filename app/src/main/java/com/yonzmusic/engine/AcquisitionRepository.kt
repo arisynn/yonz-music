@@ -21,12 +21,25 @@ class AcquisitionRepository(private val app: YonzApp) {
     val activePlan=MutableStateFlow("")
     val currentAction=MutableStateFlow("")
     val history = MutableStateFlow<List<JSONObject>>(emptyList())
+    val reviewDraft = MutableStateFlow<JSONObject?>(null)
+    fun saveReview(value: JSONObject) {
+        val snapshot=JSONObject(value.toString())
+        reviewDraft.value=snapshot
+        app.persistenceScope.launch { dao.state(AppState("engine-review:${snapshot.getString("plan_id")}",snapshot.toString())) }
+    }
     private val pendingCancels = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     @Volatile private var executing=false
     @Volatile private var enqueueing=false
     @Volatile private var workActive=false
     init {
-        app.persistenceScope.launch { refreshHistory() }
+        app.persistenceScope.launch {
+            refreshHistory()
+            val last=dao.state("engine-last-plan")?.value
+            history.value.firstOrNull { it.optString("id")==last }?.let {
+                plan.value=it
+                reviewDraft.value=dao.state("engine-review:$last")?.value?.let { value -> runCatching { JSONObject(value) }.getOrNull() }
+            }
+        }
         app.persistenceScope.launch {
             androidx.work.WorkManager.getInstance(app).getWorkInfosForUniqueWorkFlow("yono-engine").collect { infos ->
                 workActive=infos.any { !it.state.isFinished };busy.value=workActive || executing || enqueueing
@@ -93,7 +106,10 @@ class AcquisitionRepository(private val app: YonzApp) {
         val destination = savedDestination ?: recoveredDestination ?: request.optString("destination").ifBlank { dao.state("download_destination")?.value.orEmpty() }
         if(destination.isBlank()) { executing=false;busy.value=false;message.value="Pilih tujuan unduhan dahulu.";return@withContext }
         val client = YonoEngineClient(app, SafDocumentStore(app, Uri.parse(destination)), YonoEngineClient.RuntimePaths(
-            quickJs = File(app.applicationInfo.nativeLibraryDir, "libqjs.so")))
+            quickJs = File(app.applicationInfo.nativeLibraryDir, "libqjs.so")), accessToken = {
+                val input=request.optJSONObject("payload")?.let { it.optString("content")+it.optString("url") }.orEmpty()
+                if(request.optString("action")=="prepare" && Regex("(?:open\\.spotify\\.com|spotify\\.link|spoti\\.fi|spotify:playlist:)",RegexOption.IGNORE_CASE).containsMatchIn(input))app.spotify.accessToken()else ""
+            })
         suspend fun call(action: String, payload: JSONObject): JSONObject {
             if (!operationContext.isActive || cancelled) error("Dibatalkan")
             val current = client.begin(action, payload, if (action == "acquire") 7200 else 900); task = current
@@ -134,7 +150,8 @@ class AcquisitionRepository(private val app: YonzApp) {
             val result = call(action, payload)
             if (result.has("entries")) {
                 plan.value = result; dao.state(AppState("engine-last-plan", result.getString("id")))
-                if(action=="prepare")dao.state(AppState("engine-destination:${result.getString("id")}",destination))
+                if(reviewDraft.value?.optString("plan_id")!=result.getString("id"))reviewDraft.value=dao.state("engine-review:${result.getString("id")}")?.value?.let { runCatching { JSONObject(it) }.getOrNull() }
+                if(action=="prepare" && dao.state("engine-destination:${result.getString("id")}")==null)dao.state(AppState("engine-destination:${result.getString("id")}",destination))
                 if (dao.state("engine-consent:${result.getString("id")}")?.value == "1") importResult(result)
             }
             message.value = "Selesai"
@@ -147,21 +164,22 @@ class AcquisitionRepository(private val app: YonzApp) {
     }
     internal suspend fun importResult(result: JSONObject) {
         val id = result.getString("id")
-        val playlist = app.database.withTransaction {
-            dao.state("engine-playlist:$id")?.value?.toLongOrNull()?.takeIf { dao.playlistExists(it) }
-                ?: app.repository.create(result.getString("name")).also { dao.state(AppState("engine-playlist:$id", it.toString())) }
-        }
+        val createPlaylist = result.optBoolean("create_playlist", true) // Legacy receipts keep their behavior.
+        val accepted = result.optJSONArray("accepted_ids")?.let { array -> (0 until array.length()).map { array.getString(it) }.toSet() }
         val knownByUri = dao.allTracks().filter { it.availability!=Availability.ALIAS }.associateBy { it.uri }.toMutableMap()
         val rows = result.getJSONArray("entries"); val ids = mutableListOf<String>()
         for (i in 0 until rows.length()) {
-            val row = rows.getJSONObject(i); val uri = row.optString("uri"); if (uri.isBlank() || row.optString("status") !in setOf("downloaded","exists","duplicate")) continue
+            val row = rows.getJSONObject(i); val uri = row.optString("uri"); if (uri.isBlank() || row.optString("status") !in setOf("downloaded","exists","duplicate") || (accepted != null && row.getString("id") !in accepted)) continue
             val known = knownByUri[uri]
             val readable=runCatching { app.contentResolver.openFileDescriptor(Uri.parse(uri),"r")?.use {true} ?: false }.getOrDefault(false)
             if(!readable)continue
             val song = row.getJSONObject("song"); val artists = song.getJSONArray("artists")
             val artist = (0 until artists.length()).joinToString("; ") { artists.getString(it) }
             val audio=row.optJSONObject("audio") ?: JSONObject()
-            val job=DownloadJob(row.getString("id"),id,i,playlist,result.getString("name"),"",song.getString("title"),artist,song.optString("album"),
+            val folderLabel=if(result.has("folder"))runCatching {
+                android.provider.DocumentsContract.getDocumentId(Uri.parse(uri)).substringAfter(':').substringBeforeLast('/',"").ifBlank { "Folder tujuan" }
+            }.getOrDefault("Folder tujuan")else result.getString("name")
+            val job=DownloadJob(row.getString("id"),id,i,0,folderLabel,"",song.getString("title"),artist,song.optString("album"),
                 song.optString("youtube_id").takeIf(String::isNotBlank)?.let { "youtube:$it" } ?: "sha256:${audio.optString("sha256")}",song.optString("source_url"),"User-authorized source","",
                 received=audio.optLong("size"),sha256=audio.optString("sha256"),trackId=known?.id.orEmpty())
             val track=if(known==null || (row.optString("status")=="downloaded" && known.metadataOrigin!="user")) app.repository.indexDownloaded(Uri.parse(uri),job,song.optString("metadata_origin","source")) else known
@@ -171,6 +189,10 @@ class AcquisitionRepository(private val app: YonzApp) {
             knownByUri[uri] = indexed
             ids += indexed.id
         }
-        app.repository.reconcileDownloadOrder(playlist, ids)
+        if (createPlaylist && ids.isNotEmpty()) app.database.withTransaction {
+            val playlist = dao.state("engine-playlist:$id")?.value?.toLongOrNull()?.takeIf { dao.playlistExists(it) }
+                ?: app.repository.create(result.getString("name")).also { dao.state(AppState("engine-playlist:$id", it.toString())) }
+            app.repository.reconcileDownloadOrder(playlist, ids)
+        }
     }
 }

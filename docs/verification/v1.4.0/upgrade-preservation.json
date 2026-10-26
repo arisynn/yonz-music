@@ -1,0 +1,19 @@
+{
+  "versionCode_before": 6,
+  "versionCode_after": 7,
+  "install_in_place": true,
+  "uninstall": false,
+  "data_cleared": false,
+  "schema_before": 3,
+  "schema_after": 3,
+  "all_rows_byte_equivalent": true,
+  "counts": {
+    "tracks": 39,
+    "playlists": 24,
+    "playlist_entries": 39,
+    "favorites": 1,
+    "history": 10,
+    "listens": 14,
+    "sources": 40
+  }
+}

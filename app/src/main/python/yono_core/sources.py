@@ -119,8 +119,12 @@ class Sources:
                             control.emit("waiting", seconds=max(1, delay), message="Menunggu batas layanan…")
                             control.wait(max(1, delay))
                             continue
-                        if response.status_code in {401, 403}:
-                            raise EngineError("SPOTIFY_AUTH_REQUIRED", "Izin/token metadata Spotify tidak berlaku untuk playlist ini.")
+                        if response.status_code == 401:
+                            raise EngineError("SPOTIFY_AUTH_REQUIRED", "Koneksi Spotify kedaluwarsa atau ditolak. Hubungkan ulang melalui Koneksi playlist Spotify.")
+                        if response.status_code == 403:
+                            raise EngineError("SPOTIFY_PLAYLIST_ACCESS", "Spotify menolak akses isi playlist. Development Mode umumnya hanya mengizinkan playlist milik/kolaborasi pengguna; periksa akun yang diizinkan di aplikasi Developer atau impor ekspor TXT/CSV/JSON.")
+                        if response.status_code == 404:
+                            raise EngineError("SPOTIFY_PLAYLIST_MISSING", "Playlist tidak ditemukan atau tidak dapat dilihat dengan akun ini.")
                         if response.status_code >= 400:
                             raise EngineError("SOURCE_HTTP", f"Sumber metadata memberi HTTP {response.status_code}.", retryable=response.status_code >= 500)
                         return response.json()
@@ -133,6 +137,10 @@ class Sources:
             client = OfficialClient()
         try:
             metadata = client.playlist(pid)
+            if not isinstance(metadata, dict):
+                raise EngineError("SOURCE_METADATA", "Metadata playlist tidak valid.")
+            if "items" not in metadata and "tracks" not in metadata:
+                raise EngineError("SPOTIFY_PLAYLIST_ACCESS", "Spotify memberikan nama playlist tetapi tidak mengizinkan isi lagunya. Gunakan playlist yang dapat diakses akun/aplikasi ini atau impor ekspor daftar.")
             block = metadata.get("items") or metadata.get("tracks") or {}
             meta_total = block.get("total") if isinstance(block, dict) else None
             page, rows, seen, expected = client.playlist_items(pid), [], set(), None
