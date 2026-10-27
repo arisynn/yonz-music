@@ -19,8 +19,8 @@ android {
         applicationId = "com.yonzmusic.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(9)
-        versionName = "1.4.2"
+        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(10)
+        versionName = "1.5.0"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,7 +37,14 @@ android {
         }
     }
     buildTypes {
-        debug { applicationIdSuffix = ".dev"; versionNameSuffix = "-dev" }
+        debug { applicationIdSuffix = ".dev"; versionNameSuffix = "-dev";buildConfigField("boolean","ONLINE_SEARCH_PREVIEW","true") }
+        create("preview") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-preview.1"
+            matchingFallbacks += listOf("debug")
+            resValue("string","app_name","Yono Music Preview")
+        }
         create("migration") {
             initWith(getByName("debug"))
             applicationIdSuffix = ""
@@ -45,6 +52,7 @@ android {
             matchingFallbacks += listOf("debug")
         }
         release {
+            buildConfigField("boolean","ONLINE_SEARCH_PREVIEW","false")
             signingConfig = signingConfigs.findByName("ownerRelease")
             isMinifyEnabled = true
             isShrinkResources = true

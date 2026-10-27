@@ -2,6 +2,8 @@
 
 Your Music. Your Space.
 
+**Preview 1.5.0-preview.1:** automatic local/online Search, official iTunes promotional previews, optional YouTube API search/visible player, and additional Commons discovery. [Scope, privacy and setup](docs/ONLINE_SEARCH_PREVIEW.md). This is the separate Dev package; stable remains **1.4.2**. Preview publication is pending renewed GitHub authentication; no public preview release is claimed. Apple previews are not connected to cross-service downloading.
+
 **1.4.2:** shuffle starts at the current song and includes the remaining queue in a new random cycle; the queue shows the actual playback order. Home artwork crossfades between available local covers every six seconds, with no tap action and with reduced-motion/background handling.
 
 **1.4.1 hotfix:** memperbaiki crash progres updater setelah unduhan. Jika updater lama crash, unduh APK melalui browser dan instal menimpa aplikasi official; jangan uninstall.

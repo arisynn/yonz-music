@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
 private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fun sizeOf(key:String,value:Bitmap)=value.allocationByteCount}
 /** Only shown after explicit source review. No tracking pixels, arbitrary hosts, or persistent failure cache. */
 @Composable fun SourceThumbnail(url:String) {
-    val allowed=setOf("i.ytimg.com","img.youtube.com","i.scdn.co","lh3.googleusercontent.com")
+    val allowed=setOf("i.ytimg.com","img.youtube.com","i.scdn.co","lh3.googleusercontent.com")+com.yonzmusic.app.search.SearchContract.artHosts
     val image by produceState<Bitmap?>(sourceImages.get(url),url) {
         if(value==null && url.isNotBlank())value=withContext(Dispatchers.IO) { runCatching {
             val response=SafeHttp.get(url,allowed,limit=2*1024*1024)

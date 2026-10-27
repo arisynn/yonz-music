@@ -22,3 +22,12 @@ Material rounded vector sources retain the original Apache headers. Test-only JU
 Sources are available through the repository and exact version directions above, independently of APK use. The source archive includes build recipes, native source, first-party Python/Kotlin, tests/resources and license texts. Gradle/Chaquopy retrieve the pinned upstream dependencies during a clean build. No private key or proprietary runtime from the old ZIP is distributed.
 
 Runtime probe on API 29: CPython 3.12.15, OpenSSL 3.5.9, SQLite 3.53.4, Expat 2.8.5. zlib 1.2.11 is reported by the emulator platform libz, not a vendored replacement; device system libraries/security patches remain Android responsibilities. The OSV query covered the exact Maven/PyPI inventory, not a comprehensive native-library CVE scan. Native source/license build directions are retained in Chaquopy 17.1.0. Service player JavaScript may be processed inside the restricted QuickJS sandbox; it has no JS filesystem/network/process modules. No downloaded native/runtime executable is used.
+
+
+ONLINE SEARCH PREVIEW — SERVICE ASSETS
+The unmodified Buy on iTunes Store badge is an Apple service mark used under the Apple marketing guidelines, not relicensed under the application GPL. Preview audio is provided courtesy of iTunes; clips link directly to their store items and are not exported or matched to other-service downloads.
+https://www.apple.com/itunes/marketing-on-itunes/identity-guidelines.html
+https://performance-partners.apple.com/search-api
+YouTube content plays through the official visible iframe and remains subject to YouTube service/embedding terms; no YouTube media/runtime is bundled.
+https://developers.google.com/youtube/terms/required-minimum-functionality
+Commons result content retains its own displayed source license; app licensing does not replace that license.

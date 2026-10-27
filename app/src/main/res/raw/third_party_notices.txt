@@ -2108,3 +2108,12 @@ one at http://mozilla.org/MPL/2.0/.
 
 ***** END LICENSE BLOCK *****
 @(#) $RCSfile: certdata.txt,v $ $Revision: 1.80 $ $Date: 2011/11/03 15:11:58 $
+
+
+ONLINE SEARCH PREVIEW — SERVICE ASSETS
+The unmodified Buy on iTunes Store badge is an Apple service mark used under the Apple marketing guidelines, not relicensed under the application GPL. Preview audio is provided courtesy of iTunes; clips link directly to their store items and are not exported or matched to other-service downloads.
+https://www.apple.com/itunes/marketing-on-itunes/identity-guidelines.html
+https://performance-partners.apple.com/search-api
+YouTube content plays through the official visible iframe and remains subject to YouTube service/embedding terms; no YouTube media/runtime is bundled.
+https://developers.google.com/youtube/terms/required-minimum-functionality
+Commons result content retains its own displayed source license; app licensing does not replace that license.

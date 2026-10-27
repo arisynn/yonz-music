@@ -44,6 +44,16 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val scanning = repository.scanning
     val sleepEnd = app.sleepEnd
     val playback = PlaybackConnection(application)
+    val searchSettings = com.yonzmusic.app.search.SearchSettings(application)
+    val recentSearch=MutableStateFlow(searchSettings.history())
+    val onlineSearch = com.yonzmusic.app.search.OnlineSearch(viewModelScope,com.yonzmusic.app.search.NetworkSearchBackend(searchSettings),{searchSettings.key().isNotBlank()},onSuccess={query->searchSettings.rememberQuery(query);recentSearch.value=searchSettings.history()})
+    fun clearSearchHistory(enabled: Boolean=searchSettings.remembersHistory()) {searchSettings.clearHistory(enabled);recentSearch.value=emptyList()}
+    val onlinePreview = com.yonzmusic.app.search.OnlinePreview(application,playback,viewModelScope)
+    val searchQuery=MutableStateFlow("")
+    val searchOnline=MutableStateFlow(false)
+    val searchProvider=MutableStateFlow(com.yonzmusic.app.search.SearchProvider.APPLE)
+    val pendingDownloadInput=MutableStateFlow("")
+    init {playback.beforeLocalPlay = {onlinePreview.stop()}}
     val messages = MutableSharedFlow<String>(extraBufferCapacity = 8)
     val importPreview = MutableStateFlow<ImportPreview?>(null)
     val importBusy = MutableStateFlow(false)
@@ -308,5 +318,5 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
         messages.emit("M3U8 exported. Content URI references work with the same local library.")
     } }
-    override fun onCleared() { playback.close(); super.onCleared() }
+    override fun onCleared() {onlineSearch.cancel();onlinePreview.close();playback.close();super.onCleared()}
 }

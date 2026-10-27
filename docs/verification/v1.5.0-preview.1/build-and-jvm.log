@@ -1,0 +1,111 @@
+> Task :app:buildQuickJs UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:prePreviewBuild UP-TO-DATE
+> Task :app:mergePreviewNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generatePreviewBuildConfig UP-TO-DATE
+> Task :app:findPreviewPythonCommand
+> Task :app:extractPreviewPythonBuildPackages UP-TO-DATE
+> Task :app:installPreviewPythonRequirements UP-TO-DATE
+> Task :app:mergePreviewPythonSources UP-TO-DATE
+> Task :app:generatePreviewPythonProxies UP-TO-DATE
+> Task :app:checkPreviewAarMetadata UP-TO-DATE
+> Task :app:generatePreviewResValues UP-TO-DATE
+> Task :app:mapPreviewSourceSetPaths UP-TO-DATE
+> Task :app:generatePreviewResources UP-TO-DATE
+> Task :app:mergePreviewResources UP-TO-DATE
+> Task :app:packagePreviewResources UP-TO-DATE
+> Task :app:parsePreviewLocalResources UP-TO-DATE
+> Task :app:createPreviewCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksPreview UP-TO-DATE
+> Task :app:processPreviewMainManifest UP-TO-DATE
+> Task :app:processPreviewManifest UP-TO-DATE
+> Task :app:processPreviewManifestForPackage UP-TO-DATE
+> Task :app:processPreviewResources UP-TO-DATE
+> Task :app:kspPreviewKotlin UP-TO-DATE
+> Task :app:compilePreviewKotlin UP-TO-DATE
+> Task :app:javaPreCompilePreview UP-TO-DATE
+> Task :app:compilePreviewJavaWithJavac UP-TO-DATE
+> Task :app:mergePreviewShaders UP-TO-DATE
+> Task :app:compilePreviewShaders NO-SOURCE
+> Task :app:generatePreviewAssets UP-TO-DATE
+> Task :app:generatePreviewPythonMiscAssets UP-TO-DATE
+> Task :app:generatePreviewPythonRequirementsAssets UP-TO-DATE
+> Task :app:generatePreviewPythonSourceAssets UP-TO-DATE
+> Task :app:generatePreviewPythonBuildAssets UP-TO-DATE
+> Task :app:mergePreviewAssets UP-TO-DATE
+> Task :app:compressPreviewAssets UP-TO-DATE
+> Task :app:checkPreviewDuplicateClasses UP-TO-DATE
+> Task :app:desugarPreviewFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexPreview UP-TO-DATE
+> Task :app:mergeLibDexPreview UP-TO-DATE
+> Task :app:dexBuilderPreview UP-TO-DATE
+> Task :app:mergePreviewGlobalSynthetics UP-TO-DATE
+> Task :app:processPreviewJavaRes UP-TO-DATE
+> Task :app:mergePreviewJavaResource UP-TO-DATE
+> Task :app:mergeProjectDexPreview UP-TO-DATE
+> Task :app:generatePreviewPythonJniLibs UP-TO-DATE
+> Task :app:mergePreviewJniLibFolders UP-TO-DATE
+> Task :app:mergePreviewNativeLibs UP-TO-DATE
+> Task :app:stripPreviewDebugSymbols UP-TO-DATE
+> Task :app:validateSigningPreview UP-TO-DATE
+> Task :app:writePreviewAppMetadata UP-TO-DATE
+> Task :app:writePreviewSigningConfigVersions UP-TO-DATE
+> Task :app:packagePreview UP-TO-DATE
+> Task :app:createPreviewApkListingFileRedirect UP-TO-DATE
+> Task :app:assemblePreview UP-TO-DATE
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:generatePreviewLintReportModel UP-TO-DATE
+> Task :app:bundlePreviewClassesToCompileJar UP-TO-DATE
+> Task :app:prePreviewUnitTestBuild UP-TO-DATE
+> Task :app:generatePreviewUnitTestLintModel UP-TO-DATE
+> Task :app:lintAnalyzePreview
+> Task :app:lintAnalyzePreviewUnitTest
+
+> Task :app:lintReportPreview
+Wrote HTML report to file:///workspace/github-publish/repository/app/build/reports/lint-results-preview.html
+
+> Task :app:lintPreview
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:findDebugPythonCommand
+> Task :app:extractDebugPythonBuildPackages UP-TO-DATE
+> Task :app:installDebugPythonRequirements UP-TO-DATE
+> Task :app:mergeDebugPythonSources UP-TO-DATE
+> Task :app:generateDebugPythonProxies UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kspDebugKotlin
+> Task :app:compileDebugKotlin
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/search/PreviewDataSource.kt:69:105 Condition is always 'true'.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/MetadataEditor.kt:30:154 'static field SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/PlayerScreens.kt:74:16 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/PlayerScreens.kt:75:16 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/PlayerScreens.kt:76:51 'var isStatusBarContrastEnforced: Boolean' is deprecated. Deprecated in Java.
+
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:kspDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:processDebugUnitTestJavaRes UP-TO-DATE
+> Task :app:testDebugUnitTest
+
+BUILD SUCCESSFUL in 1m 57s
+88 actionable tasks: 13 executed, 75 up-to-date

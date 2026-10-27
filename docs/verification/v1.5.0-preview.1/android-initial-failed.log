@@ -1,0 +1,181 @@
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.OnlineSearchPreviewTest:
+INSTRUMENTATION_STATUS: test=realAppleSearchAndDecodedStreamingPreviewKeepLocalQueueAndDatabase
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stack=com.yonzmusic.app.search.SearchFailure: Pencarian online belum tersedia. Periksa koneksi lalu coba lagi.
+	at com.yonzmusic.app.search.SearchHttp$get$2$task$1.run(SearchHttp.kt:57)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+	at java.lang.Thread.run(Thread.java:919)
+
+INSTRUMENTATION_STATUS: stream=
+Error in realAppleSearchAndDecodedStreamingPreviewKeepLocalQueueAndDatabase(com.yonzmusic.app.OnlineSearchPreviewTest):
+com.yonzmusic.app.search.SearchFailure: Pencarian online belum tersedia. Periksa koneksi lalu coba lagi.
+	at com.yonzmusic.app.search.SearchHttp$get$2$task$1.run(SearchHttp.kt:57)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+	at java.lang.Thread.run(Thread.java:919)
+
+INSTRUMENTATION_STATUS: test=realAppleSearchAndDecodedStreamingPreviewKeepLocalQueueAndDatabase
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=searchConfigurationHistoryAndProviderIsolationUsePrivateStorage
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=searchConfigurationHistoryAndProviderIsolationUsePrivateStorage
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.ShufflePlaybackTest:
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.QueueGesture14Test:
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Drag move changes actual session order: PlaybackUi(id=f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, playing=false, queue=[f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, 2b1eeab2689e891a6462c2b783e2b20bbd795b45fe6c0e1be441719b20504d28, aed562beb835025d975024db65a6492fa6a1833778779c8175c621eb047b1afe, f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf], index=0, shuffle=true, repeat=0, error=null, ready=true, queueKeys=[70e4b725-8b0b-477c-8786-5d350611ca4c, b79b84e8-dc0a-4127-8cdd-47f7f52963d5, 401d1153-efa1-4056-a4da-511acb448407, 0b8814d7-29fb-44b5-867e-3ab5ebd8d9c7], playbackOrder=[0, 2, 3, 1])
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend$await(QueueGesture14Test.kt:25)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend(QueueGesture14Test.kt:36)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.QueueGesture14Test.keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(QueueGesture14Test.kt:15)
+
+INSTRUMENTATION_STATUS: stream=
+Error in keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(com.yonzmusic.app.QueueGesture14Test):
+java.lang.AssertionError: Drag move changes actual session order: PlaybackUi(id=f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, playing=false, queue=[f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, 2b1eeab2689e891a6462c2b783e2b20bbd795b45fe6c0e1be441719b20504d28, aed562beb835025d975024db65a6492fa6a1833778779c8175c621eb047b1afe, f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf], index=0, shuffle=true, repeat=0, error=null, ready=true, queueKeys=[70e4b725-8b0b-477c-8786-5d350611ca4c, b79b84e8-dc0a-4127-8cdd-47f7f52963d5, 401d1153-efa1-4056-a4da-511acb448407, 0b8814d7-29fb-44b5-867e-3ab5ebd8d9c7], playbackOrder=[0, 2, 3, 1])
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend$await(QueueGesture14Test.kt:25)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend(QueueGesture14Test.kt:36)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.QueueGesture14Test.keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(QueueGesture14Test.kt:15)
+
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.PlaybackIntegrationTest:
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.UpdateProgressTest:
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 177.129
+There were 2 failures:
+1) realAppleSearchAndDecodedStreamingPreviewKeepLocalQueueAndDatabase(com.yonzmusic.app.OnlineSearchPreviewTest)
+com.yonzmusic.app.search.SearchFailure: Pencarian online belum tersedia. Periksa koneksi lalu coba lagi.
+	at com.yonzmusic.app.search.SearchHttp$get$2$task$1.run(SearchHttp.kt:57)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:462)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+	at java.lang.Thread.run(Thread.java:919)
+2) keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(com.yonzmusic.app.QueueGesture14Test)
+java.lang.AssertionError: Drag move changes actual session order: PlaybackUi(id=f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, playing=false, queue=[f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf, 2b1eeab2689e891a6462c2b783e2b20bbd795b45fe6c0e1be441719b20504d28, aed562beb835025d975024db65a6492fa6a1833778779c8175c621eb047b1afe, f89e19f0d61f485d23c3ca2721bc27c639d0fd301ac8c7fdb0606c2b72211eaf], index=0, shuffle=true, repeat=0, error=null, ready=true, queueKeys=[70e4b725-8b0b-477c-8786-5d350611ca4c, b79b84e8-dc0a-4127-8cdd-47f7f52963d5, 401d1153-efa1-4056-a4da-511acb448407, 0b8814d7-29fb-44b5-867e-3ab5ebd8d9c7], playbackOrder=[0, 2, 3, 1])
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend$await(QueueGesture14Test.kt:25)
+	at com.yonzmusic.app.QueueGesture14Test$keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession$1.invokeSuspend(QueueGesture14Test.kt:36)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.QueueGesture14Test.keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession(QueueGesture14Test.kt:15)
+
+FAILURES!!!
+Tests run: 7,  Failures: 2
+
+
+INSTRUMENTATION_CODE: -1

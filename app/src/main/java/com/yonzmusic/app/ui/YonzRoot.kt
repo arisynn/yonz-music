@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -164,7 +165,7 @@ import org.json.JSONArray
                 )
             },
             bottomBar = {
-                Column(Modifier.background(colors.background).navigationBarsPadding()) {
+                if(!(destination=="search" && WindowInsets.ime.getBottom(LocalDensity.current)>0)) Column(Modifier.background(colors.background).navigationBarsPadding()) {
                     if (current != null && playback.queue.isNotEmpty()) MiniPlayer(current, playback.playing, preferences.glass, vm.playback, { playerOpen = true })
                     if (destination in primaryDestinations || destination == "detail") NavigationBar(containerColor = colors.background, tonalElevation = 0.dp, windowInsets = WindowInsets(0)) {
                         val labels = listOf("Home", "Library", "Search", "Playlists")
@@ -182,7 +183,12 @@ import org.json.JSONArray
                 Crossfade(destination,modifier=Modifier.fillMaxSize(),animationSpec=tween(if(LocalReducedMotion.current)0 else 160),label="page") { route -> when (route) {
                     "home" -> HomeScreen(tracks, favorites, history, current, playback.id, { vm.play(it.first, it.second) }, { menuId = it.id }, { detail("favorites", "", "Favorites") }, { detail("history", "", "Recently played") }, { k, t -> detail("album", k, t) }, { vm.resetImport(); navigate("import") }, { destination = "library" }, { playerOpen = true },scrollState=homeScroll,mixes=mixes)
                     "library" -> LibraryScreen(tracks, favorites, playback.id, preferences.sort, scanning, { vm.resetImport(); navigate("import") }, vm::scan, vm::sort, { t, id -> vm.play(t, id) }, { menuId = it.id }, { kind, key, title -> detail(kind, key, title) })
-                    "search" -> SearchScreen(tracks, playlists, favorites, playback.id, { t, id -> vm.play(t, id) }, { menuId = it.id }, { p -> detail("playlist", "", p.name, p.id) })
+                    "search" -> SearchScreen(vm,tracks, playlists, favorites, playback.id, { t, id -> vm.play(t, id) }, { menuId = it.id }, { p -> detail("playlist", "", p.name, p.id) },{song->
+                        if(song.provider==com.yonzmusic.app.search.SearchProvider.COMMONS && com.yonzmusic.app.search.SearchContract.https(song.preview,setOf("upload.wikimedia.org"))) {
+                            if(acquisition.busy.value)vm.notify("Tunggu pekerjaan unduhan saat ini, lalu coba lagi.")
+                            else {vm.pendingDownloadInput.value=song.preview;vm.resetImport();navigate("import")}
+                        }
+                    })
                     "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorites") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") })
                     "detail" -> DetailScreen(detailTracks, favorites, playback.id, detailKind == "playlist", { t, id -> vm.play(t, id) }, { menuId = it.id }, { nameAction = "rename" }, { deleteId = selectedPlaylist }, { exportTracks = detailTracks; export.launch((playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle).take(60) + ".m3u8") }, { from, to -> vm.move(selectedPlaylist, from, to) }, { addIds = emptyList() })
                     "settings" -> SettingsScreen(preferences, tracks, scanning, sleepEnd, vm::theme, vm::motion, vm::glass, vm::scan, { minutes -> vm.playback.timer(minutes) }, {

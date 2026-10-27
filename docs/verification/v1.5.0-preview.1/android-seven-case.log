@@ -1,0 +1,111 @@
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.OnlineSearchPreviewTest:
+INSTRUMENTATION_STATUS: test=realAppleSearchAndDecodedStreamingPreviewKeepLocalQueueAndDatabase
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=realAppleSearchAndDecodedStreamingPreviewKeepLocalQueueAndDatabase
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=searchConfigurationHistoryAndProviderIsolationUsePrivateStorage
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=searchConfigurationHistoryAndProviderIsolationUsePrivateStorage
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.ShufflePlaybackTest:
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.QueueGesture14Test:
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.PlaybackIntegrationTest:
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.UpdateProgressTest:
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=7
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 210.462
+
+OK (7 tests)
+
+
+INSTRUMENTATION_CODE: -1

@@ -26,6 +26,8 @@ class QueueGesture14Test {
   }
   try {
    await("Controller connects"){connection.state.value.ready}
+   inst.runOnMainSync {if(connection.state.value.shuffle)connection.shuffle()}
+   await("Manual reorder fixture starts with shuffle off"){!connection.state.value.shuffle}
    inst.runOnMainSync {connection.play(tracks,tracks.first().id)}
    await("Queue set"){connection.state.value.queue.size==tracks.size}
    inst.runOnMainSync {connection.toggle();connection.enqueue(tracks.first(),false)}

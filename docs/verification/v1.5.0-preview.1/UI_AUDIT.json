@@ -1,0 +1,29 @@
+{
+  "device": "API29 x86_64 software emulator",
+  "physicalDevice": false,
+  "screenPixels": [
+    640,
+    1280
+  ],
+  "logicalWidthDp": 320,
+  "appThemes": [
+    "Dark",
+    "Light"
+  ],
+  "fontScales": [
+    1.0,
+    1.5
+  ],
+  "actualAutomaticAppleQuery": true,
+  "actualAppleClipPlayed": true,
+  "keyboardOpenResultsVisible": true,
+  "youtubeEmbedPlaybackVerified": false,
+  "youtubeWebViewVersion": "74.0.3729.185",
+  "youtubeObserved": "18s readiness timeout; black view removed; external fallback displayed",
+  "largeTextCorrection": "audition button and store badge stack vertically above fontScale1.2",
+  "sourceSelector": "one horizontal row with source dropdown; scrolls horizontally at large type",
+  "overlapObservedInFinalInspectedStates": false,
+  "collectionDeletedOrReset": false,
+  "screenshots": "docs/screenshots/v1.5.0-preview.1",
+  "scope": "Search results/keyboard, audition sheet, YouTube failure fallback; not an audit of every unchanged screen"
+}

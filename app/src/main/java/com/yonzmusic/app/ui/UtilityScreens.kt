@@ -77,7 +77,7 @@ import java.util.Date
         item { SectionTitle("A space of your own", "Yono Music · ${com.yonzmusic.app.BuildConfig.VERSION_NAME}") }
         item { Text("Dibuat oleh Karisyono · Open source · GPL-3.0-or-later", Modifier.padding(horizontal = Design.page), style = MaterialTheme.typography.titleSmall) }
         item { MenuAction(Icons.Rounded.Info, "Source code · arisynn/yonz-music") { runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/arisynn/yonz-music"))) } } }
-        item { Text("Built for listening, without ads, accounts, or tracking. Your music, playlists, and preferences stay on this device. Only optional downloads and GitHub update checks use the internet. Playback stays offline.\n\nOn Xiaomi HyperOS, if screen-off playback is interrupted, open this app's battery settings and allow background activity. No battery exemption is requested automatically.\n\nSleep timers apply to the current playback-service session. Playback context is restored paused after reopening.\n\n© 2026 Karisyono · Yono Music · Your Music. Your Space.", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant, modifier = Modifier.padding(horizontal = Design.page, vertical = Design.sm)) }
+        item { Text("Built for listening, without ads, accounts, or tracking. Your music, playlists, and preferences stay on this device. Optional online Search/foreground previews, downloads and GitHub update checks use the internet. Selected providers receive online queries/media requests; search history can be cleared or disabled. Local playback stays offline.\n\nOn Xiaomi HyperOS, if screen-off playback is interrupted, open this app's battery settings and allow background activity. No battery exemption is requested automatically.\n\nSleep timers apply to the current playback-service session. Playback context is restored paused after reopening.\n\n© 2026 Karisyono · Yono Music · Your Music. Your Space.", style = MaterialTheme.typography.bodySmall, color = c.onSurfaceVariant, modifier = Modifier.padding(horizontal = Design.page, vertical = Design.sm)) }
     }
     if (licenses) AlertDialog(onDismissRequest = { licenses = false }, title = { Text("Open-source licenses") }, text = { Text(licenseText, Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()), style = MaterialTheme.typography.bodySmall) }, confirmButton = { TextButton({ licenses = false }) { Text("Done") } })
 }
@@ -98,7 +98,7 @@ private fun Modifier.toggleableSetting(value: Boolean, change: (Boolean) -> Unit
     var name by rememberSaveable { mutableStateOf("Imported collection") }
     val c = MaterialTheme.colorScheme
     val listState = rememberLazyListState()
-    var downloadMode by rememberSaveable { mutableStateOf(false) }
+    var downloadMode by rememberSaveable { mutableStateOf(vm.pendingDownloadInput.value.isNotBlank()) }
     LaunchedEffect(preview) { if (preview != null) { listState.scrollToItem(0); if (vm.importedFileName != "pasted.txt") name = vm.importedFileName.substringBeforeLast('.').take(100).ifBlank { "Imported collection" } } }
     LazyColumn(state = listState, contentPadding = PaddingValues(bottom = Design.section), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
         item {

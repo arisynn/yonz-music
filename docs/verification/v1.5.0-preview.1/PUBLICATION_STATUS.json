@@ -1,0 +1,11 @@
+{
+  "authentication": "rejected",
+  "githubStatus": 401,
+  "pushCompleted": false,
+  "newReleasePublished": false,
+  "existingLatestVerified": "v1.4.2",
+  "plannedTag": "v1.5.0-preview.1",
+  "plannedPrerelease": true,
+  "plannedMakeLatest": false,
+  "credentialsIncluded": false
+}

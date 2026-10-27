@@ -55,6 +55,10 @@ import androidx.compose.foundation.lazy.LazyColumn
     fun persistReview() { if(planId.isNotBlank())repo.saveReview(draft()) }
     var authorized by rememberSaveable { mutableStateOf(false) }
     var editing by rememberSaveable { mutableStateOf(true) }
+    val pendingInput by vm.pendingDownloadInput.collectAsStateWithLifecycle()
+    LaunchedEffect(pendingInput) {
+        if(pendingInput.isNotBlank()) {text=pendingInput;kind="auto";editing=true;authorized=false;vm.pendingDownloadInput.value=""}
+    }
     LaunchedEffect(plan?.optString("id")) { if (plan != null) editing = false }
     var downloadsOpen by remember { mutableStateOf(false) }
     var details by remember { mutableStateOf(false) }

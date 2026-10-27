@@ -124,15 +124,13 @@ import kotlinx.coroutines.withContext
         }
     }
 }
-@Composable fun SearchScreen(tracks: List<Track>, playlists: List<PlaylistSummary>, favorites: Set<String>, activeId: String?, onPlay: (List<Track>, String) -> Unit, onMenu: (Track) -> Unit, onPlaylist: (PlaylistSummary) -> Unit) {
-    var query by rememberSaveable { mutableStateOf("") }
+@Composable fun LocalSearchResults(query: String, tracks: List<Track>, playlists: List<PlaylistSummary>, favorites: Set<String>, activeId: String?, onPlay: (List<Track>, String) -> Unit, onMenu: (Track) -> Unit, onPlaylist: (PlaylistSummary) -> Unit) {
     val results by produceState<List<Track>>(emptyList(), tracks, query) {
         delay(120)
-        value = withContext(Dispatchers.Default) { val key = MusicListParser.normalize(query); if (key.isBlank()) emptyList() else tracks.filter { key in MusicListParser.normalize("${it.title} ${it.artist} ${it.album}") } }
+        value = withContext(Dispatchers.Default) { if (query.isBlank()) emptyList() else tracks.mapNotNull {track->com.yonzmusic.app.search.LocalSearch.score(query,track.title,track.artist,track.album)?.let {it to track}}.sortedBy {it.first}.map {it.second} }
     }
-    val foundPlaylists = remember(playlists, query) { if (query.isBlank()) emptyList() else playlists.filter { it.name.contains(query, true) } }
+    val foundPlaylists = remember(playlists, query) { if (query.isBlank()) emptyList() else playlists.filter {com.yonzmusic.app.search.LocalSearch.score(query,it.name)!=null} }
     LazyColumn(contentPadding = PaddingValues(bottom = Design.page)) {
-        item { OutlinedTextField(query, { query = it }, modifier = Modifier.fillMaxWidth().padding(horizontal = Design.page, vertical = Design.sm), placeholder = { Text("Songs, artists, albums…") }, leadingIcon = { Icon(Icons.Rounded.Search, null) }, trailingIcon = { if (query.isNotEmpty()) ActionIcon(Icons.Rounded.Close, "Clear search", { query = "" }) }, singleLine = true, shape = Design.card) }
         if (query.isBlank()) item { EmptyState("Find your next favorite", "Search titles, artists, albums, and playlists in your own collection.", "search") }
         else if (results.isEmpty() && foundPlaylists.isEmpty()) item { EmptyState("Nothing here just yet", "Try another title, artist, or album. Only songs in your local library appear here.", "search") }
         if (foundPlaylists.isNotEmpty()) {
