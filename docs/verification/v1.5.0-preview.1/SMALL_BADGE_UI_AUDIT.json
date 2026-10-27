@@ -1,0 +1,25 @@
+{
+  "graphicVariant": "Apple official Small Badge; unmodified artwork",
+  "graphicDp": [
+    79.25,
+    16
+  ],
+  "touchTargetDp": [
+    88,
+    48
+  ],
+  "themes": [
+    "Light",
+    "Dark"
+  ],
+  "fontScales": [
+    1,
+    1.5
+  ],
+  "emulator": "API29 x86_64; 320dp width",
+  "actualAppleSearchAndPreviewPlayback": true,
+  "finalInspectedStatesHaveUnintendedOverlap": false,
+  "initialEnvironmentIssue": "Android System UI ANR after software-emulator startup; chose Wait and reran UI automation without data reset",
+  "physicalDevice": false,
+  "testsRerun": "preview assembly/lint and targeted live visual check; 126 JVM and seven Android suite results are from earlier preview verification"
+}

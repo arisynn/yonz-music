@@ -1,0 +1,78 @@
+Starting a Gradle Daemon, 3 stopped Daemons could not be reused, use --status for details
+> Task :app:buildQuickJs UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:prePreviewBuild UP-TO-DATE
+> Task :app:mergePreviewNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generatePreviewBuildConfig UP-TO-DATE
+> Task :app:findPreviewPythonCommand
+> Task :app:extractPreviewPythonBuildPackages UP-TO-DATE
+> Task :app:installPreviewPythonRequirements UP-TO-DATE
+> Task :app:mergePreviewPythonSources UP-TO-DATE
+> Task :app:generatePreviewPythonProxies UP-TO-DATE
+> Task :app:checkPreviewAarMetadata UP-TO-DATE
+> Task :app:generatePreviewResValues UP-TO-DATE
+> Task :app:mapPreviewSourceSetPaths
+> Task :app:generatePreviewResources
+> Task :app:mergePreviewResources
+> Task :app:packagePreviewResources
+> Task :app:parsePreviewLocalResources
+> Task :app:createPreviewCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksPreview UP-TO-DATE
+> Task :app:processPreviewMainManifest UP-TO-DATE
+> Task :app:processPreviewManifest UP-TO-DATE
+> Task :app:processPreviewManifestForPackage UP-TO-DATE
+> Task :app:processPreviewResources
+> Task :app:kspPreviewKotlin
+> Task :app:compilePreviewKotlin
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/search/PreviewDataSource.kt:69:105 Condition is always 'true'.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/MetadataEditor.kt:30:154 'static field SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/PlayerScreens.kt:74:16 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/PlayerScreens.kt:75:16 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/PlayerScreens.kt:76:51 'var isStatusBarContrastEnforced: Boolean' is deprecated. Deprecated in Java.
+
+> Task :app:javaPreCompilePreview UP-TO-DATE
+> Task :app:compilePreviewJavaWithJavac UP-TO-DATE
+> Task :app:mergePreviewShaders UP-TO-DATE
+> Task :app:compilePreviewShaders NO-SOURCE
+> Task :app:generatePreviewAssets UP-TO-DATE
+> Task :app:generatePreviewPythonMiscAssets UP-TO-DATE
+> Task :app:generatePreviewPythonRequirementsAssets UP-TO-DATE
+> Task :app:generatePreviewPythonSourceAssets UP-TO-DATE
+> Task :app:generatePreviewPythonBuildAssets UP-TO-DATE
+> Task :app:mergePreviewAssets UP-TO-DATE
+> Task :app:compressPreviewAssets UP-TO-DATE
+> Task :app:checkPreviewDuplicateClasses UP-TO-DATE
+> Task :app:desugarPreviewFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexPreview UP-TO-DATE
+> Task :app:mergeLibDexPreview UP-TO-DATE
+> Task :app:dexBuilderPreview
+> Task :app:mergePreviewGlobalSynthetics UP-TO-DATE
+> Task :app:processPreviewJavaRes UP-TO-DATE
+> Task :app:mergePreviewJavaResource UP-TO-DATE
+> Task :app:mergeProjectDexPreview
+> Task :app:generatePreviewPythonJniLibs UP-TO-DATE
+> Task :app:mergePreviewJniLibFolders UP-TO-DATE
+> Task :app:mergePreviewNativeLibs UP-TO-DATE
+> Task :app:stripPreviewDebugSymbols UP-TO-DATE
+> Task :app:validateSigningPreview UP-TO-DATE
+> Task :app:writePreviewAppMetadata UP-TO-DATE
+> Task :app:writePreviewSigningConfigVersions UP-TO-DATE
+> Task :app:packagePreview
+> Task :app:createPreviewApkListingFileRedirect UP-TO-DATE
+> Task :app:assemblePreview
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:generatePreviewLintReportModel
+> Task :app:bundlePreviewClassesToCompileJar
+> Task :app:prePreviewUnitTestBuild UP-TO-DATE
+> Task :app:generatePreviewUnitTestLintModel
+> Task :app:lintAnalyzePreview
+> Task :app:lintAnalyzePreviewUnitTest
+
+> Task :app:lintReportPreview
+Wrote HTML report to file:///workspace/github-publish/repository/app/build/reports/lint-results-preview.html
+
+> Task :app:lintPreview
+
+BUILD SUCCESSFUL in 2m 6s
+57 actionable tasks: 19 executed, 38 up-to-date

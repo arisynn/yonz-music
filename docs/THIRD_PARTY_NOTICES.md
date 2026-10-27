@@ -25,7 +25,7 @@ Runtime probe on API 29: CPython 3.12.15, OpenSSL 3.5.9, SQLite 3.53.4, Expat 2.
 
 
 ONLINE SEARCH PREVIEW — SERVICE ASSETS
-The unmodified Buy on iTunes Store badge is an Apple service mark used under the Apple marketing guidelines, not relicensed under the application GPL. Preview audio is provided courtesy of iTunes; clips link directly to their store items and are not exported or matched to other-service downloads.
+The unmodified Small iTunes Store badge is an Apple service mark used under the Apple marketing guidelines, not relicensed under the application GPL. Preview audio is provided courtesy of iTunes; clips link directly to their store items and are not exported or matched to other-service downloads.
 https://www.apple.com/itunes/marketing-on-itunes/identity-guidelines.html
 https://performance-partners.apple.com/search-api
 YouTube content plays through the official visible iframe and remains subject to YouTube service/embedding terms; no YouTube media/runtime is bundled.

@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -29,10 +30,13 @@ import kotlinx.coroutines.delay
 
 @Composable internal fun AppleStoreBadge(page: String,beforeOpen: ()->Unit = {}) {
     val context=LocalContext.current
-    Image(painterResource(R.drawable.itunes_store_badge),"Buka lagu di iTunes Store",
-        Modifier.width(140.dp).height(48.dp).clickable {
-            if(SearchContract.https(page,SearchContract.applePages))runCatching {beforeOpen();context.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(page)))}
-        })
+    // Apple's unmodified Small Badge is intended for titles in a list. Keep the
+    // graphic at its original 79.25:16 ratio and the hit target at least 48dp.
+    Box(Modifier.width(88.dp).height(48.dp).clickable {
+        if(SearchContract.https(page,SearchContract.applePages))runCatching {beforeOpen();context.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(page)))}
+    },contentAlignment=Alignment.Center) {
+        Image(painterResource(R.drawable.itunes_store_badge),"Buka lagu di iTunes Store",Modifier.size(79.25.dp,16.dp))
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

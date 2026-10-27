@@ -4,6 +4,7 @@
 - Official iTunes discovery with real promotional clips, store badges and attribution; no preview export or Apple-to-YouTube download mapping.
 - Optional own-key YouTube Data API search and visible official player; direct video links and external fallback. Commons catalogue and handoff to existing authorized download review.
 - Foreground audition pauses local playback without replacing its queue or adding remote tracks to collections.
+- Small official iTunes attribution badge replaces the oversized Buy on artwork; store link and accessible touch target retained.
 - Compact source selector and one keyboard inset keep results usable while typing.
 - Separate existing Dev identity, code10; official 1.4.2 and Room schema3 remain unchanged.
 

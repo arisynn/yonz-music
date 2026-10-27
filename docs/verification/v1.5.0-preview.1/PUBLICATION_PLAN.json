@@ -1,0 +1,10 @@
+{
+  "authentication": "renewed credential verified against owner account",
+  "plannedTag": "v1.5.0-preview.1",
+  "prerelease": true,
+  "makeLatest": false,
+  "stableVerifiedBeforePublishing": "v1.4.2",
+  "snapshotPhase": "before public release creation",
+  "overwriteExistingReleasesOrTags": false,
+  "credentialsIncluded": false
+}

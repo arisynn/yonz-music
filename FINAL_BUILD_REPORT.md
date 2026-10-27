@@ -10,4 +10,6 @@ SDK min26, target/compile35; JDK17, Gradle8.11.1, AGP8.9.1, Kotlin2.1.20, Compos
 
 Preview assembly/lint and126 JVM tests passed; seven distinct Android API29 cases passed, including real iTunes query and decoded streamed audition. In-place Dev9→10 retained exact collection rows. Actual scope, initial failed attempts and device limitations are in TEST_REPORT.md. Artifact size/hash/signature and exact source commit accompany the distribution report. Preview has no stable update.json and must be published as a GitHub prerelease with make_latest=false.
 
-Publication limitation: the available GitHub credentials were rejected with HTTP401. No push, new public release or tag publication is claimed. The compiled APK/source are delivered locally; existing official/latest remains1.4.2.
+The first publication attempt was blocked by HTTP401. Renewed GitHub credentials were subsequently verified as the owner account. This source snapshot precedes publication: distribution records the resulting public prerelease URL/commit and verifies that official/latest remains1.4.2.
+
+Final badge refinement: the original Apple-provided Small Badge replaces the large Buy on graphic. It displays at79.25×16dp within an88×48dp touch target, with clear space and the direct store link preserved. No engine, metadata, database, permission or signing behavior changed.

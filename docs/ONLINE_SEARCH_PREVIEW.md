@@ -32,3 +32,5 @@ https://developers.google.com/youtube/terms/required-minimum-functionality
 Actual test outcomes and device limitations are recorded in TEST_REPORT.md and docs/verification/v1.5.0-preview.1. Fixture tests and live-service tests must be distinguished.
 
 Commons currently reuses the existing bounded blocking transport; cancellation can wait for its socket timeout even though stale results are discarded. Apple/YouTube metadata transport disconnects on cancellation. YouTube readiness is bounded to18s with a visible external-source fallback, not a claim that embedding is verified on every WebView.
+
+Visual refinement before first publication: the official Apple Small Badge (no Buy on wording) replaces the large graphic in results and the preview sheet. Its79.25×16dp graphic has an88×48dp touch area and clear space. The direct store destination and provided-courtesy attribution remain.

@@ -1,0 +1,10 @@
+Stopping Daemon(s)
+1 Daemon stopped
+restarting adbd as root
+Performing Streamed Install
+Success
+Traceback (most recent call last):
+  File "/workspace/testing/yono150/ui_small_badge.py", line 26, in <module>
+    assert d(description='Settings',packageName='com.yonzmusic.app.dev').wait(timeout=60);d(description='Settings',packageName='com.yonzmusic.app.dev').click()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
