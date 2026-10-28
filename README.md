@@ -2,6 +2,8 @@
 
 Your Music. Your Space.
 
+**1.5.1:** unduhan disembunyikan dari Galeri secara default menggunakan `.nomedia` hanya di folder tujuan yang dipilih. Bisa dimatikan di Settings; seluruh isi/subfolder tujuan terpengaruh, termasuk pemutar lain yang memakai indeks Android. JSON metadata baru disimpan rapi di `.yono/` dan sampul tetap `.cover/`. [Rincian tata letak dan batasannya](docs/DOWNLOAD_FOLDER_LAYOUT.md). JSON lama tetap dibaca. Audio, ID koleksi dan format aslinya tidak diubah. Galeri HyperOS mungkin perlu memperbarui indeks.
+
 **1.5.0:** pencarian engine, streaming native dan unduhan langsung dalam tampilan minimal. Ketuk lagu untuk putar/jeda; menu ⋮ berisi aksi mendatar Berikut / Antrean / Unduh. Folder tersimpan dipakai langsung, tanpa panel berulang. Media3 menyiapkan awal audio lagu berikutnya; analisis sumber dua item antrean berikutnya dibatasi dan dibagi dengan pemutaran. Playlist online dapat dibuat sendiri dari hasil Search atau diimpor sebagai snapshot tautan YouTube Music/YouTube. Hubungkan Spotify dihapus. Riwayat unduhan panjang tidak lagi menyembunyikan pekerjaan aktif. Guava diperbarui ke33.7.2-android untuk perbaikan CVE-2026-102554. [APK/source official](https://github.com/arisynn/yonz-music/releases/tag/v1.5.0) · [Laporan tes dan batasannya](TEST_REPORT.md).
 
 Pemilik mengonfirmasi streaming dan hasil unduhan Preview4 dapat diputar di HP-nya. Uji perangkat tersebut adalah laporan pemilik; uji emulator terkontrol dan percobaan jaringan build dilaporkan terpisah. Persiapan antrean membantu perpindahan, bukan jaminan tanpa buffering atau ketersediaan semua sumber.
@@ -14,7 +16,7 @@ Pemilik mengonfirmasi streaming dan hasil unduhan Preview4 dapat diputar di HP-n
 
 ![Yono Music owner-supplied identity](brand/launcher-preview-1024.png)
 
-**[Download Yono Music 1.5.0](https://github.com/arisynn/yonz-music/releases/download/v1.5.0/Yono_Music_v1.5.0.apk)** · [Release, source, assets and checksums](https://github.com/arisynn/yonz-music/releases/tag/v1.5.0). Android 8.0+, 64-bit arm64-v8a/x86_64. Production-signed by Karisyono. The [early Dev preview](https://github.com/arisynn/yonz-music/releases/tag/v1.1.0-preview.1) remains available as a separate testing channel.
+**[Download Yono Music 1.5.1](https://github.com/arisynn/yonz-music/releases/download/v1.5.1/Yono_Music_v1.5.1.apk)** · [Release, source, assets and checksums](https://github.com/arisynn/yonz-music/releases/tag/v1.5.1). Android 8.0+, 64-bit arm64-v8a/x86_64. Production-signed by Karisyono. The [early Dev preview](https://github.com/arisynn/yonz-music/releases/tag/v1.1.0-preview.1) remains available as a separate testing channel.
 
 A native Kotlin/Jetpack Compose music player, with Media3 background playback, local Room collections and DataStore preferences. Free, open source, no ads, no tracking, no account. Local playback, library browsing and playlists work without internet. Optional source downloads and GitHub update checks use the network.
 

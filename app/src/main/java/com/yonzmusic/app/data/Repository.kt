@@ -181,9 +181,12 @@ class Repository(val context: Context, val db: MusicDatabase) {
                         while(cursor.moveToNext()) {
                             val child=cursor.getString(0);val name=cursor.getString(1).orEmpty();val mime=cursor.getString(2).orEmpty()
                             val inCovers=path.substringAfterLast('/')==".cover"
-                            if(mime==DocumentsContract.Document.MIME_TYPE_DIR) { if(!inCovers && (source.recursive || name==".cover"))pending.add(child to "$path/$name");continue }
-                            val doc=Document(DocumentsContract.buildDocumentUriUsingTree(root,child),name,path,cursor.getLong(3),cursor.getLong(4))
+                            val inMetadata=path.substringAfterLast('/')==".yono"
+                            if(mime==DocumentsContract.Document.MIME_TYPE_DIR) { if(!inCovers && !inMetadata && (source.recursive || name in setOf(".cover",".yono")))pending.add(child to "$path/$name");continue }
+                            // Companion references remain relative to the audio folder, not .yono.
+                            val doc=Document(DocumentsContract.buildDocumentUriUsingTree(root,child),name,if(inMetadata)path.substringBeforeLast('/')else path,cursor.getLong(3),cursor.getLong(4))
                             if(inCovers) { if(mime.startsWith("image/") && pictures.size<2000 && doc.size<=8*1024*1024)pictures+=doc;continue }
+                            if(inMetadata) { if(name.endsWith(".yono.json",true) && doc.size<=128*1024 && manifests.size<10000)manifests+=doc;continue }
                             if(name.endsWith(".json",true) && doc.size<=128*1024) { if(manifests.size<10000)manifests+=doc }
                             else if(mime.startsWith("image/") && pictures.size<2000 && doc.size<=8*1024*1024) pictures+=doc
                             else if(!name.startsWith(".yono-part-") && !name.endsWith(".part") && (mime.startsWith("audio/") || name.substringAfterLast('.').lowercase() in AUDIO_EXT)) { check(documents.size<10000);documents+=doc }

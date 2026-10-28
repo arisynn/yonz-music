@@ -1,0 +1,18 @@
+{
+  "runtime": "API29 software AVD, production-signed1.5.1",
+  "defaultOn": true,
+  "toggleOff": true,
+  "offSurvivesForceStop": true,
+  "toggleOnSurvivesReopen": true,
+  "widthDp": 320,
+  "fontScales": [
+    1.0,
+    1.5
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "physicalHyperosGalleryReindexTested": false,
+  "uninstallOrClearData": false
+}

@@ -193,7 +193,7 @@ class Engine:
             "artwork": {"file_name": (row.get("cover_directory", "") + name(row["artwork_uri"], row.get("cover_name", ""))) if row.get("artwork_uri") else "",
                         "sha256": audio.get("artwork_sha256", "")}}
         path = workspace / "metadata.yono.json"
-        path.write_text(json.dumps(meta, ensure_ascii=False, allow_nan=False, indent=2), encoding="utf-8")
+        path.write_text(json.dumps(meta, ensure_ascii=False, allow_nan=False, indent=2) + "\n", encoding="utf-8")
         from .media import file_hash
         filename = safe_name(meta["audio"]["file_name"] or song.title) + ".yono.json"
         uri = str(self.storage.commit(str(path), plan["folder"], filename, "application/json",

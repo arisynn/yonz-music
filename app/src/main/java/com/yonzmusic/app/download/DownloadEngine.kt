@@ -128,6 +128,7 @@ class DownloadEngine(private val app: YonzApp, private val testTransport: JSONOb
             require(workspace.usableSpace > complete.length() + 4 * 1024 * 1024) { "Not enough temporary storage." }
             val hash = SafeHttp.sha256(complete)
             val parent = folder(job.destination, job.playlistName)
+            app.downloadGallery.beforePublish(Uri.parse(job.destination), parent)
             val stem = RecordingMatch.safeName("${job.artist} - ${job.title}")
             val names = children(parent).map { it.first }.toSet()
             var name = "$stem.${info.extension}"; var suffix = 2

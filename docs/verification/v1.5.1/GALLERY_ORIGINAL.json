@@ -1,0 +1,7 @@
+{
+  "requestedMime": "audio\/webm",
+  "providerMime": "video\/webm",
+  "sha256Unchanged": true,
+  "nativeAudioOnly": true,
+  "fixture": true
+}

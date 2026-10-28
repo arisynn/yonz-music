@@ -80,6 +80,10 @@ proof_json=json.dumps(proof)
    app.acquisition.execute(request)
    assertEquals("Selesai",app.acquisition.message.value)
    val row=plan.getJSONArray("entries").getJSONObject(0)
+   val manifestUri=Uri.parse(row.getString("metadata_uri"))
+   assertTrue(android.provider.DocumentsContract.getDocumentId(manifestUri).substringBeforeLast('/').endsWith("/.yono"))
+   val pretty=app.contentResolver.openInputStream(manifestUri)!!.bufferedReader().use { it.readText() }
+   assertTrue(pretty.endsWith("\n")); assertTrue(pretty.contains("\n  \"audio\": {"))
    val track=dao.allTracks().single { it.uri==row.getString("uri") }
    assertEquals(row.getString("artwork_uri"),track.artUri)
    assertTrue(track.fileName.endsWith(if(i==0) ".webm" else ".opus"))

@@ -16,6 +16,7 @@ class YonzApp : Application() {
     val preferences by lazy { Preferences(this) }
     val streams by lazy { com.yonzmusic.app.playback.StreamRepository(this) }
     internal var streamTestDataSource: androidx.media3.datasource.DataSource.Factory? = null // Internal DI; no Intent/config hook.
+    val downloadGallery by lazy { com.yonzmusic.engine.DownloadGalleryVisibility(this) }
     val acquisition by lazy { com.yonzmusic.engine.AcquisitionRepository(this) }
     val onlineCollections by lazy { com.yonzmusic.app.data.OnlineCollections(this) }
     val sleepEnd = MutableStateFlow(0L)
@@ -28,7 +29,7 @@ class YonzApp : Application() {
             runCatching {java.security.KeyStore.getInstance("AndroidKeyStore").apply {load(null);deleteEntry("yono.spotify.oauth.v1")}}
         }
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
-            override fun onStart(owner: LifecycleOwner) { updates.onForeground() }
+            override fun onStart(owner: LifecycleOwner) { updates.onForeground(); persistenceScope.launch { downloadGallery.reconcile() } }
             override fun onStop(owner: LifecycleOwner) { updates.onBackground() }
         })
     }

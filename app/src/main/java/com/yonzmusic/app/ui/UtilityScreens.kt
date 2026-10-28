@@ -29,7 +29,7 @@ import java.util.Date
 
 @Composable fun SettingsScreen(preferences: UserPreferences, tracks: List<Track>, scanning: Boolean, sleepEnd: Long,
     theme: (String) -> Unit, motion: (Boolean) -> Unit, glass: (Boolean) -> Unit, scan: () -> Unit, timer: (Int) -> Unit,
-    equalizer: () -> Unit, onImport: () -> Unit, appSettings: () -> Unit, smartMix: (Boolean) -> Unit = {}
+    equalizer: () -> Unit, onImport: () -> Unit, appSettings: () -> Unit, smartMix: (Boolean) -> Unit = {}, hideDownloads: (Boolean) -> Unit = {}, galleryNotice: String = ""
 ) {
     val c = MaterialTheme.colorScheme
     var licenses by remember { mutableStateOf(false) }
@@ -69,6 +69,8 @@ import java.util.Date
         item { SectionTitle("Your files stay yours", "Music library") }
         item { ListItem(headlineContent = { Text("Rescan library") }, supportingContent = { Text(if (scanning) "Reading local music…" else "${tracks.count { it.available }} available · ${tracks.count { !it.available }} unavailable") }, leadingContent = { Icon(Icons.Rounded.Refresh, null) }, modifier = Modifier.clickable(enabled = !scanning, onClick = scan)) }
         if (scanning) item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = Design.page)) }
+        item { ToggleSetting("Sembunyikan unduhan dari Galeri", "Aktif secara default. Berlaku untuk seluruh folder tujuan unduhan dan subfoldernya. Yono tetap bisa memutarnya; pemutar lain yang memakai indeks media Android bisa tidak menampilkannya. Galeri mungkin perlu memperbarui indeks.", preferences.hideDownloadsFromGallery, hideDownloads) }
+        if (galleryNotice.isNotBlank()) item { Text(galleryNotice, Modifier.padding(horizontal = Design.page, vertical = Design.sm), style = MaterialTheme.typography.bodySmall, color = c.error) }
         item { MenuAction(Icons.Rounded.LibraryAdd, "Import music or playlists", onImport) }
         item { ListItem(headlineContent = { Text("Possible duplicate recordings") }, supportingContent = { Text("$duplicates metadata groups. Files are never deleted or merged automatically.") }, leadingContent = { Icon(Icons.Rounded.CopyAll, null) }) }
         item { MenuAction(Icons.Rounded.Security, "Manage Android permissions", appSettings) }

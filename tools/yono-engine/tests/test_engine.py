@@ -127,6 +127,12 @@ class EngineTests(unittest.TestCase):
         result=self.engine.acquire(plan['id'],[plan['entries'][0]['id']])
         row=result['entries'][0]
         self.assertEqual(self.storage.path(row['artwork_uri']).read_bytes(),PNG)
+        manifest=self.storage.path(row['metadata_uri'])
+        self.assertEqual(manifest.parent.name,'.yono')
+        text=manifest.read_text(encoding='utf-8')
+        self.assertTrue(text.endswith('\n'))
+        self.assertIn('\n  "audio": {',text)
+        self.assertEqual(json.loads(text)['audio']['sha256'],row['audio']['sha256'])
         self.assertNotIn('artwork_path',row['audio'])
         uri=row['artwork_uri'];row['status']='saving';row.pop('uri');self.engine.save(result)
         again=self.engine.acquire(plan['id'],[row['id']])

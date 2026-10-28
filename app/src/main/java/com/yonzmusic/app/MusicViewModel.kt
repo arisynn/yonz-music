@@ -128,6 +128,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         if(target.isBlank() || !granted)configure()
         else app.acquisition.enqueueSelected(song,target,dao.state("stream-download-playlist")?.value=="1",::notify)
     }}
+    fun hideDownloadsFromGallery(enabled: Boolean) { action { app.downloadGallery.setEnabled(enabled); app.downloadGallery.notice.value.takeIf { it.isNotBlank() }?.let { messages.emit(it) } } }
     fun smartMix(enabled: Boolean) { action { app.preferences.smartMix(enabled) } }
     fun relink(id: String, uri: Uri) { action { messages.emit(repository.relink(id,uri)) } }
     fun editMetadata(id:String,title:String,artists:String,album:String,art:Uri?) { action { messages.emit(repository.editMetadata(id,title,artists,album,art)) } }
@@ -144,7 +145,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun restoreBackup(uri: Uri) { action { messages.emit(CollectionBackup(app).restore(uri)) } }
     fun destination(uri: Uri) { action {
         require(app.contentResolver.persistedUriPermissions.any { it.uri == uri && it.isReadPermission && it.isWritePermission }) { "Choose a provider that offers persistent read and write access for downloads." }
-        dao.state(AppState("download_destination", uri.toString())); messages.emit("Download destination saved. It is not automatically scanned.")
+        dao.state(AppState("download_destination", uri.toString()))
+        app.downloadGallery.reconcile()
+        messages.emit(app.downloadGallery.notice.value.ifBlank { "Tujuan unduhan disimpan. Tidak dipindai otomatis." })
     } }
     fun searchAudio(query: String) {
         sourceJob?.cancel()

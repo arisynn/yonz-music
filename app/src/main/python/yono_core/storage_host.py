@@ -66,6 +66,8 @@ class DirectoryStore:
         parent = self.root / safe_name(folder) if folder else self.root
         if cover:
             parent = parent / ".cover"
+        elif mime == "application/json" and filename.endswith(".yono.json"):
+            parent = parent / ".yono"
         parent.mkdir(parents=True, exist_ok=True)
         name = Path(safe_name(filename, 180))
         for i in range(1, 10001):

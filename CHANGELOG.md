@@ -1,5 +1,13 @@
 # 1.5.0-preview.4 — 2026-10-28
 
+## 1.5.1 · 2026-10-28
+
+- Default-on “Sembunyikan unduhan dari Galeri”, persisted in DataStore. Applies only to explicit download destination folders, including their descendants. Existing selected destination reconciles on foreground; no whole-storage/media-library scan.
+- Journal ownership before creating `.nomedia`; disabling removes only exact markers carrying the app's random ownership token. Existing/modified user markers and `.cover/.nomedia` survive. Unavailable/readonly providers show an actionable notice; publication does not silently ignore a failed hiding policy.
+- New portable metadata manifests use hidden `.yono/` directories and readable two-space UTF-8 JSON with a final newline. Original audio and `.cover` remain in place. Explicit scans find both new manifests (even with recursive music browsing off) and legacy adjacent JSON, matching audio/art by SHA-256. No automatic moving or rewriting of old companion files.
+- Package, production signing identity, Room schema, collections, navigation, engine dependencies and original audio format retained; versionCode15.
+
+
 ## 1.5.0 — native online playback and direct downloads
 
 - Promote the engine Search/streaming/direct-download workflow while preserving Home / Library / Search / Playlists, the owner logo and original audio formats.

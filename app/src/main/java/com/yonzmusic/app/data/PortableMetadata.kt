@@ -42,7 +42,7 @@ class PortableMetadata(private val context: Context) {
             .put("audio",JSONObject().put("sha256",track.sha256).put("size",track.fileSize).put("duration_ms",track.duration).put("file_name",track.fileName))
             .put("metadata",JSONObject().put("title",track.title).put("artists",JSONArray(track.artist.split(';').map(String::trim).filter(String::isNotBlank)))
                 .put("album",MetadataPolicy.known(track.album)).put("source_identity",track.sourceIdentity).put("source_url",source).put("origin",track.metadataOrigin))
-            .put("artwork",JSONObject().put("file_name",coverName).put("sha256",coverHash)).toString(2)
+            .put("artwork",JSONObject().put("file_name",coverName).put("sha256",coverHash)).toString(2) + "\n"
     }
     /** Write only a new companion inside an explicitly writable selected tree. Never overwrite audio/sidecars. */
     fun writeNextTo(track: Track, text: String): Uri? = runCatching {
@@ -70,8 +70,9 @@ class PortableMetadata(private val context: Context) {
                 root.put("artwork",JSONObject().put("file_name",".cover/"+displayName(copy)).put("sha256",java.security.MessageDigest.getInstance("SHA-256").digest(bytes).joinToString(""){"%02x".format(it)}))
             }
         }
-        val created=DocumentsContract.createDocument(context.contentResolver,parent,"application/json",track.fileName+".yono.json") ?: return null
-        try { context.contentResolver.openOutputStream(created,"w")!!.use { it.write(root.toString(2).toByteArray()) }; require(read(created)?.hash==track.sha256); created }
+        val metadataParent=com.yonzmusic.engine.MetadataDirectory.obtain(context.contentResolver,uri,parent)
+        val created=DocumentsContract.createDocument(context.contentResolver,metadataParent,"application/json",track.fileName+".yono.json") ?: return null
+        try { context.contentResolver.openOutputStream(created,"w")!!.use { it.write((root.toString(2)+"\n").toByteArray()) }; require(read(created)?.hash==track.sha256); created }
         catch(e:Exception) { runCatching { DocumentsContract.deleteDocument(context.contentResolver,created) }; throw e }
     }.getOrNull()
     fun displayName(uri: Uri): String = context.contentResolver.query(uri,arrayOf(OpenableColumns.DISPLAY_NAME),null,null,null)?.use { if(it.moveToFirst()) it.getString(0) else "" }.orEmpty()

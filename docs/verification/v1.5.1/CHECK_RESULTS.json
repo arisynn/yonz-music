@@ -1,0 +1,22 @@
+{
+  "jvm": {
+    "tests": 140,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python": {
+    "tests_run": 184,
+    "failures": 0,
+    "errors": 0,
+    "skipped": [],
+    "successful": true
+  },
+  "lintRelease": {
+    "Error": 0,
+    "Warning": 119
+  },
+  "androidControlledCases": 6,
+  "physicalHyperosGalleryReindexTested": false,
+  "livePlatformDownloadRetested": false
+}

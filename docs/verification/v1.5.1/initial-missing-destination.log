@@ -1,0 +1,320 @@
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DownloadGalleryTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.DownloadGalleryTest:
+INSTRUMENTATION_STATUS: test=defaultPublicationKeepsOriginalWebmAndIdempotentRecovery
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DownloadGalleryTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stack=java.lang.NullPointerException
+	at com.yonzmusic.app.DownloadGalleryTest$defaultPublicationKeepsOriginalWebmAndIdempotentRecovery$1.invokeSuspend(DownloadGalleryTest.kt:42)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.DownloadGalleryTest.defaultPublicationKeepsOriginalWebmAndIdempotentRecovery(DownloadGalleryTest.kt:39)
+
+INSTRUMENTATION_STATUS: stream=
+Error in defaultPublicationKeepsOriginalWebmAndIdempotentRecovery(com.yonzmusic.app.DownloadGalleryTest):
+java.lang.NullPointerException
+	at com.yonzmusic.app.DownloadGalleryTest$defaultPublicationKeepsOriginalWebmAndIdempotentRecovery$1.invokeSuspend(DownloadGalleryTest.kt:42)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.DownloadGalleryTest.defaultPublicationKeepsOriginalWebmAndIdempotentRecovery(DownloadGalleryTest.kt:39)
+
+INSTRUMENTATION_STATUS: test=defaultPublicationKeepsOriginalWebmAndIdempotentRecovery
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DownloadGalleryTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.DownloadGalleryTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stack=java.lang.NullPointerException
+	at com.yonzmusic.app.DownloadGalleryTest$toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice$1.invokeSuspend(DownloadGalleryTest.kt:80)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.DownloadGalleryTest.toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice(DownloadGalleryTest.kt:79)
+
+INSTRUMENTATION_STATUS: stream=
+Error in toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice(com.yonzmusic.app.DownloadGalleryTest):
+java.lang.NullPointerException
+	at com.yonzmusic.app.DownloadGalleryTest$toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice$1.invokeSuspend(DownloadGalleryTest.kt:80)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.DownloadGalleryTest.toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice(DownloadGalleryTest.kt:79)
+
+INSTRUMENTATION_STATUS: test=toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.HiddenMetadataTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.HiddenMetadataTest:
+INSTRUMENTATION_STATUS: test=prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.HiddenMetadataTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stack=java.lang.NullPointerException
+	at com.yonzmusic.app.HiddenMetadataTest$prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections$1.invokeSuspend(HiddenMetadataTest.kt:23)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.HiddenMetadataTest.prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections(HiddenMetadataTest.kt:20)
+
+INSTRUMENTATION_STATUS: stream=
+Error in prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections(com.yonzmusic.app.HiddenMetadataTest):
+java.lang.NullPointerException
+	at com.yonzmusic.app.HiddenMetadataTest$prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections$1.invokeSuspend(HiddenMetadataTest.kt:23)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.HiddenMetadataTest.prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections(HiddenMetadataTest.kt:20)
+
+INSTRUMENTATION_STATUS: test=prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OriginalArtworkTest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.OriginalArtworkTest:
+INSTRUMENTATION_STATUS: test=originalWebmAndOpusWithCompanionCoversRetainAfterRescan
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OriginalArtworkTest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stack=java.lang.NullPointerException
+	at com.yonzmusic.app.OriginalArtworkTest$originalWebmAndOpusWithCompanionCoversRetainAfterRescan$1.invokeSuspend(OriginalArtworkTest.kt:29)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.OriginalArtworkTest.originalWebmAndOpusWithCompanionCoversRetainAfterRescan(OriginalArtworkTest.kt:25)
+
+INSTRUMENTATION_STATUS: stream=
+Error in originalWebmAndOpusWithCompanionCoversRetainAfterRescan(com.yonzmusic.app.OriginalArtworkTest):
+java.lang.NullPointerException
+	at com.yonzmusic.app.OriginalArtworkTest$originalWebmAndOpusWithCompanionCoversRetainAfterRescan$1.invokeSuspend(OriginalArtworkTest.kt:29)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.OriginalArtworkTest.originalWebmAndOpusWithCompanionCoversRetainAfterRescan(OriginalArtworkTest.kt:25)
+
+INSTRUMENTATION_STATUS: test=originalWebmAndOpusWithCompanionCoversRetainAfterRescan
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.CollectionRecoveryTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.CollectionRecoveryTest:
+INSTRUMENTATION_STATUS: test=realSafRelocationRenamePortableWebmAndCollectionIdentity
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.CollectionRecoveryTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stack=java.lang.NullPointerException
+	at com.yonzmusic.app.CollectionRecoveryTest$realSafRelocationRenamePortableWebmAndCollectionIdentity$1.invokeSuspend(CollectionRecoveryTest.kt:30)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.CollectionRecoveryTest.realSafRelocationRenamePortableWebmAndCollectionIdentity(CollectionRecoveryTest.kt:29)
+
+INSTRUMENTATION_STATUS: stream=
+Error in realSafRelocationRenamePortableWebmAndCollectionIdentity(com.yonzmusic.app.CollectionRecoveryTest):
+java.lang.NullPointerException
+	at com.yonzmusic.app.CollectionRecoveryTest$realSafRelocationRenamePortableWebmAndCollectionIdentity$1.invokeSuspend(CollectionRecoveryTest.kt:30)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.CollectionRecoveryTest.realSafRelocationRenamePortableWebmAndCollectionIdentity(CollectionRecoveryTest.kt:29)
+
+INSTRUMENTATION_STATUS: test=realSafRelocationRenamePortableWebmAndCollectionIdentity
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.CollectionRecoveryTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.CollectionRecoveryTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=6
+INSTRUMENTATION_STATUS: stack=java.lang.NullPointerException
+	at com.yonzmusic.app.CollectionRecoveryTest$artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource$1.invokeSuspend(CollectionRecoveryTest.kt:71)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.CollectionRecoveryTest.artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource(CollectionRecoveryTest.kt:70)
+
+INSTRUMENTATION_STATUS: stream=
+Error in artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource(com.yonzmusic.app.CollectionRecoveryTest):
+java.lang.NullPointerException
+	at com.yonzmusic.app.CollectionRecoveryTest$artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource$1.invokeSuspend(CollectionRecoveryTest.kt:71)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.CollectionRecoveryTest.artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource(CollectionRecoveryTest.kt:70)
+
+INSTRUMENTATION_STATUS: test=artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 1.106
+There were 6 failures:
+1) defaultPublicationKeepsOriginalWebmAndIdempotentRecovery(com.yonzmusic.app.DownloadGalleryTest)
+java.lang.NullPointerException
+	at com.yonzmusic.app.DownloadGalleryTest$defaultPublicationKeepsOriginalWebmAndIdempotentRecovery$1.invokeSuspend(DownloadGalleryTest.kt:42)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.DownloadGalleryTest.defaultPublicationKeepsOriginalWebmAndIdempotentRecovery(DownloadGalleryTest.kt:39)
+2) toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice(com.yonzmusic.app.DownloadGalleryTest)
+java.lang.NullPointerException
+	at com.yonzmusic.app.DownloadGalleryTest$toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice$1.invokeSuspend(DownloadGalleryTest.kt:80)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.DownloadGalleryTest.toggleRecoveryOwnMarkersOnlyAndUnavailableFolderNotice(DownloadGalleryTest.kt:79)
+3) prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections(com.yonzmusic.app.HiddenMetadataTest)
+java.lang.NullPointerException
+	at com.yonzmusic.app.HiddenMetadataTest$prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections$1.invokeSuspend(HiddenMetadataTest.kt:23)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.HiddenMetadataTest.prettyHiddenManifestFreshNonrecursiveImportAndRenameKeepArtworkAndCollections(HiddenMetadataTest.kt:20)
+4) originalWebmAndOpusWithCompanionCoversRetainAfterRescan(com.yonzmusic.app.OriginalArtworkTest)
+java.lang.NullPointerException
+	at com.yonzmusic.app.OriginalArtworkTest$originalWebmAndOpusWithCompanionCoversRetainAfterRescan$1.invokeSuspend(OriginalArtworkTest.kt:29)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.OriginalArtworkTest.originalWebmAndOpusWithCompanionCoversRetainAfterRescan(OriginalArtworkTest.kt:25)
+5) realSafRelocationRenamePortableWebmAndCollectionIdentity(com.yonzmusic.app.CollectionRecoveryTest)
+java.lang.NullPointerException
+	at com.yonzmusic.app.CollectionRecoveryTest$realSafRelocationRenamePortableWebmAndCollectionIdentity$1.invokeSuspend(CollectionRecoveryTest.kt:30)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.CollectionRecoveryTest.realSafRelocationRenamePortableWebmAndCollectionIdentity(CollectionRecoveryTest.kt:29)
+6) artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource(com.yonzmusic.app.CollectionRecoveryTest)
+java.lang.NullPointerException
+	at com.yonzmusic.app.CollectionRecoveryTest$artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource$1.invokeSuspend(CollectionRecoveryTest.kt:71)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.CollectionRecoveryTest.artworkCacheUsesSizeAndRevisionAndNeverUpscalesTinySource(CollectionRecoveryTest.kt:70)
+
+FAILURES!!!
+Tests run: 6,  Failures: 6
+
+
+INSTRUMENTATION_CODE: -1

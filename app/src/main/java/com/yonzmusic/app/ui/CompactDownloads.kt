@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
     val event by repo.event.collectAsStateWithLifecycle()
     val plan by repo.plan.collectAsStateWithLifecycle()
     val message by repo.message.collectAsStateWithLifecycle()
+    val preferences by vm.preferences.collectAsStateWithLifecycle()
     val destination by vm.outputDestination.collectAsStateWithLifecycle()
     val tracks by vm.tracks.collectAsStateWithLifecycle()
     val artists = remember(tracks) { tracks.filter { it.available }.flatMap { it.artist.split(';') }.distinct() }
@@ -94,6 +95,7 @@ import androidx.compose.foundation.lazy.LazyColumn
             TextButton({ folder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)) }, enabled = !busy) { Text(if (destination.isBlank()) "Pilih tujuan" else "Ubah tujuan") }
         }
         if (destination.isNotBlank()) Text("Simpan ke: ${Uri.decode(destination.substringAfterLast('/')).substringAfter(':')}", style = MaterialTheme.typography.bodySmall, maxLines = 2)
+        if (preferences.hideDownloadsFromGallery) Text("Folder unduhan tersembunyi dari Galeri · atur di Pengaturan", style = MaterialTheme.typography.bodySmall)
         } else TextButton({ editing = true }) { Text("Ubah masukan / tujuan") }
         Row { Checkbox(authorized, { authorized = it }, enabled = !busy); Text("Saya berhak mengunduh audio ini dan sumber/layanannya mengizinkan.", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall) }
         if (!busy && (editing || plan == null)) Button({ repo.submit("prepare", JSONObject().put("kind", kind).put("content", text).put("resume_existing",true)) }, enabled = authorized && text.isNotBlank() && destination.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Periksa daftar") }

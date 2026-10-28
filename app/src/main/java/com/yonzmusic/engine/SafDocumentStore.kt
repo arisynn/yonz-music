@@ -171,12 +171,17 @@ class SafDocumentStore(context: Context, private val destination: Uri) {
         return commitInternal(localPath,folderName,fileName,mime,key,expectedHash,true)
     }
     private fun commitInternal(localPath: String, folderName: String, fileName: String, mime: String, key: String, expectedHash: String, cover: Boolean): String {
+        require(expectedHash.matches(Regex("[a-f0-9]{64}")))
+        val albumParent = if (folderName.isBlank()) documentTreeRoot() else folder(component(folderName))
+        if (!cover && mime.startsWith("audio/")) (app as com.yonzmusic.app.YonzApp).downloadGallery.beforePublish(destination, albumParent)
         lookup(key, expectedHash).takeIf { it.isNotEmpty() }?.let { return it }
         val source = File(localPath).canonicalFile
         require(source.toPath().startsWith(File(root, "work").toPath()) && source.isFile)
-        require(expectedHash.matches(Regex("[a-f0-9]{64}")))
-        val albumParent = if (folderName.isBlank()) documentTreeRoot() else folder(component(folderName))
-        val parent = if(cover) CoverDirectory.obtain(resolver,destination,albumParent) else albumParent
+        val parent = when {
+            cover -> CoverDirectory.obtain(resolver, destination, albumParent)
+            mime == "application/json" && fileName.endsWith(".yono.json") -> MetadataDirectory.obtain(resolver, destination, albumParent)
+            else -> albumParent
+        }
         val finalName = uniqueName(parent, component(fileName))
         var created: Uri? = null
         var published = false

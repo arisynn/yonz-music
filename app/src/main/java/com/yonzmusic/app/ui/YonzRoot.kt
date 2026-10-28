@@ -55,6 +55,7 @@ import org.json.JSONArray
                 WindowCompat.getInsetsController(it.window,it.window.decorView).apply {isAppearanceLightStatusBars=light;isAppearanceLightNavigationBars=light}
             }
         }
+        val galleryNotice by (context.applicationContext as com.yonzmusic.app.YonzApp).downloadGallery.notice.collectAsStateWithLifecycle()
         val tracks by vm.tracks.collectAsStateWithLifecycle()
         val collectionTracks by vm.collectionTracks.collectAsStateWithLifecycle()
         val migrationNotice by vm.migrationNotice.collectAsStateWithLifecycle()
@@ -208,7 +209,7 @@ import org.json.JSONArray
                         }
                     }, { vm.resetImport(); navigate("import") }, {
                         context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
-                    },smartMix=vm::smartMix)
+                    },smartMix=vm::smartMix,hideDownloads=vm::hideDownloadsFromGallery,galleryNotice=galleryNotice)
                     "import" -> ImportScreen(vm, imports, { files.launch(Intent(Intent.ACTION_OPEN_DOCUMENT).setType("audio/*").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)) }, { folder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)) }, { list.launch(arrayOf("text/*", "application/json", "audio/x-mpegurl", "application/vnd.apple.mpegurl", "application/octet-stream")) }, { destination = "playlists"; parent = "playlists" }, { historyReport = it })
                 } }
                 if (scanning && destination != "library" && destination != "settings") LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))

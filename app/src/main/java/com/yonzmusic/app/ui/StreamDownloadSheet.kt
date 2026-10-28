@@ -24,6 +24,7 @@ import com.yonzmusic.app.search.OnlineSong
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun StreamDownloadSheet(song:OnlineSong,vm:MusicViewModel,close:()->Unit,queued:()->Unit) {
     val context=LocalContext.current;val app=context.applicationContext as YonzApp
+    val preferences by vm.preferences.collectAsStateWithLifecycle()
     val destination by vm.outputDestination.collectAsStateWithLifecycle()
     var authorized by remember(song.id){mutableStateOf(false)}
     val savedPlaylist by vm.onlineDownloadPlaylist.collectAsStateWithLifecycle()
@@ -55,7 +56,7 @@ import com.yonzmusic.app.search.OnlineSong
                 }
             }
             Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically){Checkbox(authorized,{authorized=it});Text("Saya berhak mengunduh audio ini dan sumber mengizinkan.",Modifier.weight(1f),style=MaterialTheme.typography.bodySmall)}
-            Text("Format asli · metadata & sampul",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(if (preferences.hideDownloadsFromGallery) "Format asli · tersembunyi dari Galeri (atur di Pengaturan)" else "Format asli · metadata & sampul",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
             Button({vm.onlinePlaylist(playlist);app.acquisition.enqueueSelected(song,destination,playlist,vm::notify);close();queued()},enabled=authorized && destination.isNotBlank(),modifier=Modifier.fillMaxWidth()){Text("Tambah ke unduhan")}
         }
     }
