@@ -1,3 +1,11 @@
+# 1.5.0-preview.2 — 2026-10-28
+
+- Replaced online providers with embedded yt-dlp flat metadata search, automatic600ms debounce, cancellation/deadlines, bounded pagination and cache.
+- Removed iTunes API/audio/art assets and Google YouTube Data API/key UI, plus official iframe/temporary native audition. Listening now opens the original source externally; no replacement preview is faked.
+- Kept one Search tab, local offline matching, optional private history and exact-link handoff into existing authorized download review. Existing obsolete search key files are removed; music/collections remain untouched.
+- Search uses separate bounded workers and per-instance guarded networking; all bridges share lazy Python startup synchronization. Channel names stay labelled as channels rather than guessed artists.
+- Preview code11, same Dev signature/package, Room schema3. Source is still YouTube through yt-dlp; removing the API provider does not remove the underlying platform. Live test requests were blocked by the environment proxy403; do not claim general live support.
+
 # 1.5.0-preview.1 — 2026-10-27
 
 - Automatic Search with offline ranked/accent-aware matching and an explicit Online mode; cancellable debounce, bounded caching, timeouts and query history controls.

@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 /** A single controller mirrors the service. Progress is read only by visible player composables. */
 data class PlaybackUi(val id: String? = null, val playing: Boolean = false, val queue: List<String> = emptyList(), val index: Int = 0, val shuffle: Boolean = false, val repeat: Int = Player.REPEAT_MODE_OFF, val error: String? = null, val ready: Boolean = false, val queueKeys: List<String> = emptyList(), val playbackOrder: List<Int> = emptyList())
 class PlaybackConnection(context: Context) {
-    var beforeLocalPlay: () -> Unit = {}
     val state = MutableStateFlow(PlaybackUi())
     private var controller: MediaController? = null
     private var future: ListenableFuture<MediaController>? = null
@@ -55,11 +54,10 @@ class PlaybackConnection(context: Context) {
         val available = tracks.filter { it.available }.distinctBy { it.id }.take(10000)
         val index = available.indexOfFirst { it.id == id }
         if (index < 0) return
-        beforeLocalPlay()
         queueGeneration++
         controller?.apply { setMediaItems(available.map(Track::mediaItem), index, 0); prepare(); play() }
     }
-    fun toggle() { controller?.let { if (it.playWhenReady && it.playbackState != Player.STATE_ENDED) it.pause() else { beforeLocalPlay();if (it.playbackState == Player.STATE_ENDED) it.seekTo(0); if (it.playbackState == Player.STATE_IDLE) it.prepare(); it.play() } } }
+    fun toggle() { controller?.let { if (it.playWhenReady && it.playbackState != Player.STATE_ENDED) it.pause() else { if (it.playbackState == Player.STATE_ENDED) it.seekTo(0); if (it.playbackState == Player.STATE_IDLE) it.prepare(); it.play() } } }
     fun pause() {controller?.pause()}
     fun previous() { controller?.seekToPrevious() }
     fun next() { controller?.seekToNext() }
@@ -94,7 +92,7 @@ class PlaybackConnection(context: Context) {
         val before=keys.indexOf(item.before).takeIf { item.before!=null && it>=0 }
         p.addMediaItem(after ?: before?.plus(1) ?: item.index.coerceIn(0,p.mediaItemCount),item.item)
     } }
-    fun jump(index: Int) { controller?.let { if (index in 0 until it.mediaItemCount) { beforeLocalPlay();it.seekToDefaultPosition(index); it.prepare(); it.play() } } }
+    fun jump(index: Int) { controller?.let { if (index in 0 until it.mediaItemCount) { it.seekToDefaultPosition(index); it.prepare(); it.play() } } }
     fun timer(minutes: Int) { controller?.sendCustomCommand(SessionCommand(PlaybackService.TIMER, Bundle.EMPTY), Bundle().apply { putInt("minutes", minutes) }) }
     fun close() { closed = true; Choreographer.getInstance().removeFrameCallback(firstFrame); controller?.removeListener(listener); future?.let { MediaController.releaseFuture(it) } }
 }

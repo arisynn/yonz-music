@@ -184,9 +184,9 @@ import org.json.JSONArray
                     "home" -> HomeScreen(tracks, favorites, history, current, playback.id, { vm.play(it.first, it.second) }, { menuId = it.id }, { detail("favorites", "", "Favorites") }, { detail("history", "", "Recently played") }, { k, t -> detail("album", k, t) }, { vm.resetImport(); navigate("import") }, { destination = "library" }, { playerOpen = true },scrollState=homeScroll,mixes=mixes)
                     "library" -> LibraryScreen(tracks, favorites, playback.id, preferences.sort, scanning, { vm.resetImport(); navigate("import") }, vm::scan, vm::sort, { t, id -> vm.play(t, id) }, { menuId = it.id }, { kind, key, title -> detail(kind, key, title) })
                     "search" -> SearchScreen(vm,tracks, playlists, favorites, playback.id, { t, id -> vm.play(t, id) }, { menuId = it.id }, { p -> detail("playlist", "", p.name, p.id) },{song->
-                        if(song.provider==com.yonzmusic.app.search.SearchProvider.COMMONS && com.yonzmusic.app.search.SearchContract.https(song.preview,setOf("upload.wikimedia.org"))) {
+                        if(com.yonzmusic.app.search.SearchContract.https(song.page,com.yonzmusic.app.search.SearchContract.sourceHosts)) {
                             if(acquisition.busy.value)vm.notify("Tunggu pekerjaan unduhan saat ini, lalu coba lagi.")
-                            else {vm.pendingDownloadInput.value=song.preview;vm.resetImport();navigate("import")}
+                            else {vm.pendingDownloadInput.value=song.page;vm.resetImport();navigate("import")}
                         }
                     })
                     "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorites") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") })

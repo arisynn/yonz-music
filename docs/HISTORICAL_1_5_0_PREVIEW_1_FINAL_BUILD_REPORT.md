@@ -1,0 +1,15 @@
+# Yono Music 1.5.0-preview.1 — Search preview
+
+Karisyono · preview package `com.yonzmusic.app.dev` · code10 · Room schema3. Stable official remains 1.4.2/code9. Existing Dev certificate is retained; preview is standard debug-signed and installs beside official, or upgrades the matching Dev installation. Original YONO branding and Home / Library / Search / Playlists remain. No production signing key or token is distributed.
+
+Search now offers automatic offline ranked matching and explicit opt-in online discovery. Typing starts a cancellable, debounced request without Enter/Search. Official iTunes metadata and supplied promotional clips, optional own-key YouTube Data API and visible official player, and additional license-filtered Commons discovery share one Search destination. Native foreground previews pause local playback without replacing its queue or writing remote songs/history to Room. Query history is private, bounded and optional; API credentials are user-provided and not bundled. Existing download review accepts only the explicit Commons handoff, preserving its output/authorization/validation flow.
+
+Apple previews do not feed a competing-source download mapper. YouTube text search needs a valid user project API key; direct video links and external fallback remain available without one. Embedded playback depends on the service's region/age/embedding/client restrictions and WebView. Full provider terms and implementation scope: docs/ONLINE_SEARCH_PREVIEW.md.
+
+SDK min26, target/compile35; JDK17, Gradle8.11.1, AGP8.9.1, Kotlin2.1.20, Compose BOM2025.04.01, Media3 1.6.1. arm64-v8a/x86_64. No new dependency, native runtime, Python engine, manifest permission, database migration or official signing change. Declared permissions: INTERNET, ACCESS_NETWORK_STATE, POST_NOTIFICATIONS, WAKE_LOCK, FOREGROUND_SERVICE, FOREGROUND_SERVICE_MEDIA_PLAYBACK, FOREGROUND_SERVICE_DATA_SYNC, REQUEST_INSTALL_PACKAGES. No broad storage permission/scan.
+
+Preview assembly/lint and126 JVM tests passed; seven distinct Android API29 cases passed, including real iTunes query and decoded streamed audition. In-place Dev9→10 retained exact collection rows. Actual scope, initial failed attempts and device limitations are in TEST_REPORT.md. Artifact size/hash/signature and exact source commit accompany the distribution report. Preview has no stable update.json and must be published as a GitHub prerelease with make_latest=false.
+
+The first publication attempt was blocked by HTTP401. Renewed GitHub credentials were subsequently verified as the owner account. This source snapshot precedes publication: distribution records the resulting public prerelease URL/commit and verifies that official/latest remains1.4.2.
+
+Final badge refinement: the original Apple-provided Small Badge replaces the large Buy on graphic. It displays at79.25×16dp within an88×48dp touch target, with clear space and the direct store link preserved. No engine, metadata, database, permission or signing behavior changed.

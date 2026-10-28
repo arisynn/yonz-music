@@ -1,0 +1,15 @@
+test_artwork_does_not_contact_arbitrary_hosts (test_search.SearchTests.test_artwork_does_not_contact_arbitrary_hosts) ... ok
+test_cancelled_request_never_returns_results (test_search.SearchTests.test_cancelled_request_never_returns_results) ... ok
+test_exact_link_never_substitutes_other_recording (test_search.SearchTests.test_exact_link_never_substitutes_other_recording) ... ok
+test_invalid_ids_and_live_items (test_search.SearchTests.test_invalid_ids_and_live_items) ... ok
+test_invalid_link_has_no_network (test_search.SearchTests.test_invalid_link_has_no_network) ... ok
+test_json_invalid_input_is_structured (test_search.SearchTests.test_json_invalid_input_is_structured) ... ok
+test_links_are_strict_and_no_credentials (test_search.SearchTests.test_links_are_strict_and_no_credentials) ... ok
+test_metadata_does_not_guess_artist_album_or_hd (test_search.SearchTests.test_metadata_does_not_guess_artist_album_or_hd) ... ok
+test_real_credits_and_invalid_duration (test_search.SearchTests.test_real_credits_and_invalid_duration) ... ok
+test_search_is_flat_no_download_and_pages_are_bounded (test_search.SearchTests.test_search_is_flat_no_download_and_pages_are_bounded) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+OK

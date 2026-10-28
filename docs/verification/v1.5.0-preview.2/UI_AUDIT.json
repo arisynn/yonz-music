@@ -1,0 +1,17 @@
+{
+  "device": "API29 x86_64 emulator;320dp width",
+  "themes": [
+    "Light",
+    "Dark"
+  ],
+  "fontScales": [
+    1,
+    1.5
+  ],
+  "liveSearchUiState": "error",
+  "obsoleteApiKeyFormAbsent": true,
+  "unintendedOverlapObserved": false,
+  "noUninstallOrDataReset": true,
+  "scope": "actual full-app empty/error Search and history dialog; results normalizer/bridge use separately labelled fixtures",
+  "physicalDevice": false
+}

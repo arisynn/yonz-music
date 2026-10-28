@@ -2,7 +2,7 @@
 
 Your Music. Your Space.
 
-**Preview 1.5.0-preview.1:** automatic local/online Search, official iTunes promotional previews, optional YouTube API search/visible player, and additional Commons discovery. [Scope, privacy and setup](docs/ONLINE_SEARCH_PREVIEW.md). This is the separate Dev package; stable remains **1.4.2**. [Preview release / APK / source](https://github.com/arisynn/yonz-music/releases/tag/v1.5.0-preview.1). The preview is not offered by the official stable updater. Apple previews are not connected to cross-service downloading.
+**Preview 1.5.0-preview.2:** automatic online Search now calls the embedded yt-dlp engine. iTunes search/assets/clips, Google YouTube Data API/key setup, and the embedded YouTube player are removed. Results show actual title/channel or supplied artist credits, duration/artwork when available, open the original source externally for listening, and hand the exact link into existing download review. **Live search is not verified in this build environment:** its outbound proxy rejects the source with HTTP403. Fixture/native bridge checks and real attempts are distinguished in [tests](TEST_REPORT.md). [Preview APK/source](https://github.com/arisynn/yonz-music/releases/tag/v1.5.0-preview.2). Separate Dev package; stable stays **1.4.2**.
 
 **1.4.2:** shuffle starts at the current song and includes the remaining queue in a new random cycle; the queue shows the actual playback order. Home artwork crossfades between available local covers every six seconds, with no tap action and with reduced-motion/background handling.
 

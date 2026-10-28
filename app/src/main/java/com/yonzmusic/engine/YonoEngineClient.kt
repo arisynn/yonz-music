@@ -3,7 +3,6 @@ package com.yonzmusic.engine
 import android.content.Context
 import androidx.annotation.Keep
 import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
 import java.io.Closeable
 import java.io.File
 import java.util.UUID
@@ -84,9 +83,7 @@ class YonoEngineClient(
         worker.execute {
             try {
                 storage.setCancellation { task.stopped.get() || task.currentEntry in task.cancelledEntries }
-                synchronized(PYTHON_START) {
-                    if (!Python.isStarted()) Python.start(AndroidPlatform(app))
-                }
+                PythonRuntime.module(app,"yono_engine_api")
                 val config = JSONObject().put("job_id", id).put("state_dir", root.canonicalPath)
                     .put("timeout_seconds", timeoutSeconds.coerceIn(5, 7200))
                     .put("network", com.yonzmusic.app.network.AndroidNetworkContext.options(app, "https://music.youtube.com"))
@@ -131,5 +128,4 @@ class YonoEngineClient(
         }
     }
 
-    private companion object { val PYTHON_START = Any() }
 }

@@ -1,8 +1,6 @@
 package com.yonzmusic.app.download
 
 import android.content.Context
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
 import com.yonzmusic.app.BuildConfig
 import com.yonzmusic.app.data.DownloadJob
 import com.yonzmusic.app.update.JsonGuard
@@ -16,8 +14,7 @@ object EmbeddedEngine {
         fun progress(received: Long, total: Long)
     }
     private fun module(context: Context): com.chaquo.python.PyObject {
-        synchronized(this) { if (!Python.isStarted()) Python.start(AndroidPlatform(context.applicationContext)) }
-        return Python.getInstance().getModule("yono_engine")
+        return com.yonzmusic.engine.PythonRuntime.module(context,"yono_engine")
     }
     fun quickJs(context: Context) = File(context.applicationInfo.nativeLibraryDir, "libqjs.so").takeIf { it.isFile }?.absolutePath.orEmpty()
     private fun transport(context: Context, url: String, test: JSONObject?): String {

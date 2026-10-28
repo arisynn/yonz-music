@@ -1,0 +1,180 @@
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.OnlineSearchPreviewTest:
+INSTRUMENTATION_STATUS: test=actualPythonBridgeUsesFlatReadOnlySearchAndCancellation
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stack=com.chaquo.python.PyException: SystemError: frame does not exist
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.OnlineSearchPreviewTest$actualPythonBridgeUsesFlatReadOnlySearchAndCancellation$1.invokeSuspend(OnlineSearchPreviewTest.kt:38)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.OnlineSearchPreviewTest.actualPythonBridgeUsesFlatReadOnlySearchAndCancellation(OnlineSearchPreviewTest.kt:37)
+
+INSTRUMENTATION_STATUS: stream=
+Error in actualPythonBridgeUsesFlatReadOnlySearchAndCancellation(com.yonzmusic.app.OnlineSearchPreviewTest):
+com.chaquo.python.PyException: SystemError: frame does not exist
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.OnlineSearchPreviewTest$actualPythonBridgeUsesFlatReadOnlySearchAndCancellation$1.invokeSuspend(OnlineSearchPreviewTest.kt:38)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.OnlineSearchPreviewTest.actualPythonBridgeUsesFlatReadOnlySearchAndCancellation(OnlineSearchPreviewTest.kt:37)
+
+INSTRUMENTATION_STATUS: test=actualPythonBridgeUsesFlatReadOnlySearchAndCancellation
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=optionalHistoryAndObsoleteKeyRemovalKeepCollections
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=optionalHistoryAndObsoleteKeyRemovalKeepCollections
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.ShufflePlaybackTest:
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.QueueGesture14Test:
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.PlaybackIntegrationTest:
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.UpdateProgressTest:
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.NewEngineBridgeTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.NewEngineBridgeTest:
+INSTRUMENTATION_STATUS: test=realDoctorAnd110LocalEntriesThroughChaquopy
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.NewEngineBridgeTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=8
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=realDoctorAnd110LocalEntriesThroughChaquopy
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 204.516
+There was 1 failure:
+1) actualPythonBridgeUsesFlatReadOnlySearchAndCancellation(com.yonzmusic.app.OnlineSearchPreviewTest)
+com.chaquo.python.PyException: SystemError: frame does not exist
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.OnlineSearchPreviewTest$actualPythonBridgeUsesFlatReadOnlySearchAndCancellation$1.invokeSuspend(OnlineSearchPreviewTest.kt:38)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.OnlineSearchPreviewTest.actualPythonBridgeUsesFlatReadOnlySearchAndCancellation(OnlineSearchPreviewTest.kt:37)
+
+FAILURES!!!
+Tests run: 8,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1
