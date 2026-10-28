@@ -53,6 +53,8 @@ interface MusicDao {
     @Query("SELECT * FROM tracks ORDER BY title COLLATE NOCASE") fun collectionTracks(): Flow<List<Track>>
     @Query("SELECT * FROM tracks") suspend fun allTracks(): List<Track>
     @Query("SELECT * FROM app_state WHERE name LIKE :prefix") suspend fun states(prefix: String): List<AppState>
+    @Query("SELECT * FROM app_state WHERE name LIKE :prefix") fun statesFlow(prefix: String): Flow<List<AppState>>
+    @Query("DELETE FROM app_state WHERE name = :name") suspend fun deleteState(name: String)
     @Query("SELECT * FROM listens") suspend fun allListens(): List<ListenEvent>
     @Query("SELECT trackId, COUNT(*) AS playCount, MAX(startedAt) AS lastPlayed FROM listens GROUP BY trackId") fun listenStats(): Flow<List<ListenStats>>
     @Insert suspend fun listen(event: ListenEvent)

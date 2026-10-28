@@ -32,15 +32,21 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         @Keep fun onEvent(value:String) {}
     }
     data class Resolved(val url:String,val headers:Map<String,String>,val duration:Long,val formatId:String="",val extension:String="",val codec:String="")
-    private data class Cached(val until:Long,val value:Resolved)
-    private val cache=linkedMapOf<String,Cached>()
-    @Synchronized override fun invalidate(id:String){cache.remove(id)}
+    private val cache=StreamResolutionCache<Resolved>({android.os.SystemClock.elapsedRealtime()})
+    override fun invalidate(id:String){cache.invalidate(id)}
     /** Called only by ExoPlayer loader threads. Never stores the signed URL in Room/preferences/logs. */
     override fun resolve(id:String,cancelled:AtomicBoolean,formatId:String?,timeoutMillis:Long):Resolved {
         require(valid(id))
-        if(cancelled.get() || Thread.currentThread().isInterrupted)throw StreamFailure(StreamIssue.CANCELLED)
-        synchronized(this){cache[id]?.takeIf {android.os.SystemClock.elapsedRealtime()<it.until && (formatId==null || it.value.formatId==formatId)}?.let{return it.value}}
-        val config=JSONObject().put("job_id",java.util.UUID.randomUUID().toString()).put("timeout_seconds",(timeoutMillis/1000).coerceIn(5,22))
+        val deadline=android.os.SystemClock.elapsedRealtime()+timeoutMillis.coerceIn(1,22000)
+        fun active() {
+            if(cancelled.get() || Thread.currentThread().isInterrupted)throw StreamFailure(StreamIssue.CANCELLED)
+            if(android.os.SystemClock.elapsedRealtime()>=deadline)throw StreamFailure(StreamIssue.TIMEOUT)
+        }
+        return cache.resolve(id,{formatId==null || it.formatId==formatId},::active,
+            {StreamRange.cacheMillis(it.url,System.currentTimeMillis())}) {
+        val remaining=deadline-android.os.SystemClock.elapsedRealtime()
+        if(remaining<5000)throw StreamFailure(StreamIssue.TIMEOUT)
+        val config=JSONObject().put("job_id",java.util.UUID.randomUUID().toString()).put("timeout_seconds",(remaining/1000).coerceIn(5,22))
             .put("network",AndroidNetworkContext.options(app,"https://www.youtube.com"))
         val qjs=File(app.applicationInfo.nativeLibraryDir,"libqjs.so")
         if(qjs.isFile)config.put("runtime",JSONObject().put("quickjs",JSONObject().put("path",qjs.canonicalPath)))
@@ -49,9 +55,10 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         val url=j.getString("url");runCatching {StreamPolicy.url(url)}.getOrElse {throw StreamFailure(StreamIssue.UNSAFE)}
         val headers=mutableMapOf<String,String>();j.optJSONObject("headers")?.let {h->h.keys().forEach {k->val v=h.optString(k);if(k.lowercase() in setOf("user-agent","accept","accept-language") && v.length<1500 && !v.contains('\r') && !v.contains('\n'))headers[k]=v}}
         val result=Resolved(url,headers,((j.optJSONObject("song")?.optDouble("duration",0.0) ?: 0.0)*1000).toLong().coerceIn(0,7*86400000L),j.optString("format_id").take(100),j.optString("ext").take(20),j.optString("acodec").take(100))
-        synchronized(this){cache[id]=Cached(android.os.SystemClock.elapsedRealtime()+StreamRange.cacheMillis(url,System.currentTimeMillis()),result);while(cache.size>8)cache.remove(cache.keys.first())}
-        return result
+        result
+        }
     }
+
     companion object {
         fun valid(id:String)=id.matches(Regex("[A-Za-z0-9_-]{11}"))
         fun encode(s:OnlineSong)=JSONObject().put("id",s.videoId).put("title",s.title.take(250)).put("credit",s.credit.take(1000)).put("artist",s.artistVerified).put("album",s.album.take(250)).put("duration",s.durationMs).put("art",s.artwork)

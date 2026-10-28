@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/testing/yono150qa/online_ui.py", line 20, in <module>
+    d(text='Buat').click();assert d(text=name).wait(timeout=20);d(text=name).click();assert d(text='Cari lagu').wait(timeout=20)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

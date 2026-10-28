@@ -20,7 +20,10 @@ class AcquisitionRepository(private val app: YonzApp) {
     private val queueReady=CompletableDeferred<Unit>()
     suspend fun refreshQueued() {
         val rows=dao.states("stream-download:%").mapNotNull {runCatching {JSONObject(it.value)}.getOrNull()}.sortedBy {it.optLong("created")}
-        queuedDownloads.value=(rows.filter {it.optString("status") in setOf("queued","running","cancelling")}+rows.filter {it.optString("status") !in setOf("queued","running","cancelling")}.takeLast(200)).sortedBy {it.optLong("created")}
+        val activeStatuses=setOf("queued","running","cancelling")
+        // History is bounded, but every active request must remain visible to cancel/dedup/recovery.
+        queuedDownloads.value=rows.filter {it.optString("status") in activeStatuses}+
+            rows.filter {it.optString("status") !in activeStatuses}.takeLast(200).asReversed()
     }
     private suspend fun updateQueued(id:String,expectedWork:String?=null,edit:(JSONObject)->Unit) {
         app.database.withTransaction {val j=dao.state("stream-download:$id")?.value?.let(::JSONObject) ?: return@withTransaction;if(expectedWork!=null && j.optString("work_id")!=expectedWork)return@withTransaction;edit(j);dao.state(AppState("stream-download:$id",j.toString()))};refreshQueued()
@@ -229,10 +232,7 @@ class AcquisitionRepository(private val app: YonzApp) {
         val destination = savedDestination ?: recoveredDestination ?: request.optString("destination").ifBlank { dao.state("download_destination")?.value.orEmpty() }
         if(destination.isBlank()) { if(selectedJob)failQueued(requestId,"Pilih tujuan unduhan dahulu.",workId);executing=false;busy.value=false;message.value="Pilih tujuan unduhan dahulu.";return@withContext }
         val client = YonoEngineClient(app, SafDocumentStore(app, Uri.parse(destination)), YonoEngineClient.RuntimePaths(
-            quickJs = File(app.applicationInfo.nativeLibraryDir, "libqjs.so")), accessToken = {
-                val input=request.optJSONObject("payload")?.let { it.optString("content")+it.optString("url") }.orEmpty()
-                if(request.optString("action")=="prepare" && Regex("(?:open\\.spotify\\.com|spotify\\.link|spoti\\.fi|spotify:playlist:)",RegexOption.IGNORE_CASE).containsMatchIn(input))app.spotify.accessToken()else ""
-            })
+            quickJs = File(app.applicationInfo.nativeLibraryDir, "libqjs.so")))
         suspend fun call(action: String, payload: JSONObject): JSONObject {
             if (!operationContext.isActive || stopped()) error("Dibatalkan")
             val current = client.begin(action, payload, if (action == "acquire") 7200 else 900); boundTask=BoundTask(requestId,current)

@@ -62,7 +62,6 @@ import androidx.compose.foundation.lazy.LazyColumn
     LaunchedEffect(plan?.optString("id")) { if (plan != null) editing = false }
     var downloadsOpen by remember { mutableStateOf(false) }
     var details by remember { mutableStateOf(false) }
-    var spotifyOpen by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val folder = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
         val data = r.data
@@ -87,7 +86,6 @@ import androidx.compose.foundation.lazy.LazyColumn
             Text("Unduh musik",Modifier.weight(1f),style=MaterialTheme.typography.headlineSmall)
             TextButton({downloadsOpen=true}){Text("Daftar")}
         }
-        TextButton({spotifyOpen=true},enabled=!busy){Text("Koneksi playlist Spotify")}
         if (editing || plan == null) {
         SmartSongListField(text, { text = it; kind = PasteListFormatter.detectKind(it) }, artists,
             modifier = Modifier.fillMaxWidth(), enabled = !busy, onTooLarge = { vm.notify("Masukan melebihi 2 MiB") })
@@ -139,7 +137,6 @@ import androidx.compose.foundation.lazy.LazyColumn
         }
     }
     if(downloadsOpen) DownloadSheet(vm){downloadsOpen=false}
-    if(spotifyOpen) SpotifyConnectionDialog {spotifyOpen=false}
     if(details) plan?.let { p -> PlaylistReviewSheet(p,selected,!busy,{ selected=it;persistReview() },{ row,choice ->
         persistReview();repo.submit("choose",JSONObject().put("plan_id",p.getString("id")).put("entry_id",row.getString("id")).put("youtube_id",choice));details=false
     },{details=false}) }

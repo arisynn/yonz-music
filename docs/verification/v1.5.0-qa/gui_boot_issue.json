@@ -1,0 +1,8 @@
+{
+  "scope": "Android16 software-emulator startup/test setup",
+  "observed": "Android16 software-emulator cold boot suffered repeated system-process ANRs. Subsequent UI explicitly says Process system is not responding; trace subjects include system LOCKED_BOOT_COMPLETED and Google Play Services startup.",
+  "action": "Gracefully stopped existing AVD again without wipe; use established API29 AVD for remaining tests. Android16 app workflow verification remains unavailable in this software-emulator environment.",
+  "wipeOrUninstall": false,
+  "appPassClaimed": false,
+  "affectedProcess": "Android process system / system_server and Google services, not a verified Yono Music ANR"
+}

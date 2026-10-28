@@ -1,3 +1,8 @@
+GUAVA — 33.7.2-android
+The Guava Authors — Apache License 2.0 (complete license below).
+Source: https://github.com/google/guava/tree/v33.7.2
+Maven source artifact: com.google.guava:guava:33.7.2-android:sources
+
 Yono Music · Dibuat oleh Karisyono
 First-party code: GPL-3.0-or-later. Source: https://github.com/arisynn/yonz-music
 

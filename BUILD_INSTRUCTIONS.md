@@ -1,10 +1,12 @@
-# Build Yono Music 1.5.0-preview.4
+# Build Yono Music 1.5.0
 
 Use JDK 17, Gradle 8.11.1 (included wrapper), Android SDK platform/build-tools 35/35.0.0, NDK 28.2.13676358 and CMake 3.22.1. A Linux x86_64 build host with Python 3.12 is the verified environment. Set ANDROID_HOME and JAVA_HOME normally, or use an ignored `local.properties` for sdk.dir.
 
 `bash ./gradlew -PtestBuildType=preview --max-workers=1 :app:testDebugUnitTest :app:lintPreview :app:assemblePreview :app:assemblePreviewAndroidTest`
 
-Publish only `app/build/outputs/apk/preview/app-preview.apk` for this preview. ID `com.yonzmusic.app.dev`, code13, versionName `1.5.0-preview.4`, standard existing Dev debug certificate, launcher Yono Music Preview. It installs beside official, or upgrades a matching-key Dev install without uninstall. Preview and official collections are separate. `ONLINE_SEARCH_PREVIEW` is false in release builds; do not publish an official 1.5.0 from this preview branch. GitHub release must be a prerelease with `make_latest=false`; no stable update.json is distributed.
+Official build: `bash ./gradlew -PonlineSearchEnabled=true --max-workers=1 :app:assembleRelease :app:lintRelease`. This explicit property enables the online workflow in the production variant; the privacy/offline core remains independent. Use the existing ignored owner signing configuration as described below. Output: `app/build/outputs/apk/release/app-release.apk`, ID `com.yonzmusic.app`, code14, name1.5.0, existing production certificate. Do not publish an unsigned/wrong-key APK or reset app data to pass an upgrade.
+
+Optional Dev build: `bash ./gradlew :app:assembleDebug` gives `com.yonzmusic.app.dev`,14/1.5.0-dev. The matching Preview instrumentation variant is14/1.5.0-preview.5. Dev/Preview and official collections remain separate. A stable release supplies verified `update.json`; private higher-code updater fixtures must never be installed or distributed.
 
 AGP 8.9.1, Kotlin/Compose plugin 2.1.20, KSP 2.1.20-1.0.32, Compose BOM 2025.04.01, Media3 1.6.1, Room 2.7.1 and Chaquopy 17.1.0 are pinned in Gradle. Chaquopy bundles Python 3.12.15 with yt-dlp 2026.10.21, EJS 0.8.0, Mutagen 1.48.1 and certifi 2026.10.23. The native build script compiles the included QuickJS-NG source for arm64-v8a and x86_64; no device-side compiler, pip, Node or Termux is required. First build needs dependency downloads; the installed app's local core does not.
 
@@ -18,7 +20,7 @@ An emulator-only higher code can be built with `-PtestVersionCode=13` for update
 
 ## Collection repair verification
 
-Preview default: code13, name1.5.0-preview.4 (preview build type), Room schema3. Stable distribution remains1.4.2/code9. Keep all schema JSON files and migration 1→2→3; never delete the database to make an upgrade pass.
+Default code14/name1.5.0; optional Preview suffix-preview.5; Room schema3. Official1.4.2/code9 upgrades to1.5.0/code14 with the same production certificate. Keep all schema JSON files and migration 1→2→3; never delete the database to make an upgrade pass.
 
 Host engine checks: install `app/requirements-android.lock` into a separate Python 3.12 virtual environment, then run `python tools/yono-engine/verify_host.py`. Reports default to `docs/verification/v1.3.0`; `--output` selects a different evidence directory. Host FFmpeg creates/inspects owned fixture audio only; it is not an app dependency. After building, `PYTHONPATH=app/build/python/pip/debug/common python3 tools/yono-engine/verify_host.py` can reuse the resolved pure-Python dependencies.
 
@@ -26,7 +28,7 @@ New Android checks include CollectionRecoveryTest, LocationStatesTest, OutsideAn
 
 For R8 on a constrained build host, use the default 1792 MiB Gradle heap and stop the software emulator during minification. A 768 MiB override exhausted the compiler heap during this release; the normal-heap rebuild passed. This is build-host memory, not an app runtime requirement.
 
-Optional Spotify: configure a public Client ID in Downloads → Koneksi playlist Spotify. Register `com.yonzmusic.app://spotify/callback` (Dev: `com.yonzmusic.app.dev://spotify/callback`). No client secret is used. Developer account/allowlist/quota requirements and playlist owner/collaborator restrictions apply. See docs/UPDATE_1_4_0.md.
+Spotify OAuth has been removed: no Client ID, callback or token configuration. Existing metadata exports remain supported. See [online playlists](docs/ONLINE_PLAYLISTS.md).
 
 
 ## Engine Search verification
@@ -40,4 +42,11 @@ Build instrumentation against the same Preview variant: `bash ./gradlew -PtestBu
 
 `StreamingIntegrationTest` scopes Python extractor/search fixtures to its own process and restores them in finally. Its own generated WAV passes through the real streaming DataSource and shared service; a normal constructor-injected test transport supplies bytes. The persistent request case checks dedup/cancel/recovery and actual WorkManager dependent-node execution. These are fixtures, not live source transfers. `StreamingLiveProbeTest` is a separate opt-in `-e liveStream true -e class com.yonzmusic.app.StreamingLiveProbeTest`; any failed live attempt must remain a failure in reports. No fixture toggle is exposed through app UI, config, exported components or IPC.
 
-See docs/STREAMING_PREVIEW.md for progressive-audio restrictions, local-vs-online behavior and URL expiry handling. Dependencies are unchanged; no FFmpeg/transcoding or external runtime installation is added.
+See docs/STREAMING_PREVIEW.md for progressive-audio restrictions, local-vs-online behavior and URL expiry handling. Guava is explicitly pinned to33.7.2-android; other engine/Media3 versions remain unchanged. No FFmpeg/transcoding or external runtime installation is added.
+
+
+## Streaming warm-up QA
+
+`StreamResolutionCacheTest` checks concurrent extraction coalescing, expiry/format pinning, bounded eviction, failure recovery and waiter cancellation. `StreamPreloadTest` uses the actual service and generated60-second WAV through a constructor-injected transport, checks next-item bytes arrive before transition, and verifies decoded playback after Next. No production fixture toggle exists. This test cannot measure real CDN latency. Source analysis is limited to the active queue, never all recent history or search results. Signed URLs and initial audio buffers stay in memory and expire with the session/process.
+
+Run R8 and software-emulator tests sequentially on a constrained host. The Android16 software AVD exhibited process-system/Google-service startup ANRs even after builds stopped; do not report those startup attempts as successful Android16 app tests. Existing userdata is preserved. See TEST_REPORT.md for actual verification.

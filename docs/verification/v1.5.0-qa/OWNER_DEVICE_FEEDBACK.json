@@ -1,0 +1,9 @@
+{
+  "source": "Owner report in conversation, not independently executed by build agent",
+  "build": "1.5.0-preview.4",
+  "onlineStreamingPlayback": true,
+  "directDownloadCompletedAndAudioPlayable": true,
+  "deviceContext": "Owner earlier reported Android16/latest HyperOS; no device logs or exact build fingerprint collected",
+  "newPreloadBehaviorTestedByOwner": false,
+  "releaseAuthorization": "Continue QA and official release when stable"
+}

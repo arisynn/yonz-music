@@ -23,7 +23,6 @@ class YonoEngineClient(
     context: Context,
     private val storage: SafDocumentStore,
     private val runtime: RuntimePaths = RuntimePaths(),
-    private val accessToken: () -> String = { "" },
 ) : Closeable {
     data class RuntimePaths(val quickJs: File? = null, val ffmpeg: File? = null, val ffprobe: File? = null)
 
@@ -97,7 +96,7 @@ class YonoEngineClient(
                 if (qjs.isNotEmpty()) config.put("runtime", JSONObject().put("quickjs", JSONObject().put("path", qjs)))
                 config.put("ffmpeg", trustedNative(runtime.ffmpeg)).put("ffprobe", trustedNative(runtime.ffprobe))
                 // Never persist this config or include it in user-visible logs.
-                config.put("spotify_access_token", accessToken())
+
                 val response = Python.getInstance().getModule("yono_engine_api")
                     .callAttr("execute", action, input, config.toString(), Events(task), storage).toString()
                 val result = JSONObject(response)

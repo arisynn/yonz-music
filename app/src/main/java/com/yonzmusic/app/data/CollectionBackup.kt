@@ -20,6 +20,7 @@ class CollectionBackup(private val app: YonzApp) {
             val history = JSONArray().apply { dao.history().first().forEach { h -> put(JSONObject().put("id", h.trackId).put("playedAt", h.playedAt).put("position", h.position)) } }
             JSONObject().put("schemaVersion", 1).put("applicationId", "com.yonzmusic.app").put("tracks", tracks).put("playlists", playlists)
                 .put("favorites", JSONArray(dao.favorites().first().map { it.trackId })).put("history", history)
+                .put("onlinePlaylists",JSONArray().apply {dao.states(OnlineCollectionContract.PREFIX+"%").forEach {put(OnlineCollectionContract.encode(OnlineCollectionContract.decode(JSONObject(it.value))))}})
         }
         app.preferences.snapshot()?.let { snapshot ->
             val ids = snapshot.ids.map { dao.state("track_alias:$it")?.value ?: it }
@@ -39,6 +40,9 @@ class CollectionBackup(private val app: YonzApp) {
         require(root.getInt("schemaVersion") == 1 && root.getString("applicationId") == "com.yonzmusic.app") { "Not a supported Yono collection backup." }
         val tracks = root.getJSONArray("tracks"); val playlists = root.getJSONArray("playlists"); val favorites = root.getJSONArray("favorites"); val history = root.getJSONArray("history")
         require(tracks.length() <= 10000 && playlists.length() <= 1000 && favorites.length() <= 10000 && history.length() <= 1000)
+        val onlineRows=root.optJSONArray("onlinePlaylists") ?: JSONArray()
+        require(onlineRows.length()<=100)
+        val online=(0 until onlineRows.length()).map {OnlineCollectionContract.decode(onlineRows.getJSONObject(it))}
         val mapping = mutableMapOf<String, String>()
         app.database.withTransaction {
             val existing = dao.allTracks().filter { it.availability!=Availability.ALIAS }.associateBy { it.uri }
@@ -55,6 +59,7 @@ class CollectionBackup(private val app: YonzApp) {
                     sha256=item.optString("sha256").takeIf { it.matches(Regex("[a-f0-9]{64}")) }.orEmpty(),fileSize=item.optLong("fileSize"),
                     sourceIdentity=field("sourceIdentity"),sourceUrl=field("sourceUrl",4096),metadataOrigin=item.optString("metadataOrigin","tags"))
             }
+            online.forEach {p->app.onlineCollections.save(p.copy(id=java.util.UUID.randomUUID().toString()))}
             dao.upsert(new.distinctBy { it.uri })
             repeat(playlists.length()) { n ->
                 val p = playlists.getJSONObject(n); val ids = p.getJSONArray("ids"); require(ids.length() <= 10000)

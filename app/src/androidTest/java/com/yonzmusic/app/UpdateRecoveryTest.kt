@@ -23,9 +23,11 @@ class UpdateRecoveryTest {
     private val app get() = ApplicationProvider.getApplicationContext<YonzApp>()
     private fun fixture(): File {
         assumeTrue(InstrumentationRegistry.getArguments().getString("updateGate") == "true")
-        return File(app.filesDir, "updater-fixture.apk").also { require(it.isFile) { "Push the emulator-only same-key Dev code-3 APK first" } }
+        return File(app.filesDir, "updater-fixture.apk").also { require(it.isFile) { "Provide the emulator-only higher-code same-key APK fixture first" } }
     }
-    private fun artifact(file: File) = UpdateArtifact(app.packageName, 3, "1.1.0-dev", "v-test-local-only", 26, "fixture.apk", file.length(),
+    private fun artifact(file: File) = UpdateArtifact(app.packageName,
+        requireNotNull(InstrumentationRegistry.getArguments().getString("qaTargetCode")).toLong(),
+        requireNotNull(InstrumentationRegistry.getArguments().getString("qaTargetName")), "v-test-local-only", 26, "fixture.apk", file.length(),
         SafeHttp.sha256(file), ApkValidation.installedCertificate(app), setOf("arm64-v8a", "x86_64"), "", "")
     private fun rejects(block: () -> Unit) { var failed = false; try { block() } catch (_: Exception) { failed = true }; assertTrue("Unsafe APK must be rejected", failed) }
     @Test fun actualSignatureAndManifestChecksRejectTamperingAndIncompatibleArtifacts() {
@@ -34,7 +36,7 @@ class UpdateRecoveryTest {
         rejects { ApkValidation.verify(app, file, expected.copy(sha256 = "0".repeat(64))) }
         rejects { ApkValidation.verify(app, file, expected.copy(certificate = "0".repeat(64))) }
         rejects { ApkValidation.verify(app, file, expected.copy(applicationId = "another.application")) }
-        rejects { ApkValidation.verify(app, file, expected.copy(versionCode = 4)) }
+        rejects { ApkValidation.verify(app, file, expected.copy(versionCode = expected.versionCode + 1)) }
         rejects { ApkValidation.verify(app, file, expected.copy(minSdk = 99)) }
         rejects { ApkValidation.verify(app, file, expected.copy(abis = setOf("arm64-v8a"))) }
         val corrupt = File(app.cacheDir, "corrupt-updater-fixture.apk")
@@ -49,7 +51,7 @@ class UpdateRecoveryTest {
         .put("versionName", expected.versionName).put("file", name).put("sha256", expected.sha256).put("size", expected.size)
         .put("certificate", expected.certificate).put("minSdk", 26).put("status", status).put("session", -1).put("created", System.currentTimeMillis())
     @Test fun interruptedVerifiedRenameRecoversButIncompleteOrTamperedCacheIsDiscarded() = runBlocking {
-        val file = fixture(); val expected = artifact(file); val name = "update-3-${expected.sha256.take(16)}.apk"
+        val file = fixture(); val expected = artifact(file); val name = "update-${expected.versionCode}-${expected.sha256.take(16)}.apk"
         val directory = File(app.cacheDir, "updates").apply { mkdirs() }; val complete = File(directory, name); val partial = File(directory, "$name.part")
         val prefs = app.getSharedPreferences("release-updates", 0); val manager = UpdateManager(app)
         try {
@@ -66,7 +68,7 @@ class UpdateRecoveryTest {
     }
     @Test fun forgedCallbackCannotTriggerCleanupAndVerifiedReplacementOnlyRemovesOwnedFiles() = runBlocking {
         val file = fixture(); val expected = artifact(file)
-        val name = "update-3-${expected.sha256.take(16)}.apk"; val directory = File(app.cacheDir, "updates").apply { mkdirs() }
+        val name = "update-${expected.versionCode}-${expected.sha256.take(16)}.apk"; val directory = File(app.cacheDir, "updates").apply { mkdirs() }
         val complete = File(directory, name); val partial = File(directory, "$name.part"); val unrelated = File(directory, "keep-unrelated.apk")
         val prefs = app.getSharedPreferences("release-updates", 0); val manager = UpdateManager(app)
         try {

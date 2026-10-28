@@ -19,7 +19,7 @@ android {
         applicationId = "com.yonzmusic.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(13)
+        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(14)
         versionName = "1.5.0"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -41,7 +41,7 @@ android {
         create("preview") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".dev"
-            versionNameSuffix = "-preview.4"
+            versionNameSuffix = "-preview.5"
             matchingFallbacks += listOf("debug")
             resValue("string","app_name","Yono Music Preview")
         }
@@ -52,7 +52,7 @@ android {
             matchingFallbacks += listOf("debug")
         }
         release {
-            buildConfigField("boolean","ONLINE_SEARCH_PREVIEW","false")
+            buildConfigField("boolean","ONLINE_SEARCH_PREVIEW",providers.gradleProperty("onlineSearchEnabled").orElse("false").get().toBoolean().toString())
             signingConfig = signingConfigs.findByName("ownerRelease")
             isMinifyEnabled = true
             isShrinkResources = true
@@ -87,6 +87,8 @@ chaquopy {
     }
 }
 dependencies {
+    // Media3's transitive Guava must include the Java deserialization allocation fix.
+    implementation("com.google.guava:guava:33.7.2-android")
     implementation(platform("androidx.compose:compose-bom:2025.04.01"))
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.core:core-ktx:1.16.0")

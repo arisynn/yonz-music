@@ -1,5 +1,17 @@
 # 1.5.0-preview.4 — 2026-10-28
 
+## 1.5.0 — native online playback and direct downloads
+
+- Promote the engine Search/streaming/direct-download workflow while preserving Home / Library / Search / Playlists, the owner logo and original audio formats.
+- Compact horizontal actions, immediate enqueue to a saved SAF destination, optional playlist creation, and truthful per-request recovery/retry/cancel status.
+- Prepare the next item's initial audio through Media3 (target5seconds); resolve at most two upcoming queue items in memory after playback starts. Concurrent playback/warm-up shares successful resolution; failures, cancellation and expiry remain retriable.
+- Keep every active selected-download request visible ahead of a bounded terminal history; long histories cannot disable active dedup/recovery/cancellation. Activity indicator includes persisted waiting requests.
+- Pin Guava33.7.2-android after exact-version OSV review found CVE-2026-102554 in33.3.1-android. Updated notices and source provenance.
+- Online playlist snapshots from fixed public YouTube Music/YouTube links, review before save; custom online playlists from Search, persistent order/rename/remove and shared-session Play all. Collection backups include validated references.
+- Remove Spotify OAuth UI/callback/token exchange and retire only obsolete account credentials. Metadata exports remain supported.
+- Same production ID/key, versionCode14, Room3 and existing migrations. No uninstall, data reset, transcoding or broad storage access.
+
+
 - Simplify only the new online-search/stream-save UI: one result row, tap to play/pause, More for three horizontal secondary actions; compact grouped download approval with destination/playlist side by side. Keep existing Home/Library/Playlists/player and list-import UI.
 - Enqueue directly from Search/Now Playing when a saved SAF grant exists; use truthful result messages and keep folder/playlist configuration explicit. Ask for configuration only when destination/grant is missing.
 - Pin format during expiring-URL refresh, validate byte ranges/content identity, bound ignored-range discard and automatic network retries. Surface sanitized source-specific errors and safe manual replay.

@@ -1,0 +1,20 @@
+{
+  "fromCode": 14,
+  "toCode": 14,
+  "reason": "Final cancellation/spinner and compact button corrections; no downgrade of official installation",
+  "exactCollectionAndOnlineAppStateRowsRetained": true,
+  "counts": {
+    "tracks": 1,
+    "favorites": 0,
+    "playlists": 1,
+    "playlist_entries": 0,
+    "history": 1,
+    "sources": 1,
+    "listens": 1,
+    "app_state": 1
+  },
+  "schema": 3,
+  "uninstall": false,
+  "clearData": false,
+  "adbInstallR": true
+}

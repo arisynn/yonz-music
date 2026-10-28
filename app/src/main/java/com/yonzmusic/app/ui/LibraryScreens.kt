@@ -143,11 +143,12 @@ import kotlinx.coroutines.withContext
         }
     }
 }
-@Composable fun PlaylistsScreen(playlists: List<PlaylistSummary>, tracks: List<Track>, entries: List<PlaylistEntry>, favoriteCount: Int, onCreate: () -> Unit, onFavorites: () -> Unit, onOpen: (PlaylistSummary) -> Unit, onImport: () -> Unit) {
+@Composable fun PlaylistsScreen(playlists: List<PlaylistSummary>, tracks: List<Track>, entries: List<PlaylistEntry>, favoriteCount: Int, onCreate: () -> Unit, onFavorites: () -> Unit, onOpen: (PlaylistSummary) -> Unit, onImport: () -> Unit, online:List<OnlineCollection> = emptyList(),onOnline:(OnlineCollection)->Unit = {},onLink:()->Unit = {}) {
     LazyColumn(contentPadding = PaddingValues(bottom = Design.page)) {
         item { Row(Modifier.padding(horizontal = Design.page, vertical = Design.sm), horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
-            Button(onCreate, Modifier.weight(1f)) { if (LocalDensity.current.fontScale <= 1.3f) { Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(Design.xs)) }; Text("Create") }
-            OutlinedButton(onImport, Modifier.weight(1f)) { if (LocalDensity.current.fontScale <= 1.3f) { Icon(Icons.Rounded.LibraryAdd, null); Spacer(Modifier.width(Design.xs)) }; Text("Import") }
+            Button(onCreate, Modifier.weight(1f),contentPadding=PaddingValues(horizontal=Design.sm,vertical=Design.sm)) { Text("Create",maxLines=1) }
+            OutlinedButton(onImport, Modifier.weight(1f),contentPadding=PaddingValues(horizontal=Design.sm,vertical=Design.sm)) { Text("Import",maxLines=1) }
+            OutlinedButton(onLink,Modifier.weight(1f),contentPadding=PaddingValues(horizontal=Design.sm,vertical=Design.sm)){Text("Link",maxLines=1)}
         } }
         item {
             Surface(onClick = onFavorites, color = MaterialTheme.colorScheme.secondaryContainer, shape = Design.card, modifier = Modifier.fillMaxWidth().padding(Design.page)) {
@@ -158,8 +159,18 @@ import kotlinx.coroutines.withContext
                 }
             }
         }
-        if (playlists.isEmpty()) item { EmptyState("A place for every mood", "Bring songs together into a collection that's entirely yours.", "playlist", { FilledTonalButton(onCreate) { Text("Create a playlist") } }) }
-        else {
+        if(online.isNotEmpty()) {
+            item {SectionTitle("Online","${online.size} playlist")}
+            items(online,key={"online:"+it.id}){p->
+                Row(Modifier.fillMaxWidth().clickable{onOnline(p)}.padding(horizontal=Design.page,vertical=Design.md),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.gap)) {
+                    SourceThumbnail(p.songs.firstOrNull()?.artwork.orEmpty())
+                    Column(Modifier.weight(1f)){Text(p.name,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium);Text("${p.songs.size} lagu · online",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
+                    Icon(Icons.Rounded.ChevronRight,null)
+                }
+            }
+        }
+        if (playlists.isEmpty() && online.isEmpty()) item { EmptyState("A place for every mood", "Bring songs together into a collection that's entirely yours.", "playlist", { FilledTonalButton(onCreate) { Text("Create a playlist") } }) }
+        else if(playlists.isNotEmpty()) {
             item { SectionTitle("Your collections", "${playlists.size} playlists") }
             items(playlists, key = { it.id }) { p ->
                 val first = remember(entries, tracks, p.id) { val id = entries.firstOrNull { it.playlistId == p.id }?.trackId; tracks.find { it.id == id } }

@@ -6,6 +6,7 @@ import com.yonzmusic.app.data.AppState
 import com.yonzmusic.app.search.*
 import com.yonzmusic.engine.EngineWorker
 import androidx.work.*
+import androidx.room.withTransaction
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.json.JSONArray
@@ -18,8 +19,43 @@ class SelectedQueueRecoveryTest {
     private val app get()=ApplicationProvider.getApplicationContext<YonzApp>()
     private val dao get()=app.repository.dao
     private fun song(id:String)=OnlineSong("engine:$id",SearchProvider.ENGINE,"Owned queue recovery fixture","Karisyono QA",page="https://www.youtube.com/watch?v=$id",videoId=id,artistVerified=true)
-    private suspend fun settle(check:()->Boolean)=withTimeout(10000){while(!check())delay(50)}
+    private suspend fun settle(check:suspend ()->Boolean)=withTimeout(10000){while(!check())delay(50)}
     private fun clear(id:String){for(key in listOf("stream-download:$id","engine-request:$id"))app.database.openHelper.writableDatabase.execSQL("DELETE FROM app_state WHERE name=?",arrayOf(key))}
+    @Test fun longHistoryCannotHideActiveRequestsOrDisableDedupCancelAndRecovery():Unit=runBlocking {
+        val repo=app.acquisition;val calls=java.util.concurrent.CopyOnWriteArrayList<String>();val oldScheduler=repo.selectedScheduler
+        repo.selectedScheduler={id,_->calls.add(id)}
+        val destination=dao.state("download_destination")!!.value
+        val ids=(0..241).map {java.util.UUID.randomUUID().toString()};val first=ids[0];val second=ids[1]
+        val beforeTracks=dao.allTracks();val now=System.currentTimeMillis()
+        try {
+            app.database.withTransaction {
+                for((index,id)in ids.withIndex()) {
+                    val status=if(index<2)"queued"else "complete"
+                    val row=JSONObject().put("id",id).put("work_id",id).put("source_id",if(index==0)"QAbulk00001"else "QAbulk00002")
+                        .put("destination",destination).put("status",status).put("created",now+index)
+                    dao.state(AppState("stream-download:$id",row.toString()))
+                }
+            }
+            repo.refreshQueued()
+            val active=repo.queuedDownloads.value.filter {it.optString("status") in setOf("queued","running","cancelling")}
+            assertTrue("All active rows survive >200 terminal history rows",active.any {it.getString("id")==first} && active.any {it.getString("id")==second})
+            assertTrue("Active jobs appear before terminal history",repo.queuedDownloads.value.take(2).all {it.optString("status")=="queued"})
+            assertEquals(200,repo.queuedDownloads.value.count {it.optString("status")=="complete"})
+            repo.enqueueSelected(song("QAbulk00001"),destination,false)
+            delay(500)
+            assertEquals("No second durable row for the same active recording",1,dao.states("stream-download:%").count {JSONObject(it.value).optString("source_id")=="QAbulk00001"})
+            repo.recoverSelected()
+            assertTrue("Both old active requests remain recoverable",calls.containsAll(listOf(first,second)))
+            repo.cancelQueued(first);settle {JSONObject(dao.state("stream-download:$first")!!.value).optString("status")=="cancelled"}
+            assertEquals("queued",JSONObject(dao.state("stream-download:$second")!!.value).optString("status"))
+            assertEquals("No collection mutation for history/queue operations",beforeTracks,dao.allTracks())
+        }finally {
+            app.database.withTransaction {for(id in ids)clear(id)}
+            // Remove only an owned extra QA row if a broken dedup implementation created one.
+            dao.states("stream-download:%").filter {JSONObject(it.value).optString("source_id")=="QAbulk00001" && JSONObject(it.value).optString("id") !in ids}.forEach {clear(JSONObject(it.value).getString("id"))}
+            repo.selectedScheduler=oldScheduler;repo.refreshQueued()
+        }
+    }
     @Test fun retryIsDeduplicatedAndStaleAttemptCannotOverwriteNewGeneration():Unit=runBlocking {
         val repo=app.acquisition;val calls=java.util.concurrent.CopyOnWriteArrayList<String>();repo.selectedScheduler={id,_->calls.add(id)}
         val destination=dao.state("download_destination")!!.value;val before=dao.states("stream-download:%").map {it.name}.toSet()

@@ -1,0 +1,23 @@
+{
+  "source": "https://raw.githubusercontent.com/arisynn/yonz-music/d740163bc79cb94af0d54e524a74f9be49776cc1/app/src/androidTest/assets/formats/owned-tone.wav",
+  "ownedGeneratedFixture": true,
+  "operation": "real embedded direct-audio metadata inspection",
+  "normalProxyAndTls": true,
+  "ca": "host system CA bundle including the managed proxy root",
+  "success": true,
+  "metadata": {
+    "id": "yt-dlp:Generic:owned-tone:e2cbd6d63cc1e79d3ef1fb07",
+    "title": "owned-tone",
+    "artist": "",
+    "album": "",
+    "duration": 0,
+    "size": 0,
+    "url": "https://raw.githubusercontent.com/arisynn/yonz-music/d740163bc79cb94af0d54e524a74f9be49776cc1/app/src/androidTest/assets/formats/owned-tone.wav",
+    "license": "User-authorized source",
+    "licenseUrl": "",
+    "page": "https://raw.githubusercontent.com/arisynn/yonz-music/d740163bc79cb94af0d54e524a74f9be49776cc1/app/src/androidTest/assets/formats/owned-tone.wav",
+    "description": "",
+    "artUrl": ""
+  },
+  "seconds": 6.085
+}

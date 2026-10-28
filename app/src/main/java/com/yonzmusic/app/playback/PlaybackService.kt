@@ -32,6 +32,8 @@ class PlaybackService : MediaSessionService() {
     private var session: MediaSession? = null
     private var snapshotJob: Job? = null
     private var sleepJob: Job? = null
+    private var warmJob: Job? = null
+    private var warmIds = emptyList<String>()
     private val app get() = application as YonzApp
     private var streamIssue:StreamIssue?=null
     private var issueMediaId:String?=null
@@ -44,6 +46,38 @@ class PlaybackService : MediaSessionService() {
     private var consecutiveErrors = 0
     private var wasShuffling = false
     private var previousQueueKeys = emptySet<String>()
+    /** Follow the player's actual shuffle/repeat order; never crawl search/history on startup. */
+    private fun warmUpcoming() {
+        val ids = mutableListOf<String>()
+        if (player.isPlaying && app.streamTestDataSource == null) {
+            val timeline = player.currentTimeline
+            var index = player.currentMediaItemIndex
+            val visited = mutableSetOf(index)
+            repeat(2) {
+                index = if (index in 0 until timeline.windowCount)
+                    timeline.getNextWindowIndex(index, player.repeatMode, player.shuffleModeEnabled) else C.INDEX_UNSET
+                if (index in 0 until player.mediaItemCount && visited.add(index)) {
+                    player.getMediaItemAt(index).mediaId.takeIf { it.startsWith("engine:") }
+                        ?.removePrefix("engine:")?.let(ids::add)
+                }
+            }
+        }
+        if (ids == warmIds) return
+        warmJob?.cancel(); warmIds = ids
+        warmJob = scope.launch {
+            // Current audio has priority over speculative extraction.
+            delay(400)
+            for (id in ids) {
+                ensureActive()
+                try {
+                    runInterruptible(Dispatchers.IO) {
+                        app.streams.resolve(id, java.util.concurrent.atomic.AtomicBoolean(false), timeoutMillis = 18000)
+                    }
+                } catch (e: CancellationException) { throw e }
+                catch (_: Exception) { /* A warm-up failure must never stop current playback. */ }
+            }
+        }
+    }
     private fun updateShuffleCycle() {
         val keys = (0 until player.mediaItemCount).map {
             player.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key") ?: "legacy:$it"
@@ -88,6 +122,9 @@ class PlaybackService : MediaSessionService() {
             .setLoadControl(androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(3000,20000,700,1500).build())
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
             .setHandleAudioBecomingNoisy(true).setWakeMode(C.WAKE_MODE_LOCAL).build()
+        // Media3 targets five seconds of the next item after the current buffer is full.
+        // Same player, source validation and retry policy; memory only, no offline file claims.
+        player.setPreloadConfiguration(ExoPlayer.PreloadConfiguration(5_000_000L))
         val activity = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         session = MediaSession.Builder(this, player).setSessionActivity(activity).setCallback(object : MediaSession.Callback {
             override fun onConnect(session: MediaSession, controller: MediaSession.ControllerInfo): MediaSession.ConnectionResult {
@@ -131,6 +168,7 @@ class PlaybackService : MediaSessionService() {
             override fun onEvents(player: Player, events: Player.Events) {
                 if(streamIssue!=null && (player.currentMediaItem?.mediaId!=issueMediaId || (player.playerError==null && player.playbackState!=Player.STATE_IDLE))) {streamIssue=null;issueMediaId=null;publishExtras()}
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)) updateShuffleCycle()
+                if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED, Player.EVENT_IS_PLAYING_CHANGED)) warmUpcoming()
                 listenTick()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED)) persist()
             }
@@ -203,7 +241,7 @@ class PlaybackService : MediaSessionService() {
     override fun onTaskRemoved(rootIntent: Intent?) { if (!player.playWhenReady || player.mediaItemCount == 0 || player.playbackState == Player.STATE_ENDED) stopSelf() }
     override fun onDestroy() {
         listenTick()
-        snapshotJob?.cancel(); sleepJob?.cancel(); app.sleepEnd.value = 0
+        snapshotJob?.cancel(); sleepJob?.cancel(); warmJob?.cancel(); app.sleepEnd.value = 0
         session?.release(); player.release(); scope.cancel()
         super.onDestroy()
     }

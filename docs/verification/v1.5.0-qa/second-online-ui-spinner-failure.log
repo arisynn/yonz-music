@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/workspace/testing/yono150qa/online_ui.py", line 30, in <module>
+    d(text='Tutup').click();d.shell('settings put system font_scale 1.5');time.sleep(3)
+    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/uiautomator2/_selector.py", line 153, in click
+    self.must_wait(timeout=timeout)
+  File "/home/agent/.local/lib/python3.12/site-packages/uiautomator2/_selector.py", line 342, in must_wait
+    raise UiObjectNotFoundError({'code': -32002, 'data': str(self.selector), 'method': 'wait'})
+uiautomator2.exceptions.UiObjectNotFoundError: {'code': -32002, 'data': "Selector [text='Tutup']", 'method': 'wait'}

@@ -1,0 +1,24 @@
+{
+  "runtime": "API29 software emulator, actual production-signed app and real UI input",
+  "customOnlineCreate": true,
+  "survivesForceStopAndReopen": true,
+  "rename": true,
+  "deleteConfirmed": true,
+  "unsafePlaylistLinkRejected": true,
+  "invalidLinkStopsSpinner": true,
+  "fonts": [
+    1.0,
+    1.5
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "widthDp": 320,
+  "keyboardActiveAt150Percent": true,
+  "scrolledToOffscreenRow": true,
+  "automationResumedAfterOffscreenSelectorFailure": true,
+  "uninstall": false,
+  "clearData": false,
+  "fixture": true
+}

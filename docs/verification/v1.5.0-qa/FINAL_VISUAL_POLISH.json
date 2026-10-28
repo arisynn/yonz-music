@@ -1,0 +1,24 @@
+{
+  "visualOnlyFinalPolish": true,
+  "productionSigned": true,
+  "widthDp": 320,
+  "fontScale": 1.5,
+  "theme": "dark",
+  "compactHeader": true,
+  "emptySearchActionVisibleAboveMiniPlayer": true,
+  "disabledEmptyPlayAccessible": true,
+  "actualOfflinePlayPauseUi": true,
+  "exactCollectionRowsOnReplacement": true,
+  "counts": {
+    "tracks": 1,
+    "favorites": 0,
+    "playlists": 1,
+    "playlist_entries": 0,
+    "history": 1,
+    "sources": 1,
+    "listens": 1,
+    "app_state": 1
+  },
+  "uninstall": false,
+  "clearData": false
+}

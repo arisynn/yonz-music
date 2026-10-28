@@ -1,0 +1,25 @@
+{
+  "fromVersion": "1.4.2",
+  "fromCode": 9,
+  "toVersion": "1.5.0",
+  "toCode": 14,
+  "sameProductionCertificate": "ebefa44cc5fba1292fec9fc25bb4840e41e501bb0958a86931c046fd1be523e5",
+  "mechanism": "Actual app updater -> Android PackageInstaller consent UI; Ready journal/APK seeded privately with adb root, not an HTTP updater-download test",
+  "exactAllCollectionAndAppStateRowsRetainedBeforeFirstLaunch": true,
+  "schema": 3,
+  "counts": {
+    "tracks": 1,
+    "favorites": 0,
+    "playlists": 1,
+    "playlist_entries": 0,
+    "history": 1,
+    "sources": 1,
+    "listens": 1,
+    "app_state": 0
+  },
+  "temporaryApkCleanedAfterVerifiedInstallation": true,
+  "pendingJournalCleaned": true,
+  "uninstall": false,
+  "clearData": false,
+  "candidateSha256": "0df9ac32a5a04b488bb21fa50ef828812dc81d1043894964ed75f447c398348e"
+}

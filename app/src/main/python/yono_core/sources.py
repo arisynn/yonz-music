@@ -101,7 +101,7 @@ class Sources:
 
     def spotify(self, pid, origin):
         if not self.spotify_client and not self.spotify_token:
-            raise EngineError("SPOTIFY_AUTH_REQUIRED", "Pembaca metadata Spotify memerlukan koneksi API yang diizinkan. Impor TXT/CSV/JSON juga tersedia.")
+            raise EngineError("SPOTIFY_AUTH_REQUIRED", "Koneksi akun Spotify telah dihapus dari aplikasi. Impor ekspor TXT/CSV/JSON, lalu pilih sumber audio yang diizinkan.")
         client = self.spotify_client
         http = None
         if client is None:

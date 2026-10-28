@@ -107,22 +107,9 @@ class Review14Test {
   assertEquals(1,app.repository.dao.entries(playlist).size)
   app.acquisition.importResult(plan);assertEquals(1,app.repository.dao.entries(playlist).size)
  }
- @Test fun oauthUsesEncryptedSingleUseStateAndRejectsUnsolicitedCallback() {
-  val connection=app.spotify;connection.disconnect()
-  val intent=connection.begin("0123456789abcdef0123456789abcdef")
-  assertEquals("accounts.spotify.com",intent.data!!.host)
-  assertEquals("S256",intent.data!!.getQueryParameter("code_challenge_method"))
-  assertEquals(connection.redirect,intent.data!!.getQueryParameter("redirect_uri"))
-  val state=intent.data!!.getQueryParameter("state")!!
-  val stored=File(app.noBackupFilesDir,"spotify-oauth.enc").readText()
-  assertFalse(stored.contains(state));assertFalse(stored.contains("0123456789abcdef0123456789abcdef"))
-  assertFalse(connection.callback(Uri.parse("https://example.test/spotify?state=$state")))
-  assertTrue(connection.callback(Uri.parse(connection.redirect+"?state=wrong&code=wrong")))
-  assertTrue(connection.message.value.contains("tidak cocok"))
-  assertTrue(connection.callback(Uri.parse(connection.redirect+"?state=$state&error=access_denied")))
-  assertTrue(connection.message.value.contains("dibatalkan"))
-  assertTrue(connection.callback(Uri.parse(connection.redirect+"?state=$state&error=access_denied")))
-  assertTrue(connection.message.value.contains("tidak cocok"))
-  connection.disconnect()
+ @Test fun obsoleteSpotifyConnectionIsNotExposed() {
+  val intent=android.content.Intent(android.content.Intent.ACTION_VIEW,Uri.parse(app.packageName+"://spotify/callback")).setPackage(app.packageName)
+  assertNull(app.packageManager.resolveActivity(intent,0))
+  assertFalse(File(app.noBackupFilesDir,"spotify-oauth.enc").exists())
  }
 }

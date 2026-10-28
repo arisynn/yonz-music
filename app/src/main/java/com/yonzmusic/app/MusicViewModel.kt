@@ -65,6 +65,42 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             if(local!=null) {if(next==null)playback.play(listOf(local),local.id)else playback.enqueue(local,next)}else playback.playRemote(song,next)
         }
     }
+    val onlineCollections=app.onlineCollections.flow.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptyList())
+    val onlinePlaylistPreview=MutableStateFlow<com.yonzmusic.app.search.OnlinePlaylistPreview?>(null)
+    val onlinePlaylistLoading=MutableStateFlow(false)
+    val onlinePlaylistError=MutableStateFlow("")
+    private var onlinePlaylistJob:Job?=null
+    fun readOnlinePlaylist(url:String) {
+        onlinePlaylistJob?.cancel();onlinePlaylistPreview.value=null;onlinePlaylistError.value="";onlinePlaylistLoading.value=true
+        onlinePlaylistJob=viewModelScope.launch(start=CoroutineStart.LAZY) {
+            try {onlinePlaylistPreview.value=com.yonzmusic.app.search.OnlinePlaylistLoader(app).read(url)}
+            catch(e:TimeoutCancellationException){onlinePlaylistError.value="Playlist terlalu lama merespons. Coba lagi."}
+            catch(e:CancellationException){throw e}
+            catch(e:Exception){onlinePlaylistError.value=(e as? com.yonzmusic.app.search.SearchFailure)?.userMessage ?: e.message?.take(240) ?: "Playlist belum dapat dibaca."}
+            finally{if(onlinePlaylistJob==currentCoroutineContext()[Job])onlinePlaylistLoading.value=false}
+        }
+        onlinePlaylistJob?.start()
+    }
+    fun closeOnlineImport(){onlinePlaylistJob?.cancel();onlinePlaylistJob=null;onlinePlaylistLoading.value=false;onlinePlaylistPreview.value=null;onlinePlaylistError.value=""}
+    fun saveOnlinePreview(name:String) {val preview=onlinePlaylistPreview.value ?: return;action {
+        app.onlineCollections.save(preview.collection.copy(name=name.trim()));closeOnlineImport();notify("Playlist online disimpan; audio belum diunduh.")
+    }}
+    fun createOnline(name:String,song:com.yonzmusic.app.search.OnlineSong?=null) {action {
+        app.onlineCollections.save(OnlineCollection(java.util.UUID.randomUUID().toString(),name.trim(),listOfNotNull(song)));notify("Playlist online disimpan.")
+    }}
+    fun appendOnline(id:String,song:com.yonzmusic.app.search.OnlineSong){action {app.onlineCollections.append(id,song);notify("Ditambahkan ke playlist online.")}}
+    fun renameOnline(id:String,name:String){action{app.onlineCollections.edit(id){it.copy(name=name.trim())}}}
+    fun removeOnline(id:String,songId:String){action{app.onlineCollections.removeSong(id,songId)}}
+    fun shiftOnline(id:String,songId:String,delta:Int){action{app.onlineCollections.shift(id,songId,delta)}}
+    fun deleteOnline(id:String){action{app.onlineCollections.delete(id);notify("Playlist online dihapus; audio lokal tetap aman.")}}
+    fun playOnlineCollection(p:OnlineCollection,index:Int=0) {
+        streamPlayJob?.cancel();streamPlayJob=action {
+            require(index in p.songs.indices)
+            app.database.withTransaction {p.songs.forEach {app.streams.register(it)}}
+            withTimeout(6000){playback.state.first{it.ready}}
+            playback.playRemoteList(p.songs,index)
+        }
+    }
     fun clearSearchHistory(enabled: Boolean=searchSettings.remembersHistory()) {searchSettings.clearHistory(enabled);recentSearch.value=emptyList()}
     val searchQuery=MutableStateFlow("")
     val searchOnline=MutableStateFlow(false)

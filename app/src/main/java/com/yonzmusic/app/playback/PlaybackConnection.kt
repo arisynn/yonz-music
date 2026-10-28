@@ -72,6 +72,11 @@ class PlaybackConnection(context: Context) {
             else {p.addMediaItem(if(next && p.mediaItemCount>0)p.currentMediaItemIndex+1 else p.mediaItemCount,item);if(p.playbackState==Player.STATE_IDLE)p.prepare()}
         }
     }
+    fun playRemoteList(songs:List<com.yonzmusic.app.search.OnlineSong>,index:Int) {
+        if(songs.size !in 1..500 || index !in songs.indices)return
+        queueGeneration++
+        controller?.apply {setMediaItems(songs.map {remoteMediaItem(it)},index,0);prepare();play()}
+    }
     fun toggle() { controller?.let {
         if(it.playerError!=null && it.currentMediaItem?.mediaId?.startsWith("engine:")==true) {
             val code=it.sessionExtras.getString(PlaybackService.STREAM_ISSUE)

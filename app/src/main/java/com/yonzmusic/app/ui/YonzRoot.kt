@@ -60,14 +60,17 @@ import org.json.JSONArray
         val migrationNotice by vm.migrationNotice.collectAsStateWithLifecycle()
         val favorites by vm.favorites.collectAsStateWithLifecycle()
         val playlists by vm.playlists.collectAsStateWithLifecycle()
+        val onlineCollections by vm.onlineCollections.collectAsStateWithLifecycle()
+        var onlineLink by rememberSaveable {mutableStateOf(false)}
         val entries by vm.entries.collectAsStateWithLifecycle()
         val listenStats by vm.listenStats.collectAsStateWithLifecycle()
         val homeScroll=rememberLazyListState()
         val mixes=remember(tracks,favorites,listenStats,preferences.smartMix) { if(preferences.smartMix)SmartMix.build(tracks,favorites,listenStats,System.currentTimeMillis()) else emptyList() }
         val acquisition=(context.applicationContext as com.yonzmusic.app.YonzApp).acquisition
         val engineDownloading by acquisition.busy.collectAsStateWithLifecycle()
+        val queuedDownloads by acquisition.queuedDownloads.collectAsStateWithLifecycle()
         val previousDownloads by vm.downloads.collectAsStateWithLifecycle()
-        val downloading=engineDownloading || previousDownloads.any { it.status in setOf("Queued","Downloading","Validating","Publishing","Saved") }
+        val downloading=engineDownloading || queuedDownloads.any {it.optString("status") in setOf("queued","running","cancelling")} || previousDownloads.any { it.status in setOf("Queued","Downloading","Validating","Publishing","Saved") }
         var downloadsOpen by rememberSaveable { mutableStateOf(false) }
         var metadataId by rememberSaveable { mutableStateOf<String?>(null) }
         var relocationId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -160,7 +163,7 @@ import org.json.JSONArray
                         if (destination == "home") Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
                             BrandMark(Modifier.size(40.dp))
                             Text("Yono Music", style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        } else Text(when (destination) { "library" -> "Your library"; "search" -> "Search"; "playlists" -> "Playlists"; "settings" -> "Settings"; "import" -> "Import music"; else -> if (detailKind == "playlist") playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle else detailTitle }, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        } else Text(when (destination) { "library" -> "Your library"; "search" -> "Search"; "playlists" -> "Playlists"; "settings" -> "Settings"; "import" -> "Import music"; else -> if (detailKind == "playlist") playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle else if(detailKind=="online")onlineCollections.find{it.id==detailKey}?.name ?: detailTitle else detailTitle }, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     },
                     navigationIcon = { if (destination !in primaryDestinations) ActionIcon(Icons.AutoMirrored.Rounded.ArrowBack, "Back", { back() }) },
                     actions = {
@@ -195,8 +198,8 @@ import org.json.JSONArray
                     "search" -> SearchScreen(vm,tracks, playlists, favorites, playback.id, { t, id -> vm.play(t, id) }, { menuId = it.id }, { p -> detail("playlist", "", p.name, p.id) },{song->
                         vm.downloadOnline(song){streamDownload=song}
                     },{song->streamDownload=song})
-                    "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorites") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") })
-                    "detail" -> DetailScreen(detailTracks, favorites, playback.id, detailKind == "playlist", { t, id -> vm.play(t, id) }, { menuId = it.id }, { nameAction = "rename" }, { deleteId = selectedPlaylist }, { exportTracks = detailTracks; export.launch((playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle).take(60) + ".m3u8") }, { from, to -> vm.move(selectedPlaylist, from, to) }, { addIds = emptyList() })
+                    "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorites") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") }, onlineCollections, {p->detail("online",p.id,p.name)},{onlineLink=true})
+                    "detail" -> if(detailKind=="online")OnlineCollectionDetail(vm,onlineCollections.find{it.id==detailKey},playback.id,{vm.searchOnline.value=true;destination="search"},{song->vm.downloadOnline(song){streamDownload=song}},{destination="playlists"}) else DetailScreen(detailTracks, favorites, playback.id, detailKind == "playlist", { t, id -> vm.play(t, id) }, { menuId = it.id }, { nameAction = "rename" }, { deleteId = selectedPlaylist }, { exportTracks = detailTracks; export.launch((playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle).take(60) + ".m3u8") }, { from, to -> vm.move(selectedPlaylist, from, to) }, { addIds = emptyList() })
                     "settings" -> SettingsScreen(preferences, tracks, scanning, sleepEnd, vm::theme, vm::motion, vm::glass, vm::scan, { minutes -> vm.playback.timer(minutes) }, {
                         val sessionId = vm.playback.audioSessionId()
                         if (sessionId <= 0) vm.notify("Play a song before opening system audio effects.") else {
@@ -251,7 +254,9 @@ import org.json.JSONArray
                 }
             }
         }
-        if (nameAction.isNotEmpty()) NameDialog(if (nameAction == "rename") "Rename playlist" else "Create playlist", if (nameAction == "rename") playlists.find { it.id == selectedPlaylist }?.name.orEmpty() else "", { nameAction = "" }) { name ->
+        if(onlineLink)OnlinePlaylistImportDialog(vm){onlineLink=false}
+        if(nameAction=="create")CreateCollectionDialog({nameAction=""}){name,online->if(online)vm.createOnline(name)else vm.create(name);nameAction=""}
+        else if (nameAction.isNotEmpty()) NameDialog(if (nameAction == "rename") "Rename playlist" else "Create playlist", if (nameAction == "rename") playlists.find { it.id == selectedPlaylist }?.name.orEmpty() else "", { nameAction = "" }) { name ->
             if (nameAction == "rename") vm.rename(selectedPlaylist, name) else vm.create(name, if (nameAction == "createWithTracks") addIds.orEmpty() else emptyList())
             if (nameAction == "createWithTracks") addIds = null
             nameAction = ""

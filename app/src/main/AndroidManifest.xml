@@ -13,12 +13,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="${applicationId}" android:host="spotify" android:path="/callback" />
-            </intent-filter>
         </activity>
         <!-- Exported for Android media controls; onConnect authenticates controllers and onAddMediaItems resolves local IDs. -->
         <service tools:ignore="ExportedService" android:name=".playback.PlaybackService" android:exported="true" android:foregroundServiceType="mediaPlayback">

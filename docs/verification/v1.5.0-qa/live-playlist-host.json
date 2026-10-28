@@ -1,0 +1,12 @@
+{
+  "scope": "Actual metadata-only read of upstream yt-dlp public single-video test playlist; no audio download",
+  "fixture": false,
+  "normalProxyAndTls": true,
+  "ok": false,
+  "seconds": 5.411,
+  "songs": 0,
+  "error": {
+    "code": "PLAYLIST_NETWORK",
+    "message": "Playlist belum dapat dibaca. Periksa koneksi; sumber dapat membatasi akses otomatis."
+  }
+}

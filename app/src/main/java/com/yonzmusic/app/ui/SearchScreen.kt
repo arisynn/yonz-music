@@ -45,6 +45,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
     val localSource=remember(playback.id,tracks){tracks.firstOrNull {it.id==playback.id}?.sourceIdentity}
     val lifecycle=LocalLifecycleOwner.current.lifecycle
     var selected by remember {mutableStateOf<OnlineSong?>(null)}
+    var saveSong by remember {mutableStateOf<OnlineSong?>(null)}
     var configure by remember {mutableStateOf(false)}
     val keyboard=LocalSoftwareKeyboardController.current
     val focus=LocalFocusManager.current
@@ -128,7 +129,8 @@ import com.yonzmusic.app.ui.icons.SkipNext
             }
         }
     }
-    selected?.let {song->EngineResultSheet(song,vm,onDownload,onDownloadSettings){selected=null}}
+    selected?.let {song->EngineResultSheet(song,vm,onDownload,onDownloadSettings,{saveSong=it;selected=null}){selected=null}}
+    saveSong?.let {song->OnlineSaveSongDialog(vm,song){saveSong=null}}
     if(configure)SearchHistorySettings(vm){configure=false}
 }
 
@@ -144,7 +146,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable private fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit,close:()->Unit) {
+@Composable private fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit,onSave:(OnlineSong)->Unit,close:()->Unit) {
     val context=LocalContext.current
     ModalBottomSheet(onDismissRequest=close,modifier=Modifier.statusBarsPadding(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
         DialogSystemBars()
@@ -168,6 +170,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
                     vm.playback.pause();context.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(song.page)))
                 }.onFailure {vm.notify("Tidak ada aplikasi untuk membuka sumber.")}
             },Modifier.weight(1f)){Text("Sumber")}
+            TextButton({onSave(song)},Modifier.weight(1f)){Text("Playlist")}
             TextButton({onDownloadSettings(song);close()},Modifier.weight(1f)){Text("Atur")}
             }
         }
