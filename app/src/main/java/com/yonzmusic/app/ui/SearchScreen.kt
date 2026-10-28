@@ -16,6 +16,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -27,10 +29,11 @@ import com.yonzmusic.app.data.*
 import com.yonzmusic.app.search.*
 import com.yonzmusic.app.ui.icons.Tune
 import com.yonzmusic.app.ui.icons.Download
-import com.yonzmusic.app.ui.icons.Pause
+import com.yonzmusic.app.ui.icons.QueueMusic
+import com.yonzmusic.app.ui.icons.SkipNext
 
 @Composable fun SearchScreen(vm: MusicViewModel,tracks: List<Track>,playlists: List<PlaylistSummary>,favorites: Set<String>,activeId: String?,
-    onPlay: (List<Track>,String)->Unit,onMenu: (Track)->Unit,onPlaylist: (PlaylistSummary)->Unit,onDownload: (OnlineSong)->Unit) {
+    onPlay: (List<Track>,String)->Unit,onMenu: (Track)->Unit,onPlaylist: (PlaylistSummary)->Unit,onDownload: (OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit) {
     val query by vm.searchQuery.collectAsStateWithLifecycle()
     val onlineSelection by vm.searchOnline.collectAsStateWithLifecycle()
     val online=onlineSelection && BuildConfig.ONLINE_SEARCH_PREVIEW
@@ -80,9 +83,6 @@ import com.yonzmusic.app.ui.icons.Pause
         if(!online)Box(Modifier.weight(1f)) {LocalSearchResults(query,tracks,playlists,favorites,activeId,onPlay,onMenu,onPlaylist)}
         else {
             LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(horizontal=Design.page,vertical=Design.sm),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-                item {
-                    Text("Hasil dari sumber online · pilih rekaman yang kamu maksud.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-                }
                 if(query.trim().length<3) {
                     if(query.isBlank() && recent.isNotEmpty())item {
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
@@ -93,7 +93,7 @@ import com.yonzmusic.app.ui.icons.Pause
                             recent.forEach {value->SuggestionChip(onClick={vm.searchQuery.value=value},label={Text(value,maxLines=1)})}
                         }
                     }
-                    item {EmptyState("Temukan musik di luar koleksimu","Ketik setidaknya 3 karakter. Hasil muncul otomatis. Pilih Putar untuk mendengarkan atau Unduh untuk menyimpan offline.","search")}
+                    item {EmptyState("Temukan musikmu","Ketik judul atau artis. Ketuk hasil untuk mendengarkan.","search")}
                 }
                 else {
                     if(state.loading)item {LinearProgressIndicator(Modifier.fillMaxWidth());Text("Mencari…",style=MaterialTheme.typography.labelSmall)}
@@ -108,28 +108,18 @@ import com.yonzmusic.app.ui.icons.Pause
                     if(!state.loading && state.error.isBlank() && state.songs.isEmpty())item {EmptyState("Belum ada hasil","Coba judul atau nama artis yang lebih lengkap. Hasil bergantung pada katalog dan wilayah sumber.","search")}
                     items(state.songs,key={it.id}) { song->
                         val current=playback.id==song.id || localSource=="youtube:${song.videoId}"
-                        Surface(shape=Design.small,color=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.35f)) {
-                            Column(Modifier.fillMaxWidth().padding(Design.md),verticalArrangement=Arrangement.spacedBy(Design.xs)) {
-                                Row(Modifier.fillMaxWidth().clickable {focus.clearFocus();keyboard?.hide();vm.playOnline(song)},verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+                        Row(Modifier.fillMaxWidth().clickable(onClickLabel=if(current && playback.requested)"Jeda ${song.title}"else "Putar ${song.title}") {
+                            focus.clearFocus();keyboard?.hide()
+                            if(current)vm.playback.toggle()else vm.playOnline(song)
+                        }.padding(vertical=Design.sm),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
                                     SourceThumbnail(song.artwork)
                                     Column(Modifier.weight(1f)) {
-                                        Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium)
+                                        Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium,color=if(current)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                                         Text(song.credit.takeIf {it.isNotBlank()}?.let {if(song.artistVerified)it else "Kanal: $it"} ?: "Kredit belum tersedia",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)
-                                        val extra=listOfNotNull(song.album.takeIf {it.isNotBlank()},song.durationMs.takeIf {it>0}?.let(::time)).joinToString(" · ")
+                                        val extra=if(current) {if(playback.buffering)"Menyiapkan…"else if(playback.playing)"Sedang diputar"else "Dijeda"} else song.durationMs.takeIf {it>0}?.let(::time).orEmpty()
                                         if(extra.isNotBlank())Text(extra,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall)
                                     }
-                                }
-                                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
-                                    Row(Modifier.weight(1f),verticalAlignment=Alignment.CenterVertically) {
-                                        FilledTonalIconButton({if(current)vm.playback.toggle()else vm.playOnline(song)}) {Icon(if(current && playback.requested)Icons.Rounded.Pause else Icons.Rounded.PlayArrow,if(current && playback.requested)"Jeda ${song.title}"else "Putar ${song.title}")}
-                                        if(current)Text(if(playback.buffering)"Menyiapkan…"else if(playback.playing)"Sedang diputar"else "Dijeda",modifier=Modifier.weight(1f),maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary)
-                                    }
-                                    Row {
-                                        ActionIcon(Icons.Rounded.Download,"Unduh ${song.title}",{focus.clearFocus();keyboard?.hide();onDownload(song)})
                                         ActionIcon(Icons.Rounded.MoreVert,"Opsi ${song.title}",{choose(song)})
-                                    }
-                                }
-                            }
                         }
                     }
                     if(state.next.isNotBlank())item {OutlinedButton(vm.onlineSearch::more,enabled=!state.loading,modifier=Modifier.fillMaxWidth()){Text("Muat lainnya")}}
@@ -138,7 +128,7 @@ import com.yonzmusic.app.ui.icons.Pause
             }
         }
     }
-    selected?.let {song->EngineResultSheet(song,vm,onDownload){selected=null}}
+    selected?.let {song->EngineResultSheet(song,vm,onDownload,onDownloadSettings){selected=null}}
     if(configure)SearchHistorySettings(vm){configure=false}
 }
 
@@ -154,27 +144,41 @@ import com.yonzmusic.app.ui.icons.Pause
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable private fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,close:()->Unit) {
+@Composable private fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit,close:()->Unit) {
     val context=LocalContext.current
     ModalBottomSheet(onDismissRequest=close,modifier=Modifier.statusBarsPadding(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
         DialogSystemBars()
         Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(Design.page),verticalArrangement=Arrangement.spacedBy(Design.md)) {
-            Text(song.title,style=MaterialTheme.typography.titleLarge)
-            if(song.credit.isNotBlank())Text(if(song.artistVerified)song.credit else "Kanal: ${song.credit}")
-            if(song.durationMs>0)Text(time(song.durationMs),style=MaterialTheme.typography.bodySmall)
-            Text("Metadata dari sumber asli melalui yt-dlp. Nama kanal tidak selalu nama artis. Hasil pencarian tidak membuktikan izin mengunduh.",style=MaterialTheme.typography.bodySmall)
-            OutlinedButton({
+            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+                SourceThumbnail(song.artwork)
+                Column(Modifier.weight(1f)) {
+                    Text(song.title,style=MaterialTheme.typography.titleMedium,maxLines=2,overflow=TextOverflow.Ellipsis)
+                    val credit=song.credit.takeIf {it.isNotBlank()}?.let {if(song.artistVerified)it else "Kanal: $it"}
+                    Text(listOfNotNull(credit,song.durationMs.takeIf {it>0}?.let(::time)).joinToString(" · "),style=MaterialTheme.typography.bodySmall,maxLines=2,overflow=TextOverflow.Ellipsis,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
+                OnlineResultAction("Berikut","Putar berikutnya",Icons.Rounded.SkipNext,Modifier.weight(1f)){vm.playOnline(song,true);close()}
+                OnlineResultAction("Antrean","Tambah antrean",Icons.Rounded.QueueMusic,Modifier.weight(1f)){vm.playOnline(song,false);close()}
+                OnlineResultAction("Unduh","Simpan offline",Icons.Rounded.Download,Modifier.weight(1f)){onDownload(song);close()}
+            }
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
+            TextButton({
                 if(SearchContract.https(song.page,SearchContract.sourceHosts))runCatching {
                     vm.playback.pause();context.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(song.page)))
                 }.onFailure {vm.notify("Tidak ada aplikasi untuk membuka sumber.")}
-            },Modifier.fillMaxWidth()){Text("Buka sumber untuk mendengarkan")}
-            Button({vm.playOnline(song);close()},Modifier.fillMaxWidth()){Text("Putar di Yono")}
-            Row(horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
-                TextButton({vm.playOnline(song,true);close()}){Text("Putar berikutnya")}
-                TextButton({vm.playOnline(song,false);close()}){Text("Tambah antrean")}
+            },Modifier.weight(1f)){Text("Sumber")}
+            TextButton({onDownloadSettings(song);close()},Modifier.weight(1f)){Text("Atur")}
             }
-            FilledTonalButton({onDownload(song);close()},Modifier.fillMaxWidth()){Text("Simpan offline") }
-            Text("Unduhan tetap meminta tujuan dan otorisasi pada alur yang sudah ada. Format audio asli dipertahankan.",style=MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable private fun OnlineResultAction(label:String,description:String,icon:ImageVector,modifier:Modifier=Modifier,action:()->Unit) {
+    FilledTonalButton(onClick=action,modifier=modifier.heightIn(min=80.dp),shape=Design.small,contentPadding=PaddingValues(horizontal=Design.xs,vertical=Design.md),colors=ButtonDefaults.filledTonalButtonColors(containerColor=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.5f))) {
+        Column(Modifier.fillMaxWidth(),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(Design.sm)) {
+            Icon(icon,description,Modifier.size(24.dp),tint=MaterialTheme.colorScheme.primary)
+            Text(label,style=MaterialTheme.typography.labelMedium,textAlign=TextAlign.Center,maxLines=1,overflow=TextOverflow.Ellipsis)
         }
     }
 }

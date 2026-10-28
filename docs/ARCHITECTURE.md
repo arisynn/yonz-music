@@ -17,8 +17,12 @@ The existing Kotlin/Compose MVVM application and four primary destinations remai
 The application is free/offline-first. Only optional source requests and production GitHub update checks use the network. No login, advertising, tracking, custom backend or broad storage permission is required.
 
 
-## 1.5.0-preview.3 streaming references
+## 1.5.0-preview.4 streaming references
 
 Online Search → source metadata registry (Room AppState) → the existing MediaController/MediaSessionService → opaque yono-stream URI → bounded StreamDataSource → on-demand embedded yt-dlp resolver. Remote metadata has a view-only adapter for existing player/artwork composables; it does not enter the local tracks table. Signed audio URLs are held briefly in memory only. DefaultDataSource retains local SAF content handling.
 
 Save offline → compact approval → transactional durable request → the existing unique WorkManager queue → exact selected-source prepare/acquire → original audio validation → SAF commit/portable metadata/.cover → readable receipt → local Library indexing. A selected source bypasses catalogue substitution at both review and transfer. See STREAMING_PREVIEW.md and TEST_REPORT.md for the distinct host/native fixture and failed live-source evidence.
+
+Preview4: StreamResolver is a narrow synchronous boundary with format pin/timeout/cancellation; StreamRange validates wire byte identity; StreamLoadPolicy retries only typed transient failures. StreamDataSource also retains its own two-failure retry budget across progress/reopen. The session exports sanitized issue codes scoped to current media ID. AcquisitionRepository serializes selected-request lifecycle operations and requires matching work generation/source/hash receipts before completion. No new database schema or parallel player is introduced.
+
+MusicViewModel.downloadOnline centralizes the direct-download entry from Search and Now Playing: read saved destination/grant and playlist preference, enqueue selected source, or request the shared configuration UI. AcquisitionRepository returns actual enqueue feedback through a callback; queue ownership/dedup and WorkManager remain centralized. No second download engine or collection is introduced.

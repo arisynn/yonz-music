@@ -4,16 +4,16 @@ from yono_core.control import Control
 from yono_core.model import EngineError
 
 class StreamTests(unittest.TestCase):
-    def extract(self,change=None):
+    def extract(self,change=None,format_id=None):
         calls=[]
-        data={'id':'aqz-KE-bpKQ','title':'Original fixture','duration':20,'acodec':'opus','vcodec':'none','url':'https://r1.googlevideo.com/videoplayback?expire=2000000000','channel':'Uploader','http_headers':{'User-Agent':'Fixture','Cookie':'must-not-leak'}}
+        data={'id':'aqz-KE-bpKQ','title':'Original fixture','duration':20,'format_id':'251','ext':'webm','acodec':'opus','vcodec':'none','url':'https://r1.googlevideo.com/videoplayback?expire=2000000000','channel':'Uploader','http_headers':{'User-Agent':'Fixture','Cookie':'must-not-leak'}}
         if change:data.update(change)
         class Fake:
             params={}
             def __enter__(self):return self
             def __exit__(self,*args):pass
             def extract_info(self,url,download):calls.append((url,download));return data
-        result=inspect_video('aqz-KE-bpKQ',Control('fixture'),factory=lambda *a,**k:Fake())
+        result=inspect_video('aqz-KE-bpKQ',Control('fixture'),factory=lambda *a,**k:Fake(),format_id=format_id)
         return result,calls
     def test_resolution_is_read_only_and_does_not_guess_artist(self):
         r,c=self.extract();self.assertEqual([],r['song']['artists']);self.assertEqual('',r['song']['album']);self.assertFalse(c[0][1]);self.assertNotIn('Cookie',r['headers'])
@@ -41,3 +41,63 @@ class StreamTests(unittest.TestCase):
             self.assertIsNotNone(index.find(wanted)[0])
             self.assertIsNone(index.find(wanted,exact_source=True)[0])
             self.assertIsNotNone(index.find(old,exact_source=True)[0]);index.close()
+
+    def test_expired_reference_can_only_request_the_same_format(self):
+        r,_=self.extract(format_id='251');self.assertEqual(r['format_id'],'251')
+        with self.assertRaises(EngineError):self.extract({'format_id':'140','ext':'m4a'},format_id='251')
+        for value in ['bestaudio/140','251+140','../file','',7]:
+            with self.subTest(value=value),self.assertRaises(EngineError):self.extract(format_id=value)
+
+    def test_error_boundary_returns_codes_without_exception_urls_or_tokens(self):
+        import json
+        from unittest.mock import patch
+        from yono_stream import execute,failure_code
+        import urllib.error
+        self.assertEqual('ACCESS',failure_code(urllib.error.HTTPError('https://private.test/a?sig=secret',403,'forbidden',{},None)))
+        self.assertEqual('NETWORK',failure_code(Exception('Tunnel connection failed:403 Forbidden')))
+        self.assertEqual('TIMEOUT',failure_code(TimeoutError('secret')))
+        with patch('yono_stream.inspect_video',side_effect=Exception('https://private.test/?sig=secret')):
+            value=execute(json.dumps({'video_id':'aqz-KE-bpKQ'}),json.dumps({'job_id':'fixture'}),None)
+            self.assertEqual('SOURCE',json.loads(value)['code']);self.assertNotIn('secret',value);self.assertNotIn('https://',value)
+
+    def test_verified_reuse_keeps_requested_source_and_receipt_hash(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from support import engine_at
+        from yono_core.model import Song
+        from yono_core.media import file_hash
+        with tempfile.TemporaryDirectory()as directory:
+            root=Path(directory);engine,index,_,store=engine_at(root,[])
+            path=root/'owned.wav';path.write_bytes(b'owned state fixture, not a decode test')
+            actual=Song('Owned recording',['Artist'],20,youtube_id='abcdefghijk',isrc='USAAA2400001')
+            digest=file_hash(path);uri=store.commit(str(path),'','owned.wav','audio/wav','owned-reuse',digest)
+            index.add('download',actual,uri,digest)
+            wanted=Song('Owned recording',['Artist'],20,youtube_id='aqz-KE-bpKQ',isrc=actual.isrc)
+            try:
+                with patch('yono_stream.inspect_video',return_value={'song':wanted.to_dict()}):
+                    plan=engine.prepare({'kind':'selected_video','video_id':wanted.youtube_id})
+                self.assertEqual(plan['counts'],{'exists':1})
+                self.assertEqual(plan['entries'][0]['song']['youtube_id'],wanted.youtube_id)
+                self.assertEqual(plan['entries'][0]['audio']['sha256'],digest)
+            finally:index.close()
+
+    def test_explicit_metadata_retry_keeps_recording_and_row_identity(self):
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        from support import engine_at
+        from yono_core.model import Song
+        with tempfile.TemporaryDirectory()as directory:
+            engine,index,_,_=engine_at(Path(directory),[])
+            engine.catalogue.resolve=lambda *_:self.fail('must not substitute a catalogue recording')
+            wanted=Song('Owned recording',['Artist'],20,youtube_id='aqz-KE-bpKQ')
+            try:
+                with patch('yono_stream.inspect_video',return_value={'song':wanted.to_dict()}):
+                    plan=engine.prepare({'kind':'selected_video','video_id':wanted.youtube_id})
+                    identity=plan['entries'][0]['id'];plan['entries'][0]['status']='failed';engine.save(plan)
+                    again=engine.retry(plan['id'])
+                self.assertEqual(again['entries'][0]['id'],identity)
+                self.assertEqual(again['entries'][0]['song']['youtube_id'],wanted.youtube_id)
+                self.assertEqual(again['entries'][0]['status'],'ready')
+            finally:index.close()

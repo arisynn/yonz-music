@@ -19,7 +19,7 @@ android {
         applicationId = "com.yonzmusic.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(12)
+        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(13)
         versionName = "1.5.0"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -41,7 +41,7 @@ android {
         create("preview") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".dev"
-            versionNameSuffix = "-preview.3"
+            versionNameSuffix = "-preview.4"
             matchingFallbacks += listOf("debug")
             resValue("string","app_name","Yono Music Preview")
         }

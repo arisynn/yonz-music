@@ -1,0 +1,70 @@
+Starting a Gradle Daemon, 2 stopped Daemons could not be reused, use --status for details
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:buildQuickJs UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:prePreviewBuild UP-TO-DATE
+> Task :app:generatePreviewBuildConfig UP-TO-DATE
+> Task :app:findPreviewPythonCommand
+> Task :app:extractPreviewPythonBuildPackages UP-TO-DATE
+> Task :app:installPreviewPythonRequirements UP-TO-DATE
+> Task :app:mergePreviewPythonSources UP-TO-DATE
+> Task :app:generatePreviewPythonProxies UP-TO-DATE
+> Task :app:checkPreviewAarMetadata UP-TO-DATE
+> Task :app:generatePreviewResValues UP-TO-DATE
+> Task :app:mapPreviewSourceSetPaths UP-TO-DATE
+> Task :app:generatePreviewResources UP-TO-DATE
+> Task :app:mergePreviewResources UP-TO-DATE
+> Task :app:packagePreviewResources UP-TO-DATE
+> Task :app:parsePreviewLocalResources UP-TO-DATE
+> Task :app:createPreviewCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksPreview UP-TO-DATE
+> Task :app:processPreviewMainManifest UP-TO-DATE
+> Task :app:processPreviewManifest UP-TO-DATE
+> Task :app:processPreviewManifestForPackage UP-TO-DATE
+> Task :app:processPreviewResources UP-TO-DATE
+> Task :app:kspPreviewKotlin UP-TO-DATE
+> Task :app:compilePreviewKotlin UP-TO-DATE
+> Task :app:javaPreCompilePreview UP-TO-DATE
+> Task :app:compilePreviewJavaWithJavac UP-TO-DATE
+> Task :app:bundlePreviewClassesToCompileJar UP-TO-DATE
+> Task :app:prePreviewAndroidTestBuild SKIPPED
+> Task :app:processPreviewAndroidTestManifest UP-TO-DATE
+> Task :app:generatePreviewAndroidTestBuildConfig UP-TO-DATE
+> Task :app:checkPreviewAndroidTestAarMetadata UP-TO-DATE
+> Task :app:generatePreviewAndroidTestResValues UP-TO-DATE
+> Task :app:mapPreviewAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:generatePreviewAndroidTestResources UP-TO-DATE
+> Task :app:mergePreviewAndroidTestResources UP-TO-DATE
+> Task :app:processPreviewAndroidTestResources UP-TO-DATE
+> Task :app:kspPreviewAndroidTestKotlin
+> Task :app:compilePreviewAndroidTestKotlin
+> Task :app:javaPreCompilePreviewAndroidTest UP-TO-DATE
+> Task :app:compilePreviewAndroidTestJavaWithJavac UP-TO-DATE
+> Task :app:mergePreviewAndroidTestShaders UP-TO-DATE
+> Task :app:compilePreviewAndroidTestShaders NO-SOURCE
+> Task :app:generatePreviewAndroidTestAssets UP-TO-DATE
+> Task :app:mergePreviewAndroidTestAssets UP-TO-DATE
+> Task :app:compressPreviewAndroidTestAssets UP-TO-DATE
+> Task :app:checkPreviewAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:desugarPreviewAndroidTestFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexPreviewAndroidTest UP-TO-DATE
+> Task :app:mergeLibDexPreviewAndroidTest UP-TO-DATE
+> Task :app:dexBuilderPreviewAndroidTest
+> Task :app:mergePreviewAndroidTestGlobalSynthetics UP-TO-DATE
+> Task :app:processPreviewAndroidTestJavaRes UP-TO-DATE
+> Task :app:mergePreviewAndroidTestJavaResource UP-TO-DATE
+> Task :app:mergeProjectDexPreviewAndroidTest
+> Task :app:mergePreviewAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:generatePreviewPythonJniLibs UP-TO-DATE
+> Task :app:mergePreviewJniLibFolders UP-TO-DATE
+> Task :app:mergePreviewNativeLibs UP-TO-DATE
+> Task :app:mergePreviewAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripPreviewAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningPreviewAndroidTest UP-TO-DATE
+> Task :app:writePreviewAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:packagePreviewAndroidTest
+> Task :app:createPreviewAndroidTestApkListingFileRedirect UP-TO-DATE
+> Task :app:assemblePreviewAndroidTest
+
+BUILD SUCCESSFUL in 24s
+57 actionable tasks: 6 executed, 51 up-to-date

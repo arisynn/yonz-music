@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yonzmusic.app.MetadataAndMixTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-28T09:02:22" hostname="0e650192ef9c" time="0.003">
+  <properties/>
+  <testcase name="shortTapAndSeekDoNotBecomeAPlay" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.0"/>
+  <testcase name="hashesNotNamesDecideRelocation" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.001"/>
+  <testcase name="transitionQualifiesOldTrackWithoutCreditingNewTrack" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.0"/>
+  <testcase name="pausedTimeDoesNotCountAndQualificationOccursOnce" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.0"/>
+  <testcase name="historicalFilenameFallbackNeverOverwritesCorrectTags" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.001"/>
+  <testcase name="fallbackOnlyWhenTagsAreMissing" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.0"/>
+  <testcase name="filenameMetadataSurvivesRenameWhenTagsAbsent" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.0"/>
+  <testcase name="sourceWinsFilenameButMissingSourceFieldsKeepGoodTags" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.0"/>
+  <testcase name="mixRequiresRealEnoughDataAndNeverChangesAlbums" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.001"/>
+  <testcase name="tinyClipStillNeedsActualFullDurationAtMinimum" classname="com.yonzmusic.app.MetadataAndMixTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

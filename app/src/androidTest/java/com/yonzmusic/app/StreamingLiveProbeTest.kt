@@ -22,11 +22,11 @@ class StreamingLiveProbeTest {
         app.streams.register(song)
         lateinit var connection:PlaybackConnection
         inst.runOnMainSync {connection=PlaybackConnection(app)}
-        suspend fun await(check:()->Boolean) {withTimeout(45000){while(true){var yes=false;inst.runOnMainSync {yes=check()};if(yes)break;delay(100)}}}
+        suspend fun await(check:()->Boolean) {withTimeout(45000){while(true){var yes=false;var failure:String?=null;inst.runOnMainSync {yes=check();if(connection.state.value.id==song.id)failure=connection.state.value.error};if(yes)break;if(failure!=null)fail("LIVE_STREAM_SOURCE_FAILED: $failure");delay(100)}}}
         try {
             await {connection.state.value.ready};inst.runOnMainSync {connection.playRemote(song)}
             await {connection.state.value.playing && connection.position()>300}
-            assertTrue(connection.duration()>0);println("LIVE_STREAM_DECODE_SUCCESS")
+            inst.runOnMainSync {assertTrue(connection.duration()>0)};println("LIVE_STREAM_DECODE_SUCCESS")
         }finally {
             inst.runOnMainSync {connection.pause();connection.close()};app.stopService(android.content.Intent(app,com.yonzmusic.app.playback.PlaybackService::class.java));delay(300)
             if(saved!=null)app.preferences.save(saved)

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yonzmusic.app.ReleaseContractTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-28T09:02:23" hostname="0e650192ef9c" time="0.015">
+  <properties/>
+  <testcase name="unsupportedSdkAndAbiAreNotOffered" classname="com.yonzmusic.app.ReleaseContractTest" time="0.003"/>
+  <testcase name="exactDeclaredArtifactWinsOverOtherApks" classname="com.yonzmusic.app.ReleaseContractTest" time="0.0"/>
+  <testcase name="cancellationAndFailureCannotSatisfyCleanupByThemselves" classname="com.yonzmusic.app.ReleaseContractTest" time="0.002"/>
+  <testcase name="wrongPackageAndCrossReleaseAreRejected" classname="com.yonzmusic.app.ReleaseContractTest" time="0.001"/>
+  <testcase name="wrongSizeAndChecksumAreRejected" classname="com.yonzmusic.app.ReleaseContractTest" time="0.001"/>
+  <testcase name="unsafeOrCrossRepositoryAssetUrlsAreRejected" classname="com.yonzmusic.app.ReleaseContractTest" time="0.0"/>
+  <testcase name="missingAndAmbiguousApksAreRejected" classname="com.yonzmusic.app.ReleaseContractTest" time="0.001"/>
+  <testcase name="deeplyNestedAndNonNumericMetadataAreRejected" classname="com.yonzmusic.app.ReleaseContractTest" time="0.002"/>
+  <testcase name="draftAndPrereleaseAreRejected" classname="com.yonzmusic.app.ReleaseContractTest" time="0.001"/>
+  <testcase name="equalAndOlderCodesAreNotOffered" classname="com.yonzmusic.app.ReleaseContractTest" time="0.001"/>
+  <testcase name="debugUnsignedAndDifferentCertificatesAreNeverEligible" classname="com.yonzmusic.app.ReleaseContractTest" time="0.001"/>
+  <testcase name="cleanupNamesCannotEscapeTheDedicatedDirectory" classname="com.yonzmusic.app.ReleaseContractTest" time="0.001"/>
+  <testcase name="duplicateApiAssetNamesAreRejected" classname="com.yonzmusic.app.ReleaseContractTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

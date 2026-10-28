@@ -1,0 +1,32 @@
+{
+  "fixtures": [
+    {
+      "format": "mp3",
+      "durationMs": 12042,
+      "decoded": true,
+      "seek": true
+    },
+    {
+      "format": "webm",
+      "durationMs": 5008,
+      "decoded": true,
+      "seek": true
+    },
+    {
+      "format": "opus",
+      "durationMs": 5006,
+      "decoded": true,
+      "seek": true
+    },
+    {
+      "format": "m4a",
+      "durationMs": 3000,
+      "decoded": true,
+      "seek": true
+    }
+  ],
+  "injectedTimeoutRecovered": true,
+  "nonzeroRangeOnRecovery": true,
+  "backgroundAdvanced": true,
+  "liveNetwork": false
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yonzmusic.app.RecordingMatchTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-28T09:02:23" hostname="0e650192ef9c" time="0.002">
+  <properties/>
+  <testcase name="liveRemixKaraokeAndSlowedAreRejected" classname="com.yonzmusic.app.RecordingMatchTest" time="0.0"/>
+  <testcase name="punctuationDoesNotSplitBandNames" classname="com.yonzmusic.app.RecordingMatchTest" time="0.0"/>
+  <testcase name="truncatedAudioIsRejected" classname="com.yonzmusic.app.RecordingMatchTest" time="0.0"/>
+  <testcase name="titleFeaturingIsIncludedInArtistVerification" classname="com.yonzmusic.app.RecordingMatchTest" time="0.001"/>
+  <testcase name="coverPerformerIsRejected" classname="com.yonzmusic.app.RecordingMatchTest" time="0.0"/>
+  <testcase name="safeNamesAreBoundedAndCannotTraverse" classname="com.yonzmusic.app.RecordingMatchTest" time="0.0"/>
+  <testcase name="ambiguousArtistInputIsRejected" classname="com.yonzmusic.app.RecordingMatchTest" time="0.001"/>
+  <testcase name="missingGuestIsRejected" classname="com.yonzmusic.app.RecordingMatchTest" time="0.0"/>
+  <testcase name="completeFeaturingCreditsMatch" classname="com.yonzmusic.app.RecordingMatchTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

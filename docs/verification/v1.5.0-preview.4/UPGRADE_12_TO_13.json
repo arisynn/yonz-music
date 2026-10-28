@@ -1,0 +1,17 @@
+{
+  "fromCode": 12,
+  "toCode": 13,
+  "schema": 3,
+  "exactCollectionRowsRetained": true,
+  "counts": {
+    "tracks": 57,
+    "favorites": 1,
+    "playlists": 33,
+    "playlist_entries": 54,
+    "history": 13,
+    "sources": 61,
+    "listens": 18
+  },
+  "uninstall": false,
+  "clearData": false
+}

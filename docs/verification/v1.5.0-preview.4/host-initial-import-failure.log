@@ -1,0 +1,190 @@
+test_api (unittest.loader._FailedTest.test_api) ... ERROR
+test_audio_real (unittest.loader._FailedTest.test_audio_real) ... ERROR
+test_cancel (test_control_and_network.ControlTests.test_cancel) ... ok
+test_cancel_is_not_swallowed_by_except_exception (test_control_and_network.ControlTests.test_cancel_is_not_swallowed_by_except_exception) ... ok
+test_cooperative_deadline (test_control_and_network.ControlTests.test_cooperative_deadline) ... ok
+test_java_cancel_flag_before_python_job_registration (test_control_and_network.ControlTests.test_java_cancel_flag_before_python_job_registration) ... ok
+test_reader_enforces_size (test_control_and_network.ControlTests.test_reader_enforces_size) ... ok
+test_reader_none_amount (test_control_and_network.ControlTests.test_reader_none_amount) ... ok
+test_reader_preserves_complete_read (test_control_and_network.ControlTests.test_reader_preserves_complete_read) ... ok
+test_reader_stops_on_cancel (test_control_and_network.ControlTests.test_reader_stops_on_cancel) ... ok
+test_subprocess_cancel_terminates_child (test_control_and_network.ControlTests.test_subprocess_cancel_terminates_child) ... ok
+test_transfer_progress_throttled (test_control_and_network.ControlTests.test_transfer_progress_throttled) ... ok
+test_downloader_progress_hook_cancel (test_control_and_network.NetworkTests.test_downloader_progress_hook_cancel) ... ok
+test_embedded_credentials_rejected (test_control_and_network.NetworkTests.test_embedded_credentials_rejected) ... ok
+test_ipv6_local_rejected (test_control_and_network.NetworkTests.test_ipv6_local_rejected) ... ok
+test_metadata_options_flat_no_50_limit_no_remote_code (test_control_and_network.NetworkTests.test_metadata_options_flat_no_50_limit_no_remote_code) ... ok
+test_non_https_rejected (test_control_and_network.NetworkTests.test_non_https_rejected) ... ok
+test_nonstandard_port_rejected (test_control_and_network.NetworkTests.test_nonstandard_port_rejected) ... ok
+test_private_network_rejected (test_control_and_network.NetworkTests.test_private_network_rejected) ... ok
+test_public_resolution_accepted (test_control_and_network.NetworkTests.test_public_resolution_accepted) ... ok
+test_query_token_rejected (test_control_and_network.NetworkTests.test_query_token_rejected) ... ok
+test_requests_body_bound_applies_to_redirect_response (test_control_and_network.NetworkTests.test_requests_body_bound_applies_to_redirect_response) ... ok
+test_requests_redirect_is_checked_before_sending (test_control_and_network.NetworkTests.test_requests_redirect_is_checked_before_sending) ... ok
+test_engine (unittest.loader._FailedTest.test_engine) ... ERROR
+test_inputs_and_matching (unittest.loader._FailedTest.test_inputs_and_matching) ... ERROR
+test_attribution_wrapper (test_links_original.ShareLinksTests.test_attribution_wrapper) ... ok
+test_explicit_webm_link_uses_original_source_not_catalogue_search (test_links_original.ShareLinksTests.test_explicit_webm_link_uses_original_source_not_catalogue_search) ... ok
+test_external_video_metadata_never_falls_back_to_another_recording (test_links_original.ShareLinksTests.test_external_video_metadata_never_falls_back_to_another_recording) ... ok
+test_extless_audio_metadata_is_not_swapped_for_a_catalogue_recording (test_links_original.ShareLinksTests.test_extless_audio_metadata_is_not_swapped_for_a_catalogue_recording) ... ok
+test_extless_explicit_audio_retains_same_source (test_links_original.ShareLinksTests.test_extless_explicit_audio_retains_same_source) ... ok
+test_fake_host_is_not_youtube (test_links_original.ShareLinksTests.test_fake_host_is_not_youtube) ... ok
+test_invalid_port_returns_actionable_link_error (test_links_original.ShareLinksTests.test_invalid_port_returns_actionable_link_error) ... ok
+test_live_embed_shorts_v_routes (test_links_original.ShareLinksTests.test_live_embed_shorts_v_routes) ... ok
+test_multiple_links_not_silently_dropped (test_links_original.ShareLinksTests.test_multiple_links_not_silently_dropped) ... ok
+test_share_caption_markdown_and_schemeless (test_links_original.ShareLinksTests.test_share_caption_markdown_and_schemeless) ... ok
+test_signed_audio_query_and_balanced_filename_unchanged (test_links_original.ShareLinksTests.test_signed_audio_query_and_balanced_filename_unchanged) ... ok
+test_signed_query_does_not_decode_arbitrary_html_entities (test_links_original.ShareLinksTests.test_signed_query_does_not_decode_arbitrary_html_entities) ... ok
+test_spotify_embed_locale_and_uri (test_links_original.ShareLinksTests.test_spotify_embed_locale_and_uri) ... ok
+test_spotify_short_link_routes_to_authorized_metadata_reader (test_links_original.ShareLinksTests.test_spotify_short_link_routes_to_authorized_metadata_reader) ... ok
+test_text_list_rows_recognize_embedded_links (test_links_original.ShareLinksTests.test_text_list_rows_recognize_embedded_links) ... ok
+test_portable_and_cancel (unittest.loader._FailedTest.test_portable_and_cancel) ... ERROR
+test_review14 (unittest.loader._FailedTest.test_review14) ... ERROR
+test_artwork_does_not_contact_arbitrary_hosts (test_search.SearchTests.test_artwork_does_not_contact_arbitrary_hosts) ... ok
+test_cancelled_request_never_returns_results (test_search.SearchTests.test_cancelled_request_never_returns_results) ... ok
+test_exact_link_never_substitutes_other_recording (test_search.SearchTests.test_exact_link_never_substitutes_other_recording) ... ok
+test_invalid_ids_and_live_items (test_search.SearchTests.test_invalid_ids_and_live_items) ... ok
+test_invalid_link_has_no_network (test_search.SearchTests.test_invalid_link_has_no_network) ... ok
+test_json_invalid_input_is_structured (test_search.SearchTests.test_json_invalid_input_is_structured) ... ok
+test_links_are_strict_and_no_credentials (test_search.SearchTests.test_links_are_strict_and_no_credentials) ... ok
+test_metadata_does_not_guess_artist_album_or_hd (test_search.SearchTests.test_metadata_does_not_guess_artist_album_or_hd) ... ok
+test_real_credits_and_invalid_duration (test_search.SearchTests.test_real_credits_and_invalid_duration) ... ok
+test_search_is_flat_no_download_and_pages_are_bounded (test_search.SearchTests.test_search_is_flat_no_download_and_pages_are_bounded) ... ok
+test_error_boundary_returns_codes_without_exception_urls_or_tokens (test_stream.StreamTests.test_error_boundary_returns_codes_without_exception_urls_or_tokens) ... ok
+test_expired_reference_can_only_request_the_same_format (test_stream.StreamTests.test_expired_reference_can_only_request_the_same_format) ... ok
+test_invalid_source_identity_never_enters_extractor (test_stream.StreamTests.test_invalid_source_identity_never_enters_extractor) ... ok
+test_never_substitutes_other_video (test_stream.StreamTests.test_never_substitutes_other_video) ... ok
+test_rejects_arbitrary_stream_hosts_and_credentials (test_stream.StreamTests.test_rejects_arbitrary_stream_hosts_and_credentials) ... ok
+test_rejects_drm_private_live_and_merged_formats (test_stream.StreamTests.test_rejects_drm_private_live_and_merged_formats) ... ok
+test_resolution_is_read_only_and_does_not_guess_artist (test_stream.StreamTests.test_resolution_is_read_only_and_does_not_guess_artist) ... ok
+test_selected_source_does_not_reuse_same_title_from_different_video (test_stream.StreamTests.test_selected_source_does_not_reuse_same_title_from_different_video) ... ok
+test_verified_reuse_keeps_requested_source_and_receipt_hash (test_stream.StreamTests.test_verified_reuse_keeps_requested_source_and_receipt_hash) ... ERROR
+
+======================================================================
+ERROR: test_api (unittest.loader._FailedTest.test_api)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_api
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/test_api.py", line 7, in <module>
+    from yono_core.storage_host import DirectoryStore
+  File "/workspace/github-publish/repository/app/src/main/python/yono_core/storage_host.py", line 6, in <module>
+    from .engine import atomic_json
+  File "/workspace/github-publish/repository/app/src/main/python/yono_core/engine.py", line 397
+    if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
+IndentationError: unexpected indent
+
+
+======================================================================
+ERROR: test_audio_real (unittest.loader._FailedTest.test_audio_real)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_audio_real
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/test_audio_real.py", line 12, in <module>
+    from support import PNG
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/support.py", line 7, in <module>
+    from yono_core.engine import Engine
+  File "/workspace/github-publish/repository/app/src/main/python/yono_core/engine.py", line 397
+    if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
+IndentationError: unexpected indent
+
+
+======================================================================
+ERROR: test_engine (unittest.loader._FailedTest.test_engine)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_engine
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/test_engine.py", line 9, in <module>
+    from yono_core.engine import atomic_json, identity
+  File "/workspace/github-publish/repository/app/src/main/python/yono_core/engine.py", line 397
+    if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
+IndentationError: unexpected indent
+
+
+======================================================================
+ERROR: test_inputs_and_matching (unittest.loader._FailedTest.test_inputs_and_matching)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_inputs_and_matching
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/test_inputs_and_matching.py", line 8, in <module>
+    from support import FakeYT, candidate, details
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/support.py", line 7, in <module>
+    from yono_core.engine import Engine
+  File "/workspace/github-publish/repository/app/src/main/python/yono_core/engine.py", line 397
+    if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
+IndentationError: unexpected indent
+
+
+======================================================================
+ERROR: test_portable_and_cancel (unittest.loader._FailedTest.test_portable_and_cancel)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_portable_and_cancel
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/test_portable_and_cancel.py", line 4, in <module>
+    from support import candidate,engine_at,PNG
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/support.py", line 7, in <module>
+    from yono_core.engine import Engine
+  File "/workspace/github-publish/repository/app/src/main/python/yono_core/engine.py", line 397
+    if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
+IndentationError: unexpected indent
+
+
+======================================================================
+ERROR: test_review14 (unittest.loader._FailedTest.test_review14)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_review14
+Traceback (most recent call last):
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 396, in _find_test_path
+    module = self._get_module_from_name(name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/loader.py", line 339, in _get_module_from_name
+    __import__(name)
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/test_review14.py", line 7, in <module>
+    from support import candidate, engine_at, PNG
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/support.py", line 7, in <module>
+    from yono_core.engine import Engine
+  File "/workspace/github-publish/repository/app/src/main/python/yono_core/engine.py", line 397
+    if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
+IndentationError: unexpected indent
+
+
+======================================================================
+ERROR: test_verified_reuse_keeps_requested_source_and_receipt_hash (test_stream.StreamTests.test_verified_reuse_keeps_requested_source_and_receipt_hash)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/test_stream.py", line 67, in test_verified_reuse_keeps_requested_source_and_receipt_hash
+    from support import engine_at
+  File "/workspace/github-publish/repository/tools/yono-engine/tests/support.py", line 7, in <module>
+    from yono_core.engine import Engine
+  File "/workspace/github-publish/repository/app/src/main/python/yono_core/engine.py", line 397
+    if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
+IndentationError: unexpected indent
+
+----------------------------------------------------------------------
+Ran 61 tests in 0.278s
+
+FAILED (errors=7)

@@ -1,3 +1,12 @@
+# 1.5.0-preview.4 — 2026-10-28
+
+- Simplify only the new online-search/stream-save UI: one result row, tap to play/pause, More for three horizontal secondary actions; compact grouped download approval with destination/playlist side by side. Keep existing Home/Library/Playlists/player and list-import UI.
+- Enqueue directly from Search/Now Playing when a saved SAF grant exists; use truthful result messages and keep folder/playlist configuration explicit. Ask for configuration only when destination/grant is missing.
+- Pin format during expiring-URL refresh, validate byte ranges/content identity, bound ignored-range discard and automatic network retries. Surface sanitized source-specific errors and safe manual replay.
+- Serialize selected-request retry/cancel/recovery, reject stale WorkManager generations, retain per-entry errors, and verify exact-source published receipts by SHA256 before indexing/completion.
+- Keep selected source during metadata retry and verified duplicate reuse. Original audio, portable metadata/.cover, local collection IDs, Room3, permissions/dependencies and Dev certificate are unchanged.
+- Code13, separate Dev Preview. Official/latest1.4.2 remains unchanged. Live-source availability and physical HyperOS are not established by fixture tests; see TEST_REPORT.md.
+
 # 1.5.0-preview.3 — 2026-10-28
 
 - Add native online playback through embedded yt-dlp with on-demand expiring audio references; retain one Media3 service, mini-player, Now Playing, seek and mixed queue.

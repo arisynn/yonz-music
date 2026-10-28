@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yonzmusic.app.CollectionOrderTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2026-10-28T09:02:22" hostname="0e650192ef9c" time="0.016">
+  <properties/>
+  <testcase name="emptyPlaylistAcceptsNewTracks" classname="com.yonzmusic.app.CollectionOrderTest" time="0.01"/>
+  <testcase name="appendPreservesOrderAndSuppressesDuplicates" classname="com.yonzmusic.app.CollectionOrderTest" time="0.002"/>
+  <testcase name="movingUpKeepsMembership" classname="com.yonzmusic.app.CollectionOrderTest" time="0.0"/>
+  <testcase name="retryInsertsAtRequestedPositionWithoutDroppingUserAdditions" classname="com.yonzmusic.app.CollectionOrderTest" time="0.001"/>
+  <testcase name="existingArrivingTrackKeepsItsUserChosenPosition" classname="com.yonzmusic.app.CollectionOrderTest" time="0.0"/>
+  <testcase name="selfMoveKeepsOrder" classname="com.yonzmusic.app.CollectionOrderTest" time="0.0"/>
+  <testcase name="movingDownKeepsMembership" classname="com.yonzmusic.app.CollectionOrderTest" time="0.0"/>
+  <testcase name="invalidMovesDoNotLoseTracks" classname="com.yonzmusic.app.CollectionOrderTest" time="0.0"/>
+  <testcase name="resumeHandlesFinishedUnknownAndMidTrackPositions" classname="com.yonzmusic.app.CollectionOrderTest" time="0.0"/>
+  <testcase name="arrivingTrackDoesNotRecreatePreviouslyRemovedBatchMembers" classname="com.yonzmusic.app.CollectionOrderTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

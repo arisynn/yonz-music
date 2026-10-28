@@ -1,13 +1,13 @@
-# Native streaming and offline queue — 1.5.0-preview.3
+# Native streaming and offline queue — 1.5.0-preview.4
 
-Yono Music by Karisyono. Preview package com.yonzmusic.app.dev, code12, existing Dev certificate and Room3. Official/latest stays1.4.2. No release updater metadata points stable users at this preview.
+Yono Music by Karisyono. Preview package com.yonzmusic.app.dev, code13, existing Dev certificate and Room3. Official/latest stays1.4.2. No release updater metadata points stable users at this preview.
 
 ## Using it
 
 1. Open Search → Online and type a title, artist or supported video link. Results appear automatically after a short debounce; no API key or extra Search tap.
-2. Tap a result or its Play button to listen. The current result's button toggles pause. The existing mini-player opens the single Now Playing screen, with seek, queue and a Save offline action.
-3. More offers Play here, Play next, Add to queue, Save offline and the original source page. Explicit Play here replaces the current queue; queue actions preserve it. Local and online items share one Media3 session. Adding an item does not silently start a paused queue.
-4. Download opens one compact approval sheet: choose/change the writable SAF destination, optionally create a playlist (off initially), approve the content/source permission, then enqueue. One song without playlist goes directly in the destination. Metadata/artwork companions continue in .cover with .nomedia where applicable. Original encoding/container is retained; no MP3 conversion or invented bitrate/HD artwork.
+2. Tap a result to listen; tap the current result to pause/resume. Each result is one plain row with artwork, title, source credit and duration/status. The only trailing action is More. The existing mini-player opens the single Now Playing screen, with seek, queue and a Save offline action.
+3. More offers three horizontal equal-width actions: Play next, Add to queue and Save offline, with a small source link below. Tapping another result replaces the current queue; queue actions preserve it. Local and online items share one Media3 session. Adding an item does not silently start a paused queue.
+4. Download enqueues immediately when a saved writable SAF grant exists, from Search or Now Playing. A truthful result message confirms enqueue or reports duplicates/errors; no approval panel or download-list navigation interrupts repeated downloads. The user's explicit Download action selects the exact recording. More → Atur reopens the compact destination/optional-playlist panel; it is also the fallback when no folder/grant exists. The first configuration retains source/content authorization. Playlist starts off, and the choice saved when submitting is reused for quick downloads. One song without playlist goes directly in the destination. Metadata/artwork remain in .cover with .nomedia where applicable; original format is retained.
 5. The shared Download list shows pending/current/history rows, real progress or an indeterminate indicator, cancel, retry and open result. Another request can be added while one runs. Duplicate active source+destination requests are rejected. Cancelling one row does not cancel later WorkManager nodes. A published readable receipt is required before completion. Pause/resume download is not offered.
 
 ## Architecture and collection safety
@@ -24,8 +24,14 @@ Persistent jobs use the existing WorkManager unique queue and Room AppState tran
 
 ## UI and limits
 
-Home / Library / Search / Playlists, owner logo and themes remain. Direct result controls have48dp targets; status text yields space to controls. Shared Now Playing shows true buffering state and disables seek for unknown duration. Download approval remains one scrollable modal for compact displays/font scaling, rather than adding another navigation destination. Existing reduced-motion settings apply.
+Home / Library / Search / Playlists, owner logo and themes remain. The More control has a48dp target. Extra actions appear only in a compact horizontal three-action sheet. Download approval groups artwork/title/credit, places destination and playlist switch on one row, and uses one primary enqueue action; optional playlist and source authorization remain explicit. Home, Library, Playlists, the existing player and the older list-import screen are unchanged. Shared Now Playing shows true buffering state and disables seek for unknown duration. Download approval remains one scrollable modal for compact displays/font scaling, rather than adding another navigation destination. Existing reduced-motion settings apply.
 
 Only standalone progressive HTTPS audio exposed by this source is admitted for streaming. HLS-only sources, merged video/audio, live, DRM/private/premium/access-restricted sources, login/cookies and FFmpeg transcoding are not supported by this implementation. Original WebM/Opus/M4A decode depends on Android/Media3. A network or extractor failure is shown as an error; local playback remains independent. User reports about prior Search do not prove live streaming. The real streaming attempt in this build environment failed; controlled own-audio fixture results are documented separately in TEST_REPORT.md.
 
 Source terms and recording rights are separate requirements. yt-dlp is an extraction tool, not a permission grant. YouTube terms restrict automated access; this preview is not endorsed by YouTube and does not promise platform authorization. No credential theft, access restriction bypass or anti-bot evasion is implemented. Sources and networks may reject requests. References: https://github.com/yt-dlp/yt-dlp and https://www.youtube.com/static?template=terms .
+
+## Preview4 recovery hardening
+
+Expired401/403 references refresh once with the original format ID pinned. The DataSource rejects a changed codec/container or content length rather than appending incompatible bytes. Ranges validate start/end/total; an ignored nonzero range permits only a bounded1MiB discard. Resolver/open/read have finite cooperative timeouts. Transient network/server errors permit two automatic retries per DataSource; successful progress/reopens do not reset that budget. Access/rate/format/unsafe/TLS errors stop with sanitized actionable messages. Manual retry creates a fresh period; changed/unsupported ranges restart at zero. This is controlled-fixture coverage, not proof of any live CDN's behavior.
+
+Selected-download transitions reject stale work IDs transactionally. Retry/cancel/recovery are serialized, cancellation targets a request rather than whichever task is current later, and terminal rows cannot be flipped to cancelled. A source-matching published receipt must pass a real content-URI SHA256 check before indexing/completion. Specific failed-entry reasons survive the Python boundary. Recovery does not reacquire a completed receipt or change the selected source. No source/file deletion or Room schema change is introduced.

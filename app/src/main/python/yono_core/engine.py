@@ -133,7 +133,8 @@ class Engine:
                         song = Song.from_dict(original["song"])
                         existing, reason = self.index.find(song, exact_source=True) if original.get("selected_exact") else self.index.find(song)
                         if existing:
-                            row.update(status="exists", song=Song.from_dict(existing).to_dict(), uri=existing["uri"], reason=reason)
+                            row.update(status="exists", song=song.to_dict() if original.get("selected_exact") else Song.from_dict(existing).to_dict(), uri=existing["uri"], reason=reason)
+                            if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
                             self.index.bind(song, existing)
                         else:
                             song, candidate = (song, {"selected_exact": True}) if original.get("selected_exact") else self.catalogue.resolve(song)
@@ -141,6 +142,7 @@ class Engine:
                             if existing:
                                 self.index.bind(song, existing)
                                 row.update(status="exists", song=song.to_dict(), uri=existing["uri"], reason=reason)
+                                if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
                             elif (song.youtube_id or song.source_url) in seen:
                                 row.update(status="duplicate", song=song.to_dict(), duplicate_of=seen[song.youtube_id or song.source_url], reason="rilisan yang sama sudah ada pada daftar")
                             else:
@@ -248,6 +250,7 @@ class Engine:
                         existing, reason = self.index.find(song, exact_source=True) if row.get("request", {}).get("selected_exact") else self.index.find(song)
                         if existing:
                             row.update(status="exists", uri=existing["uri"], reason=reason)
+                            if row.get("request",{}).get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
                         else:
                             # Explicit selections keep their recording ID; Media.transfer re-checks
                             # that exact source's availability/DRM/identity before fetching bytes.
@@ -360,14 +363,21 @@ class Engine:
                     existing, reason = record, "jalur relatif folder pilihan"
                 else:
                     song = Song.from_dict(original["song"])
-                    existing, reason = self.index.find(song)
+                    exact=original.get("selected_exact")
+                    existing, reason = self.index.find(song, exact_source=True) if exact else self.index.find(song)
                     if not existing:
-                        song, candidate = self.catalogue.resolve(song)
-                        existing, reason = self.index.find(song)
+                        if exact:
+                            from yono_stream import inspect_video
+                            song=Song.from_dict(inspect_video(song.youtube_id,self.control,self.sources.runtime)["song"])
+                            candidate={"selected_exact":True}
+                        else:
+                            song, candidate = self.catalogue.resolve(song)
+                        existing, reason = self.index.find(song, exact_source=True) if exact else self.index.find(song)
                         row["candidate"] = candidate
                 row.update(song=song.to_dict(), status="exists" if existing else "ready")
                 if existing:
                     row.update(uri=existing["uri"], reason=reason)
+                    if original.get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
                     self.index.bind(song, existing)
                 row.pop("error", None)
             except EngineError as error:

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.yonzmusic.app.PasteListFormatterTest" tests="22" skipped="0" failures="0" errors="0" timestamp="2026-10-28T09:02:23" hostname="0e650192ef9c" time="0.017">
+  <properties/>
+  <testcase name="differentArtistOnlyGuessedWithExactFullName" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.002"/>
+  <testcase name="threeTracksAndDashVariants" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="unknownArtistsNeverInvented" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.001"/>
+  <testcase name="signedLinksNeverChanged" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="numberedRunRetainsOrder" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="bomAndCrlfNormalizedForPlainText" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="repeatedArtistMatchesRequestedExample" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.001"/>
+  <testcase name="formattingIsIdempotent" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="distinctArtistsFromSelectedLibrary" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.001"/>
+  <testcase name="structuredInputNotMutated" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="largePlainInputRetainedWithoutExpensiveGuessing" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.001"/>
+  <testcase name="unicodeRepeatedArtistSplits" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.001"/>
+  <testcase name="decimalsAndNonSequentialNumbersNotGuessed" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.001"/>
+  <testcase name="titleHyphenAndAcDcPreserved" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="artistMentionsInsideVersionOrFeaturedCreditsNotSplit" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="artistCollaborationSemicolonNotSplit" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.001"/>
+  <testcase name="partialFormattingDoesNotDropAmbiguousTail" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="normalTypingNotBulkButPasteAndSelectionReplaceAre" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="markdownLinkNotTreatedAsJsonOrSongBoundaries" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="existingNewlinesAndNonAsciiPreserved" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.0"/>
+  <testcase name="semicolonPipeAndBulletWithCompletePairs" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.005"/>
+  <testcase name="linkListSplitsOnlyWhenWholeLineIsUrls" classname="com.yonzmusic.app.PasteListFormatterTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

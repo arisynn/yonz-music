@@ -33,6 +33,14 @@ class PlaybackService : MediaSessionService() {
     private var snapshotJob: Job? = null
     private var sleepJob: Job? = null
     private val app get() = application as YonzApp
+    private var streamIssue:StreamIssue?=null
+    private var issueMediaId:String?=null
+    private fun publishExtras() {
+        session?.setSessionExtras(Bundle().apply {
+            putInt(AUDIO_SESSION,player.audioSessionId)
+            streamIssue?.let {putString(STREAM_ISSUE,it.name);putString(STREAM_ISSUE_ID,issueMediaId)}
+        })
+    }
     private var consecutiveErrors = 0
     private var wasShuffling = false
     private var previousQueueKeys = emptySet<String>()
@@ -71,12 +79,12 @@ class PlaybackService : MediaSessionService() {
             }
         } }
     }
-    companion object { const val TIMER = "com.yonzmusic.app.SLEEP_TIMER"; const val AUDIO_SESSION = "com.yonzmusic.app.AUDIO_SESSION" }
+    companion object { const val TIMER = "com.yonzmusic.app.SLEEP_TIMER"; const val AUDIO_SESSION = "com.yonzmusic.app.AUDIO_SESSION";const val STREAM_ISSUE="yono.stream.issue";const val STREAM_ISSUE_ID="yono.stream.issue.id" }
 
     override fun onCreate() {
         super.onCreate()
         player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this).setLoadErrorHandlingPolicy(androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy(0)).setDataSourceFactory(androidx.media3.datasource.DefaultDataSource.Factory(this, app.streamTestDataSource ?: androidx.media3.datasource.DataSource.Factory {StreamDataSource(app.streams)})))
+            .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this).setLoadErrorHandlingPolicy(StreamLoadPolicy()).setDataSourceFactory(androidx.media3.datasource.DefaultDataSource.Factory(this, app.streamTestDataSource ?: androidx.media3.datasource.DataSource.Factory {StreamDataSource(app.streams)})))
             .setLoadControl(androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(3000,20000,700,1500).build())
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
             .setHandleAudioBecomingNoisy(true).setWakeMode(C.WAKE_MODE_LOCAL).build()
@@ -116,11 +124,12 @@ class PlaybackService : MediaSessionService() {
                 return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
             }
         }).build()
-        session?.setSessionExtras(Bundle().apply { putInt(AUDIO_SESSION, player.audioSessionId) })
+        publishExtras()
         player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) { listenTick(reason==Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) }
-            override fun onAudioSessionIdChanged(audioSessionId: Int) { session?.setSessionExtras(Bundle().apply { putInt(AUDIO_SESSION, audioSessionId) }) }
+            override fun onAudioSessionIdChanged(audioSessionId: Int) { publishExtras() }
             override fun onEvents(player: Player, events: Player.Events) {
+                if(streamIssue!=null && (player.currentMediaItem?.mediaId!=issueMediaId || (player.playerError==null && player.playbackState!=Player.STATE_IDLE))) {streamIssue=null;issueMediaId=null;publishExtras()}
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)) updateShuffleCycle()
                 listenTick()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED)) persist()
@@ -136,6 +145,7 @@ class PlaybackService : MediaSessionService() {
             }
             override fun onPlayerError(error: PlaybackException) {
                 val failed = player.currentMediaItem?.mediaId
+                if(failed?.startsWith("engine:")==true) {streamIssue=if(error.errorCode in setOf(PlaybackException.ERROR_CODE_DECODING_FAILED,PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED))StreamIssue.FORMAT else StreamIssue.from(error.cause);issueMediaId=failed;publishExtras()}
                 if (failed != null && !failed.startsWith("engine:")) scope.launch(Dispatchers.IO) { app.repository.playbackFailure(failed,error.errorCode) }
                 consecutiveErrors++
                 if (player.hasNextMediaItem() && consecutiveErrors < player.mediaItemCount) { player.seekToNextMediaItem(); player.prepare() }

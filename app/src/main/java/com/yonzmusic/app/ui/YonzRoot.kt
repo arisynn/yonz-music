@@ -82,9 +82,10 @@ import org.json.JSONArray
         val current = remember(playerTracks, playback.id) { playerTracks.find { it.id == playback.id } }
         var streamDownload by remember {mutableStateOf<com.yonzmusic.app.search.OnlineSong?>(null)}
         fun downloadRemote(track:com.yonzmusic.app.data.Track) {
-            streamDownload=playback.remoteTracks.firstOrNull {it.id==track.id}?.let {t->
+            playback.remoteTracks.firstOrNull {it.id==track.id}?.let {t->
                 val id=t.id.removePrefix("engine:")
-                com.yonzmusic.app.search.OnlineSong(t.id,com.yonzmusic.app.search.SearchProvider.ENGINE,t.title,t.artist.removePrefix("Kanal: "),t.album,t.duration,t.artUri,"https://www.youtube.com/watch?v=$id",id,!t.artist.startsWith("Kanal: "))
+                val song=com.yonzmusic.app.search.OnlineSong(t.id,com.yonzmusic.app.search.SearchProvider.ENGINE,t.title,t.artist.removePrefix("Kanal: "),t.album,t.duration,t.artUri,"https://www.youtube.com/watch?v=$id",id,!t.artist.startsWith("Kanal: "))
+                vm.downloadOnline(song){streamDownload=song}
             }
         }
         val snackbar = remember { SnackbarHostState() }
@@ -192,8 +193,8 @@ import org.json.JSONArray
                     "home" -> HomeScreen(tracks, favorites, history, current, playback.id, { vm.play(it.first, it.second) }, { menuId = it.id }, { detail("favorites", "", "Favorites") }, { detail("history", "", "Recently played") }, { k, t -> detail("album", k, t) }, { vm.resetImport(); navigate("import") }, { destination = "library" }, { playerOpen = true },scrollState=homeScroll,mixes=mixes)
                     "library" -> LibraryScreen(tracks, favorites, playback.id, preferences.sort, scanning, { vm.resetImport(); navigate("import") }, vm::scan, vm::sort, { t, id -> vm.play(t, id) }, { menuId = it.id }, { kind, key, title -> detail(kind, key, title) })
                     "search" -> SearchScreen(vm,tracks, playlists, favorites, playback.id, { t, id -> vm.play(t, id) }, { menuId = it.id }, { p -> detail("playlist", "", p.name, p.id) },{song->
-                        streamDownload=song
-                    })
+                        vm.downloadOnline(song){streamDownload=song}
+                    },{song->streamDownload=song})
                     "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorites") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") })
                     "detail" -> DetailScreen(detailTracks, favorites, playback.id, detailKind == "playlist", { t, id -> vm.play(t, id) }, { menuId = it.id }, { nameAction = "rename" }, { deleteId = selectedPlaylist }, { exportTracks = detailTracks; export.launch((playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle).take(60) + ".m3u8") }, { from, to -> vm.move(selectedPlaylist, from, to) }, { addIds = emptyList() })
                     "settings" -> SettingsScreen(preferences, tracks, scanning, sleepEnd, vm::theme, vm::motion, vm::glass, vm::scan, { minutes -> vm.playback.timer(minutes) }, {

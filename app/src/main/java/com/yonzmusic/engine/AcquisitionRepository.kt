@@ -6,6 +6,7 @@ import com.yonzmusic.app.YonzApp
 import com.yonzmusic.app.data.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.withLock
 import org.json.*
 import java.io.File
 import java.util.UUID
@@ -21,25 +22,25 @@ class AcquisitionRepository(private val app: YonzApp) {
         val rows=dao.states("stream-download:%").mapNotNull {runCatching {JSONObject(it.value)}.getOrNull()}.sortedBy {it.optLong("created")}
         queuedDownloads.value=(rows.filter {it.optString("status") in setOf("queued","running","cancelling")}+rows.filter {it.optString("status") !in setOf("queued","running","cancelling")}.takeLast(200)).sortedBy {it.optLong("created")}
     }
-    private suspend fun updateQueued(id:String,edit:(JSONObject)->Unit) {
-        app.database.withTransaction {val j=dao.state("stream-download:$id")?.value?.let(::JSONObject) ?: return@withTransaction;edit(j);dao.state(AppState("stream-download:$id",j.toString()))};refreshQueued()
+    private suspend fun updateQueued(id:String,expectedWork:String?=null,edit:(JSONObject)->Unit) {
+        app.database.withTransaction {val j=dao.state("stream-download:$id")?.value?.let(::JSONObject) ?: return@withTransaction;if(expectedWork!=null && j.optString("work_id")!=expectedWork)return@withTransaction;edit(j);dao.state(AppState("stream-download:$id",j.toString()))};refreshQueued()
     }
-    fun enqueueSelected(song:com.yonzmusic.app.search.OnlineSong,destination:String,playlist:Boolean) {
+    fun enqueueSelected(song:com.yonzmusic.app.search.OnlineSong,destination:String,playlist:Boolean,onResult:((String)->Unit)?=null) {
         app.persistenceScope.launch {
             queueReady.await();queueMutex.lock()
             try {
                 require(com.yonzmusic.app.playback.StreamRepository.valid(song.videoId) && song.page=="https://www.youtube.com/watch?v=${song.videoId}")
                 require(app.contentResolver.persistedUriPermissions.any {it.uri.toString()==destination && it.isReadPermission && it.isWritePermission}) {"Hubungkan ulang folder tujuan unduhan."}
                 refreshQueued()
-                if(queuedDownloads.value.any {it.optString("source_id")==song.videoId && it.optString("destination")==destination && it.optString("status") in setOf("queued","running","cancelling")}) {message.value="Lagu ini sudah berada di antrean.";return@launch}
+                if(queuedDownloads.value.any {it.optString("source_id")==song.videoId && it.optString("destination")==destination && it.optString("status") in setOf("queued","running","cancelling")}) {message.value="Lagu ini sudah berada di antrean.";onResult?.invoke(message.value);return@launch}
                 val id=UUID.randomUUID().toString()
                 val row=JSONObject().put("id",id).put("source_id",song.videoId).put("song",com.yonzmusic.app.playback.StreamRepository.encode(song)).put("destination",destination).put("playlist",playlist).put("status","queued").put("created",System.currentTimeMillis()).put("work_id",id)
                 app.database.withTransaction {
                     dao.state(AppState("stream-download:$id",row.toString()))
                     dao.state(AppState("engine-request:$id",JSONObject().put("action","selected_download").put("payload",JSONObject().put("video_id",song.videoId)).put("destination",destination).toString()))
                 }
-                scheduleSelected(id,id);refreshQueued();message.value="Ditambahkan ke daftar unduhan."
-            }catch(e:Exception){message.value=e.message?.take(200) ?: "Antrean belum dapat disimpan."}finally{queueMutex.unlock()}
+                scheduleSelected(id,id);refreshQueued();message.value="Ditambahkan ke daftar unduhan.";onResult?.invoke(message.value)
+            }catch(e:Exception){message.value=e.message?.take(200) ?: "Antrean belum dapat disimpan.";onResult?.invoke(message.value)}finally{queueMutex.unlock()}
         }
     }
     internal var selectedScheduler:((String,String)->Unit)?=null // Dependency injection for instrumentation; no IPC/config access.
@@ -49,22 +50,55 @@ class AcquisitionRepository(private val app: YonzApp) {
             androidx.work.OneTimeWorkRequestBuilder<EngineWorker>().setId(UUID.fromString(workId)).setConstraints(androidx.work.Constraints.Builder().setRequiredNetworkType(androidx.work.NetworkType.CONNECTED).build())
                 .setInputData(androidx.work.workDataOf("request" to id)).build())
     }
-    internal suspend fun recoverSelected() {
+    internal suspend fun recoverSelected() = queueMutex.withLock {
         refreshQueued()
         for(row in queuedDownloads.value.filter {it.optString("status") in setOf("queued","running","cancelling")}) {
-            val workId=row.optString("work_id",row.getString("id"))
+            val workId=row.optString("work_id",row.getString("id"));val id=row.getString("id")
             val info=try {androidx.work.WorkManager.getInstance(app).getWorkInfoById(UUID.fromString(workId)).get(5,java.util.concurrent.TimeUnit.SECONDS)}catch(_:Exception){continue}
-            if(info==null)scheduleSelected(row.getString("id"),workId)
-            else if(info.state.isFinished)updateQueued(row.getString("id")){it.put("status","failed").put("error","Pekerjaan terhenti. Coba ulang untuk melanjutkan.")}
+            if(info==null)scheduleSelected(id,workId)
+            else if(info.state.isFinished && !reconcilePublished(row,workId))updateQueued(id,workId){it.put("status",if(it.optBoolean("cancel_requested"))"cancelled"else "failed").put("error","Pekerjaan terhenti. Coba ulang; audio yang sudah tersimpan akan diperiksa dahulu.")}
         }
     }
-    fun cancelQueued(id:String) {app.persistenceScope.launch {updateQueued(id){it.put("cancel_requested",true).put("status",if(activeRequest.value==id)"cancelling"else "cancelled")};if(activeRequest.value==id){cancelled=true;task?.cancel()}}}
-    fun retryQueued(id:String) {app.persistenceScope.launch {
-        if(activeRequest.value==id){message.value="Pekerjaan sedang berhenti. Coba lagi sebentar.";return@launch}
-        refreshQueued();if(queuedDownloads.value.firstOrNull {it.optString("id")==id}?.optString("status") !in setOf("failed","cancelled"))return@launch
-        val work=UUID.randomUUID().toString();updateQueued(id){it.put("status","queued").put("cancel_requested",false).put("error","").put("work_id",work)};scheduleSelected(id,work)
-    }}
-    internal suspend fun failQueued(id:String,message:String){updateQueued(id){if(!it.optBoolean("cancel_requested"))it.put("status","failed").put("error",message.take(200))}}
+    private val cancelledRequests=java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    fun cancelQueued(id:String) {app.persistenceScope.launch {queueReady.await();queueMutex.withLock {
+        updateQueued(id){if(it.optString("status") in setOf("queued","running","cancelling")) {
+            cancelledRequests.add(id);it.put("cancel_requested",true).put("status",if(activeRequest.value==id)"cancelling"else "cancelled")
+        }}
+        if(id in cancelledRequests)boundTask?.takeIf {it.request==id}?.task?.cancel()
+    }}}
+    fun retryQueued(id:String) {app.persistenceScope.launch {queueReady.await();queueMutex.withLock {
+        if(activeRequest.value==id){message.value="Pekerjaan sedang berhenti. Coba lagi sebentar.";return@withLock}
+        refreshQueued();val row=queuedDownloads.value.firstOrNull {it.optString("id")==id} ?: return@withLock
+        if(row.optString("status") !in setOf("failed","cancelled"))return@withLock
+        if(queuedDownloads.value.any {it.optString("id")!=id && it.optString("source_id")==row.optString("source_id") && it.optString("destination")==row.optString("destination") && it.optString("status") in setOf("queued","running","cancelling")}) {message.value="Rekaman ini sudah memiliki unduhan aktif.";return@withLock}
+        val work=UUID.randomUUID().toString();cancelledRequests.remove(id)
+        updateQueued(id){it.put("status","queued").put("cancel_requested",false).put("error","").put("error_code","").put("work_id",work)};scheduleSelected(id,work)
+    }}}
+    internal suspend fun failQueued(id:String,message:String,workId:String?=null){updateQueued(id,workId){if(!it.optBoolean("cancel_requested"))it.put("status","failed").put("error",message.take(200))}}
+    private suspend fun verifiedReceipt(plan:JSONObject,source:String):JSONObject? {
+        val receipt=SelectedDownloadResult.receipt(plan,source) ?: return null
+        if(Uri.parse(receipt.optString("uri")).scheme!="content")return null
+        val expected=receipt.optJSONObject("audio")?.optString("sha256").orEmpty().ifBlank {
+            dao.allTracks().firstOrNull {it.uri==receipt.optString("uri") && it.sourceIdentity=="youtube:$source"}?.sha256.orEmpty()
+        }
+        if(!expected.matches(Regex("[a-f0-9]{64}")))return null
+        val readable=runCatching {
+            val digest=MessageDigest.getInstance("SHA-256");var bytes=0L
+            app.contentResolver.openInputStream(Uri.parse(receipt.getString("uri")))!!.use {input->
+                val b=ByteArray(262144);while(true){val n=input.read(b);if(n<0)break;bytes+=n;require(bytes<=Repository.MAX_AUDIO_BYTES);digest.update(b,0,n)}
+            };bytes>0 && digest.digest().joinToString(""){"%02x".format(it)}==expected
+        }.getOrDefault(false)
+        return receipt.takeIf {readable}
+    }
+    /** Validate exact bytes before recovering an already-finished publication; never scan folders. */
+    private suspend fun reconcilePublished(row:JSONObject,workId:String?):Boolean {
+        val planId=row.optString("plan_id");if(!planId.matches(Regex("[a-f0-9]{32}")))return false
+        val plan=runCatching {val f=File(app.filesDir,"yono-engine/plans/$planId.json");require(f.isFile && f.length() in 1..16*1024*1024);JSONObject(f.readText())}.getOrNull() ?: return false
+        val receipt=verifiedReceipt(plan,row.optString("source_id")) ?: return false
+        importResult(plan)
+        updateQueued(row.getString("id"),workId){it.put("status","complete").put("uri",receipt.getString("uri")).put("error","Audio yang sudah tersimpan berhasil diperiksa kembali.").put("error_code","")}
+        return true
+    }
 
     val busy = MutableStateFlow(false)
     val event = MutableStateFlow(JSONObject())
@@ -82,6 +116,7 @@ class AcquisitionRepository(private val app: YonzApp) {
     }
     private val pendingCancels = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
     @Volatile private var executing=false
+    @Volatile private var executingRequest:String?=null
     @Volatile private var enqueueing=false
     @Volatile private var workActive=false
     init {
@@ -125,10 +160,14 @@ class AcquisitionRepository(private val app: YonzApp) {
             submit("repair_artwork",JSONObject().put("plan_id",match.first.getString("id")).put("entry_id",match.second.getString("id")).put("local_uri",track.uri).put("sha256",track.sha256))
         }
     }
-    private var task: YonoEngineClient.Task? = null
+    private data class BoundTask(val request:String,val task:YonoEngineClient.Task)
+    @Volatile private var boundTask:BoundTask?=null
+    private val task get()=boundTask?.task
     @Volatile private var cancelled = false
     private val dao get() = app.repository.dao
-    fun cancel() { app.persistenceScope.launch {refreshQueued();queuedDownloads.value.filter {it.optString("status") in setOf("queued","running","cancelling")}.forEach {row->updateQueued(row.getString("id")){it.put("cancel_requested",true).put("status",if(activeRequest.value==row.getString("id"))"cancelling"else "cancelled")}}};cancelled = true; event.value = JSONObject().put("stage", "cancelling"); task?.cancel() }
+    fun cancel() {executingRequest?.let {cancelledRequests.add(it)};val running=boundTask;running?.let {cancelledRequests.add(it.request);it.task.cancel()};app.persistenceScope.launch {queueReady.await();queueMutex.withLock {
+        refreshQueued();queuedDownloads.value.filter {it.optString("status") in setOf("queued","running","cancelling")}.forEach {row->val id=row.getString("id");cancelledRequests.add(id);updateQueued(id){if(it.optString("status") in setOf("queued","running","cancelling"))it.put("cancel_requested",true).put("status",if(activeRequest.value==id)"cancelling"else "cancelled")}}
+    }};event.value=JSONObject().put("stage","cancelling") }
     @Synchronized fun submit(action: String, payload: JSONObject = JSONObject()) {
         if (busy.value) return
         busy.value = true; cancelled = false;enqueueing=true
@@ -144,30 +183,40 @@ class AcquisitionRepository(private val app: YonzApp) {
             finally { enqueueing=false;busy.value=workActive || executing }
         }
     }
-    suspend fun execute(requestId: String) = withContext(Dispatchers.IO) {
-        busy.value = true;executing=true
+    internal fun finishExecution(id:String) {
+        if(executingRequest==id) {executing=false;executingRequest=null;activeRequest.value="";currentAction.value="";activeEntry.value="";activePlan.value="";cancelledRequests.remove(id)}
+        busy.value=workActive || executing || enqueueing
+    }
+    suspend fun execute(requestId: String,workId:String?=null) = withContext(Dispatchers.IO) {
+        busy.value = true;executing=true;executingRequest=requestId
+        try {
         val operationContext = currentCoroutineContext()
         val request = JSONObject(dao.state("engine-request:$requestId")!!.value)
         currentAction.value=request.getString("action")
         val selectedJob=request.optString("action")=="selected_download"
+        fun stopped()=requestId in cancelledRequests || (!selectedJob && cancelled)
+        suspend fun job(edit:(JSONObject)->Unit)=updateQueued(requestId,workId,edit)
         if(selectedJob) {
-            val row=dao.state("stream-download:$requestId")?.value?.let(::JSONObject)
-            if(row==null || row.optBoolean("cancel_requested")) {
-                if(row!=null) {
-                    val planId=row.optString("plan_id")
-                    val recovered=if(planId.matches(Regex("[a-f0-9]{32}")))runCatching {
-                        val file=File(app.filesDir,"yono-engine/plans/$planId.json");if(file.length()>16*1024*1024)throw IllegalStateException()
-                        JSONObject(file.readText())
-                    }.getOrNull()else null
-                    val rows=recovered?.optJSONArray("entries") ?: JSONArray()
-                    val receipt=(0 until rows.length()).map {rows.getJSONObject(it)}.firstOrNull {it.optJSONObject("song")?.optString("youtube_id")==row.optString("source_id") && it.optString("status") in setOf("downloaded","exists","duplicate") && it.optString("uri").isNotBlank()}
-                    if(recovered!=null && receipt!=null && runCatching {app.contentResolver.openFileDescriptor(Uri.parse(receipt.getString("uri")),"r")?.use {true} ?: false}.getOrDefault(false)) {
-                        importResult(recovered);updateQueued(requestId){it.put("status","complete").put("uri",receipt.getString("uri")).put("error","Audio sudah tersimpan sebelum pembatalan.")}
-                    }else updateQueued(requestId){it.put("status","cancelled")}
+            var row:JSONObject?=null;var superseded=false
+            app.database.withTransaction {
+                row=dao.state("stream-download:$requestId")?.value?.let(::JSONObject)
+                superseded=row==null || (workId!=null && row!!.optString("work_id")!=workId)
+                if(!superseded && !row!!.optBoolean("cancel_requested") && row!!.optString("status") in setOf("queued","running","cancelling")) {
+                    activeRequest.value=requestId;row!!.put("status","running").put("error","").put("error_code","")
+                    dao.state(AppState("stream-download:$requestId",row.toString()))
                 }
-                executing=false;busy.value=workActive;return@withContext
             }
-            cancelled=false;pendingCancels.clear();activeRequest.value=requestId;updateQueued(requestId){it.put("status","running").put("error","")}
+            if(superseded){executing=false;busy.value=workActive;currentAction.value="";return@withContext}
+            if(row!!.optString("status")=="complete") {
+                if(!reconcilePublished(row!!,workId))job {it.put("status","failed").put("error","Hasil unduhan berubah atau tidak tersedia. Hubungkan ulang lokasinya sebelum mencoba lagi.")}
+                return@withContext
+            }
+            if(row!!.optBoolean("cancel_requested")) {
+                if(!reconcilePublished(row!!,workId))job {it.put("status","cancelled")}
+                executing=false;busy.value=workActive;currentAction.value="";return@withContext
+            }
+            if(row!!.optString("status") !in setOf("queued","running","cancelling"))return@withContext
+            cancelled=false;pendingCancels.clear();refreshQueued()
         }
         activePlan.value=request.optJSONObject("payload")?.optString("plan_id").orEmpty()
         val savedDestination=dao.state("engine-destination:${activePlan.value}")?.value
@@ -178,15 +227,15 @@ class AcquisitionRepository(private val app: YonzApp) {
             }
         }.getOrNull() else null
         val destination = savedDestination ?: recoveredDestination ?: request.optString("destination").ifBlank { dao.state("download_destination")?.value.orEmpty() }
-        if(destination.isBlank()) { if(selectedJob)failQueued(requestId,"Pilih tujuan unduhan dahulu.");executing=false;busy.value=false;message.value="Pilih tujuan unduhan dahulu.";return@withContext }
+        if(destination.isBlank()) { if(selectedJob)failQueued(requestId,"Pilih tujuan unduhan dahulu.",workId);executing=false;busy.value=false;message.value="Pilih tujuan unduhan dahulu.";return@withContext }
         val client = YonoEngineClient(app, SafDocumentStore(app, Uri.parse(destination)), YonoEngineClient.RuntimePaths(
             quickJs = File(app.applicationInfo.nativeLibraryDir, "libqjs.so")), accessToken = {
                 val input=request.optJSONObject("payload")?.let { it.optString("content")+it.optString("url") }.orEmpty()
                 if(request.optString("action")=="prepare" && Regex("(?:open\\.spotify\\.com|spotify\\.link|spoti\\.fi|spotify:playlist:)",RegexOption.IGNORE_CASE).containsMatchIn(input))app.spotify.accessToken()else ""
             })
         suspend fun call(action: String, payload: JSONObject): JSONObject {
-            if (!operationContext.isActive || cancelled) error("Dibatalkan")
-            val current = client.begin(action, payload, if (action == "acquire") 7200 else 900); task = current
+            if (!operationContext.isActive || stopped()) error("Dibatalkan")
+            val current = client.begin(action, payload, if (action == "acquire") 7200 else 900); boundTask=BoundTask(requestId,current)
             pendingCancels.forEach(current::cancelEntry)
             val observer = launch { current.events.collect { update ->
                 event.value = update
@@ -195,7 +244,7 @@ class AcquisitionRepository(private val app: YonzApp) {
                 if(update.optString("stage")=="playlist_ready")activePlan.value=update.optString("plan_id")
                 if(update.optString("stage")=="item_result" || update.optString("stage")=="playlist_ready") refreshHistory()
             } }
-            val result = try { current.result.await() } catch (e: CancellationException) { current.cancel(); withContext(NonCancellable) { current.result.await() }; throw e } finally { observer.cancel(); task = null }
+            val result = try { current.result.await() } catch (e: CancellationException) { current.cancel(); withContext(NonCancellable) { current.result.await() }; throw e } finally { observer.cancel(); boundTask=null }
             if (!result.optBoolean("ok")) error(result.optJSONObject("error")?.optString("message") ?: "Operasi gagal")
             return result.getJSONObject("result")
         }
@@ -206,11 +255,11 @@ class AcquisitionRepository(private val app: YonzApp) {
                 // Explicit review action only: complete selected-source snapshot; never an output-folder scan.
                 val rows = JSONArray()
                 for (track in dao.allTracks().filter { it.active && it.available }) {
-                    if (!operationContext.isActive || cancelled) error("Dibatalkan")
+                    if (!operationContext.isActive || stopped()) error("Dibatalkan")
                     val hash = MessageDigest.getInstance("SHA-256")
                     val readable = runCatching { app.contentResolver.openInputStream(Uri.parse(track.uri))?.use { input ->
                         val buffer = ByteArray(262144)
-                        while (true) { if (!operationContext.isActive || cancelled) error("Dibatalkan"); val n = input.read(buffer); if (n < 0) break; hash.update(buffer, 0, n) }
+                        while (true) { if (!operationContext.isActive || stopped()) error("Dibatalkan"); val n = input.read(buffer); if (n < 0) break; hash.update(buffer, 0, n) }
                     } != null }.getOrDefault(false)
                     if(!readable)continue // Unavailable references cannot establish a duplicate; never delete their collection rows.
                     val digest=hash.digest().joinToString(""){"%02x".format(it)}
@@ -228,7 +277,7 @@ class AcquisitionRepository(private val app: YonzApp) {
                 val queued=JSONObject(dao.state("stream-download:$requestId")!!.value)
                 val planId=queued.optString("plan_id")
                 val prepared=if(planId.isNotBlank())call("get_plan",JSONObject().put("plan_id",planId))else call("prepare",JSONObject().put("kind","selected_video").put("video_id",payload.getString("video_id")).put("create_playlist",queued.optBoolean("playlist")))
-                updateQueued(requestId){it.put("plan_id",prepared.getString("id"))}
+                job {it.put("plan_id",prepared.getString("id"))}
                 check(!JSONObject(dao.state("stream-download:$requestId")!!.value).optBoolean("cancel_requested")){"Dibatalkan"}
                 val ids=JSONArray();val entries=prepared.getJSONArray("entries")
                 for(i in 0 until entries.length()){val e=entries.getJSONObject(i);if(e.has("song"))ids.put(e.getString("id"))}
@@ -240,32 +289,33 @@ class AcquisitionRepository(private val app: YonzApp) {
                 plan.value = result; dao.state(AppState("engine-last-plan", result.getString("id")))
                 if(reviewDraft.value?.optString("plan_id")!=result.getString("id"))reviewDraft.value=dao.state("engine-review:${result.getString("id")}")?.value?.let { runCatching { JSONObject(it) }.getOrNull() }
                 if(action=="prepare" && dao.state("engine-destination:${result.getString("id")}")==null)dao.state(AppState("engine-destination:${result.getString("id")}",destination))
-                if (dao.state("engine-consent:${result.getString("id")}")?.value == "1") importResult(result)
+                if (!selectedJob && dao.state("engine-consent:${result.getString("id")}")?.value == "1") importResult(result)
             }
             if(selectedJob) {
-                val rows=result.getJSONArray("entries");val receipt=(0 until rows.length()).map {rows.getJSONObject(it)}.firstOrNull {it.optString("status") in setOf("downloaded","exists","duplicate") && it.optString("uri").isNotBlank()}
-                check(receipt!=null && runCatching {app.contentResolver.openFileDescriptor(Uri.parse(receipt.getString("uri")),"r")?.use {true} ?: false}.getOrDefault(false)){"Audio belum berhasil disimpan. Periksa detail kegagalan dan coba ulang."}
-                updateQueued(requestId){it.put("status","complete").put("uri",receipt!!.getString("uri")).put("error","")}
+                val receipt=SelectedDownloadResult.receipt(result,payload.getString("video_id"))
+                if(receipt==null) {val failure=SelectedDownloadResult.failure(result,payload.getString("video_id"));job {it.put("error_code",failure.code)};error(failure.message)}
+                check(verifiedReceipt(result,payload.getString("video_id"))!=null){"Hasil belum dapat diverifikasi. Periksa izin folder; berkas mungkin berubah atau tidak lengkap."}
+                importResult(result)
+                job {it.put("status","complete").put("uri",receipt!!.getString("uri")).put("error","")}
             }
             message.value = "Selesai"
-        } catch (e: CancellationException) {if(selectedJob)updateQueued(requestId){if(!it.optBoolean("cancel_requested"))it.put("status","queued")};throw e
+        } catch (e: CancellationException) {if(selectedJob)job {if(!it.optBoolean("cancel_requested"))it.put("status","queued")};throw e
         } catch (e: Exception) {
-            message.value = if (cancelled) "Dibatalkan" else e.message?.take(240) ?: "Operasi gagal"
-            if(selectedJob)updateQueued(requestId){it.put("status",if(it.optBoolean("cancel_requested"))"cancelled"else "failed").put("error",message.value)}
+            message.value = if (stopped()) "Dibatalkan" else e.message?.take(240) ?: "Operasi gagal"
+            if(selectedJob)job {it.put("status",if(it.optBoolean("cancel_requested"))"cancelled"else "failed").put("error",message.value)}
             // A process can die after SAF commit: reload the durable plan on the next review.
             runCatching {
                 val expected=if(selectedJob)dao.state("stream-download:$requestId")?.value?.let {JSONObject(it).optString("plan_id")}else null
                 if(selectedJob && expected.isNullOrBlank())return@runCatching
                 val recovered = client.begin(if(selectedJob)"get_plan"else "get_last",if(selectedJob)JSONObject().put("plan_id",expected)else JSONObject()).result.await()
-                if (recovered.optBoolean("ok")) { val result=recovered.getJSONObject("result");plan.value=result;if(dao.state("engine-consent:${result.getString("id")}")?.value=="1")importResult(result)
-                    if(selectedJob) {
-                        val receipts=result.optJSONArray("entries") ?: JSONArray()
-                        val sourceId=dao.state("stream-download:$requestId")?.value?.let {JSONObject(it).optString("source_id")}
-                        val saved=(0 until receipts.length()).map {receipts.getJSONObject(it)}.firstOrNull {it.optJSONObject("song")?.optString("youtube_id")==sourceId && it.optString("status") in setOf("downloaded","exists","duplicate") && it.optString("uri").isNotBlank()}
-                        if(saved!=null && runCatching {app.contentResolver.openFileDescriptor(Uri.parse(saved.getString("uri")),"r")?.use {true} ?: false}.getOrDefault(false))updateQueued(requestId){it.put("status","complete").put("uri",saved.getString("uri")).put("error","Audio sudah tersimpan sebelum proses berhenti.")}
-                    }
-                } }
-        } finally { client.close();refreshHistory();executing=false;busy.value = workActive; cancelled = false;pendingCancels.clear();activeEntry.value="";activePlan.value="";currentAction.value="";activeRequest.value="";refreshQueued() }
+                if (recovered.optBoolean("ok")) {
+                    val result=recovered.getJSONObject("result");plan.value=result
+                    if(selectedJob)dao.state("stream-download:$requestId")?.value?.let {reconcilePublished(JSONObject(it),workId)}
+                    else if(dao.state("engine-consent:${result.getString("id")}")?.value=="1")importResult(result)
+                }
+            }
+        } finally { client.close();refreshHistory();executing=false;busy.value = workActive; cancelled = false;pendingCancels.clear();activeEntry.value="";activePlan.value="";currentAction.value="";activeRequest.value="";cancelledRequests.remove(requestId);refreshQueued() }
+        }finally {finishExecution(requestId)}
     }
     internal suspend fun importResult(result: JSONObject) {
         val id = result.getString("id")

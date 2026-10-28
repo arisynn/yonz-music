@@ -1,0 +1,45 @@
+{
+  "apkSha256": "2540dd103777e993471ad808ba26b8b423d82e1fa4455d2f4a08a11cf8c5fe07",
+  "device": "API29 stock x86_64 software emulator; 320dp width",
+  "fonts": [
+    1.0,
+    1.5
+  ],
+  "themes": "Light Search/action/configuration and shared Now Playing Light/Dark",
+  "scope": "New online UI only; existing Home/Library/Playlists/player/list-import layout retained",
+  "newLayout": "One result row; three horizontal 80dp minimum tonal action buttons, short labels with full accessible action names; source/settings footer; folder and playlist side by side in optional configuration",
+  "downloadFlow": "Saved SAF read/write grant -> direct durable enqueue from Search and Now Playing; actual feedback; missing destination/grant -> configuration, no scheduled job",
+  "interaction": "Actual Android injected touches through clickable button nodes. A scoped scheduler records queue requests without downloading invented fixture IDs. Owned request rows are cleaned up.",
+  "observations": [
+    "No unintended overlap in reviewed frames",
+    "Mini-player/navigation have reserved Scaffold space",
+    "Title/folder ellipsis is intentional for bounded long content",
+    "No three-line action labels at150% after shortening",
+    "System status/navigation bars remain readable",
+    "Modal content is scrollable within safe screen bounds"
+  ],
+  "initialFindings": [
+    {
+      "finding": "Long horizontal label fragmented and unequal tile heights at150%",
+      "evidence": "ui-initial-label-wrap-150.png",
+      "repair": "Short labels and standard equal-width tonal buttons"
+    },
+    {
+      "finding": "Description-only semantics node was nonclickable during automated save interaction",
+      "evidence": [
+        "ui-initial-compact-click-failure.log",
+        "ui-initial-accessibility-node-failure.log"
+      ],
+      "repair": "Standard Material3 button with icon description; harness resolves clickable ancestor; direct enqueue/configuration interaction retested"
+    }
+  ],
+  "notTested": [
+    "Physical Android16/HyperOS",
+    "Dark Search capture",
+    "All screen sizes/landscape/font200%",
+    "New-feature keyboard-active modal gestures"
+  ],
+  "fixtureMetadata": true,
+  "liveSourceSuccess": false,
+  "universalLayoutGuarantee": false
+}

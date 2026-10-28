@@ -1,0 +1,77 @@
+[
+  {
+    "repo": "ItzSkyeYT/InterTune",
+    "branch": "visionos-fix",
+    "sha": "524f1cd7582f5795d42cb5a9c79f7c32a517af62",
+    "apiLicense": "GPL-3.0",
+    "licenseUrl": "https://github.com/ItzSkyeYT/InterTune/blob/visionos-fix/LICENSE",
+    "licenseRead": true,
+    "archived": false,
+    "sourceCopiedIntoYono": false
+  },
+  {
+    "repo": "cromaguy/Rhythm",
+    "branch": "main",
+    "sha": "85fea209c4d44046192d830faa9181db3ece82ad",
+    "apiLicense": "GPL-3.0",
+    "licenseUrl": "https://github.com/cromaguy/Rhythm/blob/main/LICENSE",
+    "licenseRead": true,
+    "archived": false,
+    "sourceCopiedIntoYono": false
+  },
+  {
+    "repo": "deniscerri/ytdlnis",
+    "branch": "main",
+    "sha": "7c8e0483c13b678a159e84e73792c2d6a9398beb",
+    "apiLicense": "GPL-3.0",
+    "licenseUrl": "https://github.com/deniscerri/ytdlnis/blob/main/LICENSE",
+    "licenseRead": true,
+    "archived": false,
+    "sourceCopiedIntoYono": false,
+    "selectedSourcePaths": [
+      "app/src/main/java/com/deniscerri/ytdl/work/CancelScheduledDownloadWorker.kt",
+      "app/src/main/java/com/deniscerri/ytdl/work/DownloadWorker.kt"
+    ]
+  },
+  {
+    "repo": "JunkFood02/Seal",
+    "branch": "main",
+    "sha": "7677f61a20fda4210e84215fef9e9b51d25daa47",
+    "apiLicense": "GPL-3.0",
+    "licenseUrl": "https://github.com/JunkFood02/Seal/blob/main/LICENSE",
+    "licenseRead": true,
+    "archived": false,
+    "sourceCopiedIntoYono": false,
+    "selectedSourcePaths": []
+  },
+  {
+    "repo": "team-spotube/spotube",
+    "branch": "master",
+    "sha": "0d5b5b094e9dc8a08a80c88729472a71db4f3d78",
+    "apiLicense": "AGPL-3.0",
+    "licenseUrl": "https://github.com/team-spotube/spotube/blob/master/LICENSE",
+    "licenseRead": true,
+    "archived": false,
+    "sourceCopiedIntoYono": false
+  },
+  {
+    "repo": "MetrolistGroup/Metrolist",
+    "branch": "main",
+    "sha": "876e355181fd3b04e7063b10442fef1b721d53b3",
+    "apiLicense": "GPL-3.0",
+    "licenseUrl": "https://github.com/MetrolistGroup/Metrolist/blob/main/LICENSE",
+    "licenseRead": true,
+    "archived": false,
+    "sourceCopiedIntoYono": false
+  },
+  {
+    "repo": "namidaco/namida",
+    "branch": "main",
+    "sha": "dc2c96c598d1e9cd6616cf228c17011e23555d9a",
+    "apiLicense": "NOASSERTION",
+    "licenseUrl": "https://github.com/namidaco/namida/blob/main/LICENSE",
+    "licenseRead": true,
+    "archived": false,
+    "sourceCopiedIntoYono": false
+  }
+]

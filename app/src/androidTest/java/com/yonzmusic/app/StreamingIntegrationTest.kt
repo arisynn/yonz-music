@@ -33,6 +33,8 @@ class StreamingIntegrationTest {
         val samples=16000*20;val b=ByteBuffer.allocate(44+samples*2).order(ByteOrder.LITTLE_ENDIAN)
         b.put("RIFF".toByteArray()).putInt(36+samples*2).put("WAVEfmt ".toByteArray()).putInt(16).putShort(1).putShort(1).putInt(16000).putInt(32000).putShort(2).putShort(16).put("data".toByteArray()).putInt(samples*2)
         repeat(samples){b.putShort((kotlin.math.sin(it*2*Math.PI*220/16000)*800).toInt().toShort())}
+        val queueBefore=app.repository.dao.states("stream-download:%").map {it.name}.toSet()
+        val scheduled=java.util.concurrent.CopyOnWriteArrayList<String>();val oldScheduler=app.acquisition.selectedScheduler;app.acquisition.selectedScheduler={id,_->scheduled.add(id)}
         val count=app.repository.dao.allTracks().size;val saved=app.preferences.snapshot();val theme=app.preferences.flow.first().theme
         val settings=SearchSettings(app);val oldHistory=settings.history();val oldHistoryEnabled=settings.remembersHistory()
         val builtins=PythonRuntime.module(app,"builtins");val globals=builtins.callAttr("dict")
@@ -54,6 +56,7 @@ st.inspect_video,ys.run=fake_inspect,fake_search
             override fun usingProxy()=false
             override fun getResponseCode()=if(getRequestProperty("Range")!=null)206 else 200
             override fun getContentType()="audio/wav"
+            override fun getHeaderField(name:String?):String?=if(name.equals("Content-Range",true) && getRequestProperty("Range")!=null)"bytes ${start()}-${end()}/${bytes.size}"else null
             override fun getContentLengthLong()=(end()-start()+1).toLong()
             override fun getInputStream():java.io.InputStream {getRequestProperty("Range")?.let(ranges::add);return java.io.ByteArrayInputStream(bytes,start(),end()-start()+1)}
         }},{arrayOf(java.net.InetAddress.getByAddress(byteArrayOf(8,8,8,8)))})
@@ -62,6 +65,16 @@ st.inspect_video,ys.run=fake_inspect,fake_search
             ActivityScenario.launch(MainActivity::class.java).use {scenario->
                 lateinit var vm:MusicViewModel;scenario.onActivity {vm=ViewModelProvider(it)[MusicViewModel::class.java]}
                 await("Shared session connects"){vm.playback.state.value.ready}
+                val originalDestination=app.repository.dao.state("download_destination")!!
+                try {
+                    for(missing in listOf("","content://com.android.externalstorage.documents/tree/primary%3AUnselectedQA")) {
+                        app.repository.dao.state(AppState("download_destination",missing))
+                        val requested=java.util.concurrent.atomic.AtomicBoolean(false)
+                        main {vm.downloadOnline(song("QArender001")){requested.set(true)}}
+                        await("Missing destination/grant asks for configuration"){requested.get()}
+                        assertTrue("No download before writable destination grant",scheduled.isEmpty())
+                    }
+                }finally {app.repository.dao.state(originalDestination)}
                 main {vm.playOnline(song("QArender001"))}
                 await("Remote reference must decode own WAV and play"){vm.playback.state.value.id=="engine:QArender001" && vm.playback.state.value.playing && vm.playback.position()>300}
                 assertEquals(count,app.repository.dao.allTracks().size)
@@ -110,28 +123,59 @@ st.inspect_video,ys.run=fake_inspect,fake_search
                 main {vm.searchOnline.value=true;vm.searchQuery.value="Original streaming fixture"}
                 await("Actual Search receives scoped metadata fixture"){vm.onlineSearch.state.value.songs.isNotEmpty()}
                 delay(1500);screenshot("stream-search-light.png")
-                val root=inst.uiAutomation.rootInActiveWindow
-                val node=texts(root,"Original streaming fi").maxByOrNull {n->val r=android.graphics.Rect();n.getBoundsInScreen(r);r.top}
-                assertNotNull("Remote mini-player visible",node);tap(node!!)
-                delay(2000);screenshot("stream-now-playing-light.png")
                 fun described(node:android.view.accessibility.AccessibilityNodeInfo?,value:String):android.view.accessibility.AccessibilityNodeInfo? {
                     if(node==null)return null
                     if(node.contentDescription?.toString()==value)return node
                     for(i in 0 until node.childCount)described(node.getChild(i),value)?.let{return it}
                     return null
                 }
+                val more=described(inst.uiAutomation.rootInActiveWindow,"Opsi Original streaming fixture")
+                assertNotNull("Minimal result exposes its secondary actions",more);tap(more!!);delay(1500)
+                assertNotNull("Queue actions remain available in More",described(inst.uiAutomation.rootInActiveWindow,"Tambah antrean"))
+                screenshot("stream-options-light.png")
+                var save=described(inst.uiAutomation.rootInActiveWindow,"Simpan offline")
+                while(save!=null && !save.isClickable)save=save.parent
+                assertNotNull("More exposes clickable download",save);tap(save!!)
+                withTimeout(10000){while(scheduled.isEmpty())delay(100)}
+                assertTrue("Saved destination downloads directly without approval panel",texts(inst.uiAutomation.rootInActiveWindow,"Simpan untuk nanti").isEmpty())
+                assertEquals("One explicit tap enqueues one request",1,scheduled.size)
+                delay(1000)
+                // Configuration remains an explicit secondary path, not a per-download interruption.
+                val settingsMore=described(inst.uiAutomation.rootInActiveWindow,"Opsi Original streaming fixture")
+                assertNotNull(settingsMore);tap(settingsMore!!);delay(1000)
+                val settings=texts(inst.uiAutomation.rootInActiveWindow,"Atur").firstOrNull()
+                assertNotNull("Download destination/playlist configuration remains available",settings);tap(settings!!)
+                val approvalDeadline=SystemClock.elapsedRealtime()+10000
+                while(texts(inst.uiAutomation.rootInActiveWindow,"Simpan untuk nanti").isEmpty() && SystemClock.elapsedRealtime()<approvalDeadline)delay(200)
+                assertTrue("Explicit settings opens shared configuration",texts(inst.uiAutomation.rootInActiveWindow,"Simpan untuk nanti").isNotEmpty())
+                delay(500);screenshot("stream-search-save-light.png")
+                screenshot("stream-download-approval-light.png")
+                inst.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK);delay(1000)
+                val root=inst.uiAutomation.rootInActiveWindow
+                val node=texts(root,"Original streaming fi").maxByOrNull {n->val r=android.graphics.Rect();n.getBoundsInScreen(r);r.top}
+                assertNotNull("Remote mini-player visible",node);tap(node!!)
+                delay(2000)
                 var download=described(inst.uiAutomation.rootInActiveWindow,"Simpan offline")
                 while(download!=null && !download.isClickable)download=download.parent
                 assertNotNull("Shared Now Playing exposes download action",download)
+                inst.waitForIdleSync();delay(1000);screenshot("stream-now-playing-light.png")
                 tap(download!!)
-                delay(2000);assertTrue(texts(inst.uiAutomation.rootInActiveWindow,"Simpan untuk nanti").isNotEmpty());screenshot("stream-download-approval-light.png")
-                inst.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK);delay(1000)
+                withTimeout(10000){while(scheduled.size<2)delay(100)}
+                assertTrue("Now Playing download also skips the panel",texts(inst.uiAutomation.rootInActiveWindow,"Simpan untuk nanti").isEmpty())
                 app.preferences.theme("Dark");await("Dark preference reaches UI"){vm.preferences.value.theme=="Dark"};delay(2000);screenshot("stream-now-playing-dark.png")
 
             }
         }finally {
             builtins.callAttr("exec","st.inspect_video,ys.run=old_inspect,old_search",globals)
             app.streamTestDataSource=null
+            app.acquisition.selectedScheduler=oldScheduler
+            for(row in app.repository.dao.states("stream-download:%").filter {it.name !in queueBefore}) {
+                val j=org.json.JSONObject(row.value)
+                if(j.optString("source_id").startsWith("QArender")) {
+                    app.database.openHelper.writableDatabase.execSQL("DELETE FROM app_state WHERE name=?",arrayOf(row.name))
+                    app.database.openHelper.writableDatabase.execSQL("DELETE FROM app_state WHERE name=?",arrayOf("engine-request:"+j.getString("id")))
+                }
+            };app.acquisition.refreshQueued()
             app.stopService(android.content.Intent(app,PlaybackService::class.java))
             delay(300);app.preferences.theme(theme);settings.clearHistory(true);oldHistory.reversed().forEach(settings::rememberQuery);if(!oldHistoryEnabled)settings.clearHistory(false);if(saved!=null)app.preferences.save(saved)
         }
