@@ -47,6 +47,23 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val searchSettings = com.yonzmusic.app.search.SearchSettings(application)
     val recentSearch=MutableStateFlow(searchSettings.history())
     val onlineSearch = com.yonzmusic.app.search.OnlineSearch(viewModelScope,com.yonzmusic.app.search.EngineSearchBackend(application),onSuccess={query->searchSettings.rememberQuery(query);recentSearch.value=searchSettings.history()})
+    private var streamPlayJob:Job?=null
+    fun playOnline(song:com.yonzmusic.app.search.OnlineSong,next:Boolean?=null) {
+        streamPlayJob?.cancel()
+        streamPlayJob=action {
+            val local=withContext(Dispatchers.IO) {
+                val candidate=dao.allTracks().firstOrNull {it.active && it.available && it.sourceIdentity=="youtube:${song.videoId}" && it.sha256.isNotBlank()}
+                candidate?.takeIf {t->runCatching {
+                    val digest=java.security.MessageDigest.getInstance("SHA-256")
+                    app.contentResolver.openInputStream(Uri.parse(t.uri))!!.use {input->val b=ByteArray(65536);while(true){currentCoroutineContext().ensureActive();val n=input.read(b);if(n<0)break;digest.update(b,0,n)}}
+                    digest.digest().joinToString(""){"%02x".format(it)}==t.sha256
+                }.getOrDefault(false)}
+            }
+            withContext(Dispatchers.IO){app.streams.register(song)}
+            withTimeout(6000){playback.state.first {it.ready}}
+            if(local!=null) {if(next==null)playback.play(listOf(local),local.id)else playback.enqueue(local,next)}else playback.playRemote(song,next)
+        }
+    }
     fun clearSearchHistory(enabled: Boolean=searchSettings.remembersHistory()) {searchSettings.clearHistory(enabled);recentSearch.value=emptyList()}
     val searchQuery=MutableStateFlow("")
     val searchOnline=MutableStateFlow(false)
@@ -246,7 +263,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun sort(value: String) { action { app.preferences.sort(value) } }
     fun motion(value: Boolean) { action { app.preferences.motion(value) } }
     fun glass(value: Boolean) { action { app.preferences.glass(value) } }
-    fun play(tracks: List<Track>, id: String) { if (tracks.none { it.id == id && it.available }) notify("This file is unavailable. Rescan or choose it again in Import.") else if (!playback.state.value.ready) notify("Connecting to playback. Try again in a moment.") else playback.play(tracks, id) }
+    fun play(tracks: List<Track>, id: String) { streamPlayJob?.cancel(); if (tracks.none { it.id == id && it.available }) notify("This file is unavailable. Rescan or choose it again in Import.") else if (!playback.state.value.ready) notify("Connecting to playback. Try again in a moment.") else playback.play(tracks, id) }
     fun resetImport() {
         importJob?.cancel(); sourceJob?.cancel(); sourceBusy.value = false
         engineInput.value = ""; engineCandidates.value = emptyList(); engineReport.value = ""; importedSourceRequests = emptyList()

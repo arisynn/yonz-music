@@ -13,6 +13,8 @@ class YonzApp : Application() {
     val database by lazy { Room.databaseBuilder(this, MusicDatabase::class.java, "yonz-music.db").addMigrations(MusicDatabase.MIGRATION_1_2, MusicDatabase.MIGRATION_2_3).build() }
     val repository by lazy { Repository(this, database) }
     val preferences by lazy { Preferences(this) }
+    val streams by lazy { com.yonzmusic.app.playback.StreamRepository(this) }
+    internal var streamTestDataSource: androidx.media3.datasource.DataSource.Factory? = null // Internal DI; no Intent/config hook.
     val acquisition by lazy { com.yonzmusic.engine.AcquisitionRepository(this) }
     val spotify by lazy { com.yonzmusic.app.network.SpotifyConnection(this) }
     val sleepEnd = MutableStateFlow(0L)

@@ -1,3 +1,12 @@
+# 1.5.0-preview.3 — 2026-10-28
+
+- Add native online playback through embedded yt-dlp with on-demand expiring audio references; retain one Media3 service, mini-player, Now Playing, seek and mixed queue.
+- Add direct Play/Pause, Download and More actions in Search, truthful buffering state, compact shared download approval, and remote artwork in the existing bounded cache.
+- Add durable exact-recording download requests: enqueue while busy, active-source/destination deduplication, per-item cancel, retry and WorkManager recovery. Do not cancel dependent work when one row is cancelled.
+- Verify selected recording ID rather than silently substituting catalogue title/artist matches. Preserve original audio, SAF publication validation, optional playlists and portable metadata/.cover companions.
+- Do not insert remote references into local Library or persist signed stream URLs. Restore playback context paused. Keep local qualified listening/favorites unchanged.
+- Preview code12, same Dev package/certificate, Room3, SDK and dependencies/permissions unchanged. Official1.4.2 is not replaced. Live source availability remains unverified; fixture results are separate from actual network failures.
+
 # 1.5.0-preview.2 — 2026-10-28
 
 - Replaced online providers with embedded yt-dlp flat metadata search, automatic600ms debounce, cancellation/deadlines, bounded pagination and cache.

@@ -131,13 +131,13 @@ class Engine:
                         row.update(status="exists", song=Song.from_dict(record).to_dict(), uri=record["uri"], reason="jalur relatif folder pilihan")
                     else:
                         song = Song.from_dict(original["song"])
-                        existing, reason = self.index.find(song)
+                        existing, reason = self.index.find(song, exact_source=True) if original.get("selected_exact") else self.index.find(song)
                         if existing:
                             row.update(status="exists", song=Song.from_dict(existing).to_dict(), uri=existing["uri"], reason=reason)
                             self.index.bind(song, existing)
                         else:
-                            song, candidate = self.catalogue.resolve(song)
-                            existing, reason = self.index.find(song)
+                            song, candidate = (song, {"selected_exact": True}) if original.get("selected_exact") else self.catalogue.resolve(song)
+                            existing, reason = self.index.find(song, exact_source=True) if original.get("selected_exact") else self.index.find(song)
                             if existing:
                                 self.index.bind(song, existing)
                                 row.update(status="exists", song=song.to_dict(), uri=existing["uri"], reason=reason)
@@ -245,12 +245,13 @@ class Engine:
                                 done += 1
                                 self.control.emit("item_result", completed=done, total=len(selected), entry=row)
                                 continue
-                        existing, reason = self.index.find(song)
+                        existing, reason = self.index.find(song, exact_source=True) if row.get("request", {}).get("selected_exact") else self.index.find(song)
                         if existing:
                             row.update(status="exists", uri=existing["uri"], reason=reason)
                         else:
-                            # Re-check at actual transfer time; a review is not permanent source verification.
-                            verified, candidate = self.catalogue.resolve(song)
+                            # Explicit selections keep their recording ID; Media.transfer re-checks
+                            # that exact source's availability/DRM/identity before fetching bytes.
+                            verified, candidate = (song, {"selected_exact": True}) if row.get("request", {}).get("selected_exact") else self.catalogue.resolve(song)
                             source = self.media.transfer(verified, workspace)
                             result = self.media.finish(source, verified, workspace, output_format=output_format, bitrate=bitrate)
                             row.update(status="saving", pending_sha256=result["sha256"], song=verified.to_dict(),

@@ -1,0 +1,114 @@
+Starting a Gradle Daemon, 7 stopped Daemons could not be reused, use --status for details
+> Task :app:buildQuickJs UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:prePreviewBuild UP-TO-DATE
+> Task :app:mergePreviewNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generatePreviewBuildConfig UP-TO-DATE
+> Task :app:findPreviewPythonCommand
+> Task :app:extractPreviewPythonBuildPackages UP-TO-DATE
+> Task :app:installPreviewPythonRequirements UP-TO-DATE
+> Task :app:mergePreviewPythonSources UP-TO-DATE
+> Task :app:generatePreviewPythonProxies UP-TO-DATE
+> Task :app:checkPreviewAarMetadata UP-TO-DATE
+> Task :app:generatePreviewResValues UP-TO-DATE
+> Task :app:mapPreviewSourceSetPaths UP-TO-DATE
+> Task :app:generatePreviewResources UP-TO-DATE
+> Task :app:mergePreviewResources UP-TO-DATE
+> Task :app:packagePreviewResources UP-TO-DATE
+> Task :app:parsePreviewLocalResources UP-TO-DATE
+> Task :app:createPreviewCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksPreview UP-TO-DATE
+> Task :app:processPreviewMainManifest UP-TO-DATE
+> Task :app:processPreviewManifest UP-TO-DATE
+> Task :app:processPreviewManifestForPackage UP-TO-DATE
+> Task :app:processPreviewResources UP-TO-DATE
+> Task :app:kspPreviewKotlin
+> Task :app:compilePreviewKotlin
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/MetadataEditor.kt:30:154 'static field SOFT_INPUT_ADJUST_RESIZE: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/Theme.kt:82:20 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/Theme.kt:83:20 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+w: file:///workspace/github-publish/repository/app/src/main/java/com/yonzmusic/app/ui/Theme.kt:84:62 'var isStatusBarContrastEnforced: Boolean' is deprecated. Deprecated in Java.
+
+> Task :app:javaPreCompilePreview UP-TO-DATE
+> Task :app:compilePreviewJavaWithJavac UP-TO-DATE
+> Task :app:mergePreviewShaders UP-TO-DATE
+> Task :app:compilePreviewShaders NO-SOURCE
+> Task :app:generatePreviewAssets UP-TO-DATE
+> Task :app:generatePreviewPythonMiscAssets UP-TO-DATE
+> Task :app:generatePreviewPythonRequirementsAssets UP-TO-DATE
+> Task :app:generatePreviewPythonSourceAssets UP-TO-DATE
+> Task :app:generatePreviewPythonBuildAssets UP-TO-DATE
+> Task :app:mergePreviewAssets UP-TO-DATE
+> Task :app:compressPreviewAssets UP-TO-DATE
+> Task :app:checkPreviewDuplicateClasses UP-TO-DATE
+> Task :app:desugarPreviewFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexPreview UP-TO-DATE
+> Task :app:mergeLibDexPreview UP-TO-DATE
+> Task :app:dexBuilderPreview
+> Task :app:mergePreviewGlobalSynthetics UP-TO-DATE
+> Task :app:processPreviewJavaRes UP-TO-DATE
+> Task :app:mergePreviewJavaResource UP-TO-DATE
+> Task :app:mergeProjectDexPreview
+> Task :app:generatePreviewPythonJniLibs UP-TO-DATE
+> Task :app:mergePreviewJniLibFolders UP-TO-DATE
+> Task :app:mergePreviewNativeLibs UP-TO-DATE
+> Task :app:stripPreviewDebugSymbols UP-TO-DATE
+> Task :app:validateSigningPreview UP-TO-DATE
+> Task :app:writePreviewAppMetadata UP-TO-DATE
+> Task :app:writePreviewSigningConfigVersions UP-TO-DATE
+> Task :app:packagePreview
+> Task :app:createPreviewApkListingFileRedirect UP-TO-DATE
+> Task :app:assemblePreview
+> Task :app:bundlePreviewClassesToCompileJar
+> Task :app:prePreviewAndroidTestBuild SKIPPED
+> Task :app:generatePreviewAndroidTestResValues UP-TO-DATE
+> Task :app:generatePreviewAndroidTestLintModel
+> Task :app:extractProguardFiles UP-TO-DATE
+> Task :app:generatePreviewLintReportModel
+> Task :app:prePreviewUnitTestBuild UP-TO-DATE
+> Task :app:generatePreviewUnitTestLintModel
+> Task :app:lintAnalyzePreview
+> Task :app:lintAnalyzePreviewAndroidTest
+> Task :app:lintAnalyzePreviewUnitTest
+
+> Task :app:lintReportPreview
+Wrote HTML report to file:///workspace/github-publish/repository/app/build/reports/lint-results-preview.html
+
+> Task :app:lintPreview
+> Task :app:processPreviewAndroidTestManifest UP-TO-DATE
+> Task :app:generatePreviewAndroidTestBuildConfig UP-TO-DATE
+> Task :app:checkPreviewAndroidTestAarMetadata UP-TO-DATE
+> Task :app:mapPreviewAndroidTestSourceSetPaths UP-TO-DATE
+> Task :app:generatePreviewAndroidTestResources UP-TO-DATE
+> Task :app:mergePreviewAndroidTestResources UP-TO-DATE
+> Task :app:processPreviewAndroidTestResources UP-TO-DATE
+> Task :app:kspPreviewAndroidTestKotlin
+> Task :app:compilePreviewAndroidTestKotlin
+> Task :app:javaPreCompilePreviewAndroidTest UP-TO-DATE
+> Task :app:compilePreviewAndroidTestJavaWithJavac UP-TO-DATE
+> Task :app:mergePreviewAndroidTestShaders UP-TO-DATE
+> Task :app:compilePreviewAndroidTestShaders NO-SOURCE
+> Task :app:generatePreviewAndroidTestAssets UP-TO-DATE
+> Task :app:mergePreviewAndroidTestAssets UP-TO-DATE
+> Task :app:compressPreviewAndroidTestAssets UP-TO-DATE
+> Task :app:checkPreviewAndroidTestDuplicateClasses UP-TO-DATE
+> Task :app:desugarPreviewAndroidTestFileDependencies UP-TO-DATE
+> Task :app:mergeExtDexPreviewAndroidTest UP-TO-DATE
+> Task :app:mergeLibDexPreviewAndroidTest UP-TO-DATE
+> Task :app:dexBuilderPreviewAndroidTest UP-TO-DATE
+> Task :app:mergePreviewAndroidTestGlobalSynthetics UP-TO-DATE
+> Task :app:processPreviewAndroidTestJavaRes UP-TO-DATE
+> Task :app:mergePreviewAndroidTestJavaResource UP-TO-DATE
+> Task :app:mergeProjectDexPreviewAndroidTest UP-TO-DATE
+> Task :app:mergePreviewAndroidTestJniLibFolders UP-TO-DATE
+> Task :app:mergePreviewAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripPreviewAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningPreviewAndroidTest UP-TO-DATE
+> Task :app:writePreviewAndroidTestSigningConfigVersions UP-TO-DATE
+> Task :app:packagePreviewAndroidTest UP-TO-DATE
+> Task :app:createPreviewAndroidTestApkListingFileRedirect UP-TO-DATE
+> Task :app:assemblePreviewAndroidTest UP-TO-DATE
+
+BUILD SUCCESSFUL in 2m 9s
+88 actionable tasks: 17 executed, 71 up-to-date

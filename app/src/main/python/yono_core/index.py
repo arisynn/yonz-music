@@ -61,7 +61,7 @@ class LibraryIndex:
         self.bind(song, row)
         return row
 
-    def find(self, wanted):
+    def find(self, wanted, *, exact_source=False):
         histories = set()
         for kind, value in self.identities(wanted):
             histories.update(r[0] for r in self.db.execute("SELECT digest FROM bindings WHERE kind=? AND value=?", (kind, value)))
@@ -81,7 +81,7 @@ class LibraryIndex:
                 reason = "ID YouTube + durasi"
             elif wanted.isrc and wanted.isrc == actual.isrc and wanted.duration:
                 reason = "ISRC + durasi"
-            elif (wanted.artists and artist_keys(wanted.artists) == artist_keys(actual.artists)
+            elif (not exact_source and wanted.artists and artist_keys(wanted.artists) == artist_keys(actual.artists)
                   and title_key(wanted.title) == title_key(actual.title)
                   and variants(wanted.title) == variants(actual.title)
                   and (not wanted.duration or duration_matches(wanted.duration, actual.duration, 2.5))

@@ -78,7 +78,15 @@ import org.json.JSONArray
         val scanning by vm.scanning.collectAsStateWithLifecycle()
         val playback by vm.playback.state.collectAsStateWithLifecycle()
         val sleepEnd by vm.sleepEnd.collectAsStateWithLifecycle()
-        val current = remember(collectionTracks, playback.id) { collectionTracks.find { it.id == playback.id } }
+        val playerTracks=remember(collectionTracks,playback.remoteTracks){collectionTracks+playback.remoteTracks}
+        val current = remember(playerTracks, playback.id) { playerTracks.find { it.id == playback.id } }
+        var streamDownload by remember {mutableStateOf<com.yonzmusic.app.search.OnlineSong?>(null)}
+        fun downloadRemote(track:com.yonzmusic.app.data.Track) {
+            streamDownload=playback.remoteTracks.firstOrNull {it.id==track.id}?.let {t->
+                val id=t.id.removePrefix("engine:")
+                com.yonzmusic.app.search.OnlineSong(t.id,com.yonzmusic.app.search.SearchProvider.ENGINE,t.title,t.artist.removePrefix("Kanal: "),t.album,t.duration,t.artUri,"https://www.youtube.com/watch?v=$id",id,!t.artist.startsWith("Kanal: "))
+            }
+        }
         val snackbar = remember { SnackbarHostState() }
         var destination by rememberSaveable { mutableStateOf("home") }
         var parent by rememberSaveable { mutableStateOf("home") }
@@ -166,7 +174,7 @@ import org.json.JSONArray
             },
             bottomBar = {
                 if(!(destination=="search" && WindowInsets.ime.getBottom(LocalDensity.current)>0)) Column(Modifier.background(colors.background).navigationBarsPadding()) {
-                    if (current != null && playback.queue.isNotEmpty()) MiniPlayer(current, playback.playing, preferences.glass, vm.playback, { playerOpen = true })
+                    if (current != null && playback.queue.isNotEmpty()) MiniPlayer(current, playback.playing || playback.requested, preferences.glass, vm.playback, { playerOpen = true })
                     if (destination in primaryDestinations || destination == "detail") NavigationBar(containerColor = colors.background, tonalElevation = 0.dp, windowInsets = WindowInsets(0)) {
                         val labels = listOf("Home", "Library", "Search", "Playlists")
                         val icons = listOf(Icons.Rounded.Home, Icons.Rounded.LibraryMusic, Icons.Rounded.Search, Icons.Rounded.QueueMusic)
@@ -184,10 +192,7 @@ import org.json.JSONArray
                     "home" -> HomeScreen(tracks, favorites, history, current, playback.id, { vm.play(it.first, it.second) }, { menuId = it.id }, { detail("favorites", "", "Favorites") }, { detail("history", "", "Recently played") }, { k, t -> detail("album", k, t) }, { vm.resetImport(); navigate("import") }, { destination = "library" }, { playerOpen = true },scrollState=homeScroll,mixes=mixes)
                     "library" -> LibraryScreen(tracks, favorites, playback.id, preferences.sort, scanning, { vm.resetImport(); navigate("import") }, vm::scan, vm::sort, { t, id -> vm.play(t, id) }, { menuId = it.id }, { kind, key, title -> detail(kind, key, title) })
                     "search" -> SearchScreen(vm,tracks, playlists, favorites, playback.id, { t, id -> vm.play(t, id) }, { menuId = it.id }, { p -> detail("playlist", "", p.name, p.id) },{song->
-                        if(com.yonzmusic.app.search.SearchContract.https(song.page,com.yonzmusic.app.search.SearchContract.sourceHosts)) {
-                            if(acquisition.busy.value)vm.notify("Tunggu pekerjaan unduhan saat ini, lalu coba lagi.")
-                            else {vm.pendingDownloadInput.value=song.page;vm.resetImport();navigate("import")}
-                        }
+                        streamDownload=song
                     })
                     "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorites") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") })
                     "detail" -> DetailScreen(detailTracks, favorites, playback.id, detailKind == "playlist", { t, id -> vm.play(t, id) }, { menuId = it.id }, { nameAction = "rename" }, { deleteId = selectedPlaylist }, { exportTracks = detailTracks; export.launch((playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle).take(60) + ".m3u8") }, { from, to -> vm.move(selectedPlaylist, from, to) }, { addIds = emptyList() })
@@ -207,9 +212,9 @@ import org.json.JSONArray
         }
         if (migrationNotice) AlertDialog(onDismissRequest = { vm.dismissMigration() }, title = { Text("Choose your music sources") }, text = { Text("Yono Music now shows only the files and folders you choose. Your playlists, favorites, history and original audio are preserved. Choose sources in Import to reconnect your collection; uncertain recordings stay unavailable.") }, confirmButton = { TextButton({ vm.dismissMigration(); vm.resetImport(); navigate("import") }) { Text("Choose sources") } }, dismissButton = { TextButton({ vm.dismissMigration() }) { Text("Later") } })
         if (playerOpen && current != null) Dialog(onDismissRequest = { playerOpen = false }, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
-            PlayerReveal { PlayerScreen(current, playback, vm.playback, current.id in favorites, preferences, sleepEnd, { playerOpen = false }, { vm.favorite(current.id) }, { queueOpen = true }, { menuId = current.id }) }
+            PlayerReveal { PlayerScreen(current, playback, vm.playback, current.id in favorites, preferences, sleepEnd, { playerOpen = false }, { if(current.source=="stream")downloadRemote(current)else vm.favorite(current.id) }, { queueOpen = true }, { if(current.source=="stream")downloadRemote(current)else menuId = current.id }) }
         }
-        if (queueOpen) QueueSheet(collectionTracks, playback, vm.playback, { queueOpen = false })
+        if (queueOpen) QueueSheet(playerTracks, playback, vm.playback, { queueOpen = false })
         val menuTrack = collectionTracks.find { it.id == menuId }
         if (menuTrack != null) ModalBottomSheet(onDismissRequest = { menuId = null }) {
             Column(Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding().padding(bottom = Design.page)) {
@@ -225,6 +230,7 @@ import org.json.JSONArray
                 MenuAction(Icons.Rounded.Info, "Track details") { infoId = menuTrack.id; menuId = null }
             }
         }
+        streamDownload?.let {song->StreamDownloadSheet(song,vm,{streamDownload=null},{downloadsOpen=true})}
         if(downloadsOpen)DownloadSheet(vm){downloadsOpen=false}
         collectionTracks.find { it.id==metadataId }?.let { track -> MetadataEditor(track,{metadataId=null},{title,artists,album,image -> vm.editMetadata(track.id,title,artists,album,image);metadataId=null},{manifestId=track.id;manifestExport.launch(track.fileName.ifBlank { "music" }+".yono.json")},{manifestId=track.id;metadataId=null;manifestImport.launch(arrayOf("application/json","text/*","application/octet-stream"))}) }
         collectionTracks.find { it.id==relocationId }?.let { track ->

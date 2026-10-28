@@ -40,12 +40,22 @@ class PlaybackService : MediaSessionService() {
         val keys = (0 until player.mediaItemCount).map {
             player.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key") ?: "legacy:$it"
         }.toSet()
+        val inserted=(0 until player.mediaItemCount).filter {i->player.getMediaItemAt(i).mediaMetadata.extras?.getString("yono.queue.key") !in previousQueueKeys}
+        val insertedNext=inserted.filter {i->
+            val item=player.getMediaItemAt(i)
+            item.mediaMetadata.extras?.getBoolean("yono.next")==true && item.mediaMetadata.extras?.getString("yono.queue.key") !in previousQueueKeys
+        }
         val newQueue = keys.isNotEmpty() && keys.none { it in previousQueueKeys }
         val startCycle = player.shuffleModeEnabled && (!wasShuffling || newQueue)
         // Update guards before setShuffleOrder emits another timeline event.
         wasShuffling = player.shuffleModeEnabled
         previousQueueKeys = keys
-        if (startCycle && player.mediaItemCount > 0) {
+        if(player.shuffleModeEnabled && !newQueue && inserted.isNotEmpty()) {
+            val order=mutableListOf<Int>();val timeline=player.currentTimeline
+            var i=timeline.getFirstWindowIndex(true)
+            while(i in 0 until player.mediaItemCount && i !in order){order.add(i);i=timeline.getNextWindowIndex(i,Player.REPEAT_MODE_OFF,true)}
+            if(order.size==player.mediaItemCount)player.setShuffleOrder(ShuffleOrder.DefaultShuffleOrder((ShuffleCycle.insertNext(order.filter {it !in inserted},player.currentMediaItemIndex,insertedNext).toList()+inserted.filter {it !in insertedNext}).toIntArray(),kotlin.random.Random.nextLong()))
+        }else if (startCycle && player.mediaItemCount > 0) {
             player.setShuffleOrder(ShuffleOrder.DefaultShuffleOrder(
                 ShuffleCycle.indices(player.mediaItemCount, player.currentMediaItemIndex), kotlin.random.Random.nextLong()))
         }
@@ -66,6 +76,8 @@ class PlaybackService : MediaSessionService() {
     override fun onCreate() {
         super.onCreate()
         player = ExoPlayer.Builder(this)
+            .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this).setLoadErrorHandlingPolicy(androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy(0)).setDataSourceFactory(androidx.media3.datasource.DefaultDataSource.Factory(this, app.streamTestDataSource ?: androidx.media3.datasource.DataSource.Factory {StreamDataSource(app.streams)})))
+            .setLoadControl(androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(3000,20000,700,1500).build())
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
             .setHandleAudioBecomingNoisy(true).setWakeMode(C.WAKE_MODE_LOCAL).build()
         val activity = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
@@ -80,10 +92,14 @@ class PlaybackService : MediaSessionService() {
                 scope.launch {
                     try {
                         val local = withContext(Dispatchers.IO) { mediaItems.take(10000).mapNotNull { requested ->
+                            if(requested.mediaId.startsWith("engine:")) {
+                                val remote=app.streams.lookup(requested.mediaId) ?: return@mapNotNull null
+                                return@mapNotNull remoteMediaItem(remote,requested.mediaMetadata.extras?.getString("yono.queue.key"),requested.mediaMetadata.extras?.getBoolean("yono.next")==true)
+                            }
                             app.repository.dao.track(requested.mediaId)?.takeIf { t -> t.active && t.available && android.net.Uri.parse(t.uri).scheme == "content" }?.mediaItem()?.let { resolved ->
                                 val key=requested.mediaMetadata.extras?.getString("yono.queue.key")?.takeIf { it.matches(Regex("[a-fA-F0-9-]{36}")) }
                                 if(key==null)resolved else resolved.buildUpon().setMediaMetadata(resolved.mediaMetadata.buildUpon()
-                                    .setExtras(Bundle().apply {putString("yono.queue.key",key)}).build()).build()
+                                    .setExtras(Bundle().apply {putString("yono.queue.key",key);putBoolean("yono.next",requested.mediaMetadata.extras?.getBoolean("yono.next")==true)}).build()).build()
                             }
                         }.toMutableList() }
                         result.set(local)
@@ -120,7 +136,7 @@ class PlaybackService : MediaSessionService() {
             }
             override fun onPlayerError(error: PlaybackException) {
                 val failed = player.currentMediaItem?.mediaId
-                if (failed != null) scope.launch(Dispatchers.IO) { app.repository.playbackFailure(failed,error.errorCode) }
+                if (failed != null && !failed.startsWith("engine:")) scope.launch(Dispatchers.IO) { app.repository.playbackFailure(failed,error.errorCode) }
                 consecutiveErrors++
                 if (player.hasNextMediaItem() && consecutiveErrors < player.mediaItemCount) { player.seekToNextMediaItem(); player.prepare() }
                 else player.pause()
@@ -147,12 +163,15 @@ class PlaybackService : MediaSessionService() {
         scope.launch {
             val saved = app.preferences.snapshot() ?: return@launch
             val restoredIds = withContext(Dispatchers.IO) { saved.ids.map { app.repository.dao.state("track_alias:$it")?.value ?: it } }
-            val tracks = withContext(Dispatchers.IO) { restoredIds.mapNotNull { app.repository.dao.track(it)?.takeIf { it.active && it.available } }.distinctBy { it.id } }
-            if (tracks.isNotEmpty() && player.mediaItemCount == 0) {
+            val restored = withContext(Dispatchers.IO) { restoredIds.mapNotNull {id->
+                if(id.startsWith("engine:"))app.streams.lookup(id)?.let {remoteMediaItem(it)}
+                else app.repository.dao.track(id)?.takeIf {it.active && it.available}?.mediaItem()
+            } }
+            if (restored.isNotEmpty() && player.mediaItemCount == 0) {
                 val currentId = restoredIds.getOrNull(saved.index)
-                val index = tracks.indexOfFirst { it.id == currentId }.coerceAtLeast(0)
-                val position = if (tracks[index].id == currentId) com.yonzmusic.app.data.PlaybackResume.position(saved.position, tracks[index].duration) else 0L
-                player.setMediaItems(tracks.map(Track::mediaItem), index, position)
+                val index = restored.indexOfFirst { it.mediaId == currentId }.coerceAtLeast(0)
+                val position = saved.position.coerceAtLeast(0)
+                player.setMediaItems(restored, index, position)
                 player.shuffleModeEnabled = saved.shuffle
                 player.repeatMode = saved.repeat.coerceIn(Player.REPEAT_MODE_OFF, Player.REPEAT_MODE_ALL)
                 // Restore context, never autoplay after process recreation.

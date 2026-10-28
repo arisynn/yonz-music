@@ -1,0 +1,212 @@
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.StreamingIntegrationTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.StreamingIntegrationTest:
+INSTRUMENTATION_STATUS: test=durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.StreamingIntegrationTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.StreamingIntegrationTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.StreamingIntegrationTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: Actual Search receives scoped metadata fixture
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.StreamingIntegrationTest.await(StreamingIntegrationTest.kt:29)
+	at com.yonzmusic.app.StreamingIntegrationTest.await$default(StreamingIntegrationTest.kt:27)
+	at com.yonzmusic.app.StreamingIntegrationTest$oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion$1.invokeSuspend(StreamingIntegrationTest.kt:78)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.UndispatchedCoroutine.afterResume(CoroutineContext.kt:266)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(StreamingIntegrationTest.kt:32)
+
+INSTRUMENTATION_STATUS: stream=
+Error in oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(com.yonzmusic.app.StreamingIntegrationTest):
+java.lang.AssertionError: Actual Search receives scoped metadata fixture
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.StreamingIntegrationTest.await(StreamingIntegrationTest.kt:29)
+	at com.yonzmusic.app.StreamingIntegrationTest.await$default(StreamingIntegrationTest.kt:27)
+	at com.yonzmusic.app.StreamingIntegrationTest$oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion$1.invokeSuspend(StreamingIntegrationTest.kt:78)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.UndispatchedCoroutine.afterResume(CoroutineContext.kt:266)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(StreamingIntegrationTest.kt:32)
+
+INSTRUMENTATION_STATUS: test=oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.OnlineSearchPreviewTest:
+INSTRUMENTATION_STATUS: test=actualPythonBridgeUsesFlatReadOnlySearchAndCancellation
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualPythonBridgeUsesFlatReadOnlySearchAndCancellation
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=optionalHistoryAndObsoleteKeyRemovalKeepCollections
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=optionalHistoryAndObsoleteKeyRemovalKeepCollections
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.ShufflePlaybackTest:
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.QueueGesture14Test:
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.PlaybackIntegrationTest:
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.UpdateProgressTest:
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=9
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=9
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.NewEngineBridgeTest
+INSTRUMENTATION_STATUS: current=10
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.NewEngineBridgeTest:
+INSTRUMENTATION_STATUS: test=realDoctorAnd110LocalEntriesThroughChaquopy
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.NewEngineBridgeTest
+INSTRUMENTATION_STATUS: current=10
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=realDoctorAnd110LocalEntriesThroughChaquopy
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 207.7
+There was 1 failure:
+1) oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(com.yonzmusic.app.StreamingIntegrationTest)
+java.lang.AssertionError: Actual Search receives scoped metadata fixture
+	at org.junit.Assert.fail(Assert.java:89)
+	at com.yonzmusic.app.StreamingIntegrationTest.await(StreamingIntegrationTest.kt:29)
+	at com.yonzmusic.app.StreamingIntegrationTest.await$default(StreamingIntegrationTest.kt:27)
+	at com.yonzmusic.app.StreamingIntegrationTest$oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion$1.invokeSuspend(StreamingIntegrationTest.kt:78)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.UndispatchedCoroutine.afterResume(CoroutineContext.kt:266)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(StreamingIntegrationTest.kt:32)
+
+FAILURES!!!
+Tests run: 10,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

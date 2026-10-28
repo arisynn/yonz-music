@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -65,5 +66,22 @@ internal val LocalReducedMotion = staticCompositionLocalOf { false }
     val visible=androidx.compose.runtime.remember { androidx.compose.animation.core.MutableTransitionState(reduced).apply { targetState=true } }
     androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
         androidx.compose.animation.AnimatedVisibility(visibleState=visible,enter=androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(if(reduced)0 else 160)),exit=androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(0))) { content() }
+    }
+}
+
+
+/** Match dialog system-bar controls to the app theme, including three-button navigation. */
+@Composable internal fun DialogSystemBars() {
+    val view=androidx.compose.ui.platform.LocalView.current
+    val light=MaterialTheme.colorScheme.background.luminance()>.5f
+    androidx.compose.runtime.SideEffect {
+        (view.parent as? androidx.compose.ui.window.DialogWindowProvider)?.window?.let {window->
+            androidx.core.view.WindowCompat.getInsetsController(window,view).apply {
+                isAppearanceLightStatusBars=light;isAppearanceLightNavigationBars=light
+            }
+            window.statusBarColor=android.graphics.Color.TRANSPARENT
+            window.navigationBarColor=android.graphics.Color.TRANSPARENT
+            if(android.os.Build.VERSION.SDK_INT>=29) {window.isStatusBarContrastEnforced=false;window.isNavigationBarContrastEnforced=false}
+        }
     }
 }

@@ -1,3 +1,5 @@
+> Historical preview.2 search design below. Current streaming/download behavior: [STREAMING_PREVIEW.md](STREAMING_PREVIEW.md). The external-only listening limitation below was superseded in preview.3; live streaming remains independently unverified.
+
 # Online Search — 1.5.0-preview.2
 
 Yono Music Preview by Karisyono; com.yonzmusic.app.dev, code11, same existing Dev certificate and Room schema3. Installs beside official1.4.2 or upgrades the matching Dev package in place. Official/latest stays1.4.2 and preview updates do not enter its updater.

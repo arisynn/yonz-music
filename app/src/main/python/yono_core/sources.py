@@ -26,6 +26,12 @@ class Sources:
         self.spotify_token, self.spotify_client, self.runtime = spotify_token, spotify_client, runtime
 
     def load(self, request):
+        if request.get("kind") == "selected_video":
+            from yono_stream import inspect_video
+            ident = request.get("video_id")
+            record = inspect_video(ident, self.control, self.runtime)
+            return {"name": record["song"]["title"], "origin": record["song"]["source_url"], "completeness": "complete",
+                    "entries": [{"song": record["song"], "input": record["song"]["source_url"], "selected_exact": True}]}
         if request.get("kind") in {"text", "txt", "csv", "json", "spotdl", "m3u", "m3u8"}:
             return parse(request.get("content", ""), request.get("name", "Playlist"), request.get("kind"))
         value = str(request.get("url") or request.get("content") or "").strip().strip('"\'')

@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-10-28T11:34:21.855513+07:00",
+  "python": "3.12.14",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "tests_run": 173,
+  "failures": 0,
+  "errors": 0,
+  "skipped": [],
+  "successful": true,
+  "seconds": 2.651,
+  "packages": {
+    "yt-dlp": "2026.10.21",
+    "yt-dlp-ejs": "0.8.0",
+    "ytmusicapi": "1.12.3",
+    "mutagen": "1.48.1",
+    "requests": "2.34.2",
+    "certifi": "2026.10.23",
+    "charset-normalizer": "3.5.2",
+    "idna": "3.20",
+    "urllib3": "2.8.0"
+  },
+  "tools": {
+    "ffmpeg": true,
+    "ffmpeg_version": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": true,
+    "ffprobe_version": "ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers",
+    "node": true,
+    "node_version": "v24.19.0",
+    "adb": false,
+    "gradle": false,
+    "kotlinc": false,
+    "javac": false
+  },
+  "fixtures": "Synthetic own sine audio + fabricated metadata; no commercial recording downloaded",
+  "android_compiled": false,
+  "android_runtime_tested": false,
+  "live_youtube_download_tested": false,
+  "live_spotify_api_tested": false,
+  "hyperos_tested": false,
+  "play_protect_tested": false
+}

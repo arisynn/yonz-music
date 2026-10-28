@@ -26,6 +26,8 @@ import com.yonzmusic.app.MusicViewModel
 import com.yonzmusic.app.data.*
 import com.yonzmusic.app.search.*
 import com.yonzmusic.app.ui.icons.Tune
+import com.yonzmusic.app.ui.icons.Download
+import com.yonzmusic.app.ui.icons.Pause
 
 @Composable fun SearchScreen(vm: MusicViewModel,tracks: List<Track>,playlists: List<PlaylistSummary>,favorites: Set<String>,activeId: String?,
     onPlay: (List<Track>,String)->Unit,onMenu: (Track)->Unit,onPlaylist: (PlaylistSummary)->Unit,onDownload: (OnlineSong)->Unit) {
@@ -36,6 +38,8 @@ import com.yonzmusic.app.ui.icons.Tune
     val response by vm.onlineSearch.state.collectAsStateWithLifecycle()
     val state=response.takeIf {it.provider==provider && it.query==SearchContract.query(query)} ?: OnlineSearchState(query,provider,loading=query.trim().length>=3)
     val recent by vm.recentSearch.collectAsStateWithLifecycle()
+    val playback by vm.playback.state.collectAsStateWithLifecycle()
+    val localSource=remember(playback.id,tracks){tracks.firstOrNull {it.id==playback.id}?.sourceIdentity}
     val lifecycle=LocalLifecycleOwner.current.lifecycle
     var selected by remember {mutableStateOf<OnlineSong?>(null)}
     var configure by remember {mutableStateOf(false)}
@@ -89,7 +93,7 @@ import com.yonzmusic.app.ui.icons.Tune
                             recent.forEach {value->SuggestionChip(onClick={vm.searchQuery.value=value},label={Text(value,maxLines=1)})}
                         }
                     }
-                    item {EmptyState("Temukan musik di luar koleksimu","Ketik setidaknya 3 karakter. Hasil muncul otomatis. Pilih rekaman untuk membuka sumber atau meninjau unduhan.","search")}
+                    item {EmptyState("Temukan musik di luar koleksimu","Ketik setidaknya 3 karakter. Hasil muncul otomatis. Pilih Putar untuk mendengarkan atau Unduh untuk menyimpan offline.","search")}
                 }
                 else {
                     if(state.loading)item {LinearProgressIndicator(Modifier.fillMaxWidth());Text("Mencari…",style=MaterialTheme.typography.labelSmall)}
@@ -103,9 +107,10 @@ import com.yonzmusic.app.ui.icons.Tune
 
                     if(!state.loading && state.error.isBlank() && state.songs.isEmpty())item {EmptyState("Belum ada hasil","Coba judul atau nama artis yang lebih lengkap. Hasil bergantung pada katalog dan wilayah sumber.","search")}
                     items(state.songs,key={it.id}) { song->
+                        val current=playback.id==song.id || localSource=="youtube:${song.videoId}"
                         Surface(shape=Design.small,color=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.35f)) {
                             Column(Modifier.fillMaxWidth().padding(Design.md),verticalArrangement=Arrangement.spacedBy(Design.xs)) {
-                                Row(Modifier.fillMaxWidth().clickable {choose(song)},verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+                                Row(Modifier.fillMaxWidth().clickable {focus.clearFocus();keyboard?.hide();vm.playOnline(song)},verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
                                     SourceThumbnail(song.artwork)
                                     Column(Modifier.weight(1f)) {
                                         Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium)
@@ -114,8 +119,15 @@ import com.yonzmusic.app.ui.icons.Tune
                                         if(extra.isNotBlank())Text(extra,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall)
                                     }
                                 }
-                                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.End) {
-                                    TextButton({choose(song)}){Text("Lihat rekaman")}
+                                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
+                                    Row(Modifier.weight(1f),verticalAlignment=Alignment.CenterVertically) {
+                                        FilledTonalIconButton({if(current)vm.playback.toggle()else vm.playOnline(song)}) {Icon(if(current && playback.requested)Icons.Rounded.Pause else Icons.Rounded.PlayArrow,if(current && playback.requested)"Jeda ${song.title}"else "Putar ${song.title}")}
+                                        if(current)Text(if(playback.buffering)"Menyiapkan…"else if(playback.playing)"Sedang diputar"else "Dijeda",modifier=Modifier.weight(1f),maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.primary)
+                                    }
+                                    Row {
+                                        ActionIcon(Icons.Rounded.Download,"Unduh ${song.title}",{focus.clearFocus();keyboard?.hide();onDownload(song)})
+                                        ActionIcon(Icons.Rounded.MoreVert,"Opsi ${song.title}",{choose(song)})
+                                    }
                                 }
                             }
                         }
@@ -144,7 +156,8 @@ import com.yonzmusic.app.ui.icons.Tune
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable private fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,close:()->Unit) {
     val context=LocalContext.current
-    ModalBottomSheet(onDismissRequest=close,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+    ModalBottomSheet(onDismissRequest=close,modifier=Modifier.statusBarsPadding(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
+        DialogSystemBars()
         Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(Design.page),verticalArrangement=Arrangement.spacedBy(Design.md)) {
             Text(song.title,style=MaterialTheme.typography.titleLarge)
             if(song.credit.isNotBlank())Text(if(song.artistVerified)song.credit else "Kanal: ${song.credit}")
@@ -155,7 +168,12 @@ import com.yonzmusic.app.ui.icons.Tune
                     vm.playback.pause();context.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(song.page)))
                 }.onFailure {vm.notify("Tidak ada aplikasi untuk membuka sumber.")}
             },Modifier.fillMaxWidth()){Text("Buka sumber untuk mendengarkan")}
-            Button({onDownload(song);close()},Modifier.fillMaxWidth()){Text("Tinjau unduhan")}
+            Button({vm.playOnline(song);close()},Modifier.fillMaxWidth()){Text("Putar di Yono")}
+            Row(horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
+                TextButton({vm.playOnline(song,true);close()}){Text("Putar berikutnya")}
+                TextButton({vm.playOnline(song,false);close()}){Text("Tambah antrean")}
+            }
+            FilledTonalButton({onDownload(song);close()},Modifier.fillMaxWidth()){Text("Simpan offline") }
             Text("Unduhan tetap meminta tujuan dan otorisasi pada alur yang sudah ada. Format audio asli dipertahankan.",style=MaterialTheme.typography.bodySmall)
         }
     }

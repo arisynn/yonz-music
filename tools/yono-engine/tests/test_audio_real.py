@@ -86,6 +86,36 @@ class RealAudioTests(unittest.TestCase):
                 if ext=='opus':
                     cover=Picture(base64.b64decode(OggOpus(path)['metadata_block_picture'][0]))
                     self.assertEqual(cover.data,PNG)
+    def test_selected_recording_prepare_publish_webm_cover_and_reuse_never_catalogue_substitutes(self):
+        from support import engine_at
+        original=self.work/'owned-original.webm'
+        subprocess.run(['ffmpeg','-v','error','-i',str(self.source),'-c:a','libopus',str(original)],check=True)
+        digest=file_hash(original)
+        transfers=[]
+        def owned_transfer(song,workspace):
+            self.assertEqual(song.youtube_id,'00000000000')
+            transfers.append(song.youtube_id)
+            path=workspace/'selected.webm';shutil.copyfile(original,path);return path
+        self.media.transfer=owned_transfer
+        engine,index,_,storage=engine_at(self.work,[],self.token,self.media)
+        engine.catalogue.resolve=lambda *_:self.fail('Explicit selection must not be catalogue-matched')
+        request={'kind':'selected_video','video_id':'00000000000','create_playlist':False}
+        try:
+            with patch('yono_stream.inspect_video',return_value={'song':self.song.to_dict()}):
+                plan=engine.prepare(request)
+                self.assertEqual(plan['counts'],{'ready':1})
+                result=engine.acquire(plan['id'],[plan['entries'][0]['id']],output_format='original')
+                row=result['entries'][0];self.assertEqual(row['status'],'downloaded',row.get('error'));path=storage.path(row['uri'])
+                self.assertEqual(row['status'],'downloaded');self.assertEqual(path.suffix,'.webm')
+                self.assertEqual(path.parent,storage.root);self.assertEqual(file_hash(path),digest)
+                self.assertEqual(row['song']['artists'],self.song.artists)
+                self.assertEqual(storage.path(row['artwork_uri']).read_bytes(),PNG)
+                self.assertEqual(storage.path(row['artwork_uri']).parent.name,'.cover')
+                self.assertTrue((storage.path(row['artwork_uri']).parent/'.nomedia').exists())
+                again=engine.prepare(request);self.assertEqual(again['counts'],{'exists':1})
+                self.assertEqual(transfers,['00000000000'])
+        finally:index.close()
+
     def test_no_cover_is_reported_without_faking_success(self):
         self.media.artwork=lambda song: None
         result=self.media.finish(self.source,self.song,self.work)

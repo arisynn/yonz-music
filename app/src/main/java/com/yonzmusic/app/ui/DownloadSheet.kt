@@ -22,7 +22,8 @@ import kotlinx.coroutines.withContext
 
 fun downloadStatus(value:String):String=when(value) {
     "complete" -> "Selesai memproses";"complete_with_errors" -> "Selesai · sebagian gagal/dibatalkan";"review" -> "Siap diperiksa";"paused_network" -> "Jaringan bermasalah · coba ulang";"preparing" -> "Membaca metadata";
-    "ready","pending","Queued" -> "Menunggu";"matching","verifying","reading_source","reading_playlist" -> "Membaca metadata"
+    "ready","pending","Queued","queued" -> "Menunggu";"matching","verifying","reading_source","reading_playlist" -> "Membaca metadata"
+    "snapshot"->"Memeriksa koleksi pilihan";"source_warning"->"Memeriksa sumber"
     "downloading","Downloading","track_started" -> "Mengunduh";"saving","artwork","validating_audio","Validating","Publishing","Saved" -> "Memproses metadata/sampul"
     "downloaded","Complete" -> "Selesai";"exists","Existing" -> "Sudah ada";"duplicate","Duplicate" -> "Duplikat"
     "failed","Failed","unmatched","invalid","ambiguous" -> "Gagal / perlu diperiksa";"cancelled","Cancelled" -> "Dibatalkan";else -> value
@@ -30,7 +31,11 @@ fun downloadStatus(value:String):String=when(value) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun DownloadSheet(vm:MusicViewModel,dismiss:()->Unit) {
     val context=LocalContext.current;val repo=(context.applicationContext as YonzApp).acquisition
-    val plans by repo.history.collectAsStateWithLifecycle();val busy by repo.busy.collectAsStateWithLifecycle();val active by repo.activeEntry.collectAsStateWithLifecycle()
+    val allPlans by repo.history.collectAsStateWithLifecycle();
+    val queued by repo.queuedDownloads.collectAsStateWithLifecycle()
+    val activeRequest by repo.activeRequest.collectAsStateWithLifecycle()
+    val queuedPlanIds=queued.map {it.optString("plan_id")}.toSet()
+    val plans=allPlans.filter {it.optString("id") !in queuedPlanIds};val busy by repo.busy.collectAsStateWithLifecycle();val active by repo.activeEntry.collectAsStateWithLifecycle()
     val activePlan by repo.activePlan.collectAsStateWithLifecycle();val action by repo.currentAction.collectAsStateWithLifecycle()
     val tracks by vm.collectionTracks.collectAsStateWithLifecycle()
     val byHash=remember(tracks){tracks.filter{it.available && it.active && it.sha256.isNotBlank()}.associateBy{it.sha256}}
@@ -38,13 +43,36 @@ fun downloadStatus(value:String):String=when(value) {
     var authorized by rememberSaveable { mutableStateOf(false) }
     val message by repo.message.collectAsStateWithLifecycle();val legacy by vm.downloads.collectAsStateWithLifecycle()
     var selected by rememberSaveable { mutableStateOf("") };var chooser by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { repo.refreshHistory() }
+    LaunchedEffect(Unit) { repo.refreshHistory();repo.refreshQueued() }
     val plan=plans.firstOrNull { it.optString("id")==selected } ?: plans.firstOrNull { it.optString("id")==activePlan } ?: plans.firstOrNull()
     val rows=plan?.optJSONArray("entries") ?: JSONArray()
     val done=(0 until rows.length()).count { val row=rows.getJSONObject(it);row.optString("status") in setOf("downloaded","exists","duplicate") && row.optString("uri").isNotBlank() }
-    ModalBottomSheet(onDismissRequest=dismiss) {
+    ModalBottomSheet(onDismissRequest=dismiss,modifier=Modifier.statusBarsPadding()) {
+        DialogSystemBars()
         LazyColumn(Modifier.fillMaxWidth().fillMaxHeight(.9f).navigationBarsPadding(),contentPadding=PaddingValues(bottom=Design.page),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
             item { SectionTitle("Daftar unduhan",if(busy)"Ada aktivitas · progres nyata" else "Riwayat disimpan di perangkat",action={if(busy)TextButton(repo::cancel){Text("Batalkan antrean")}}) }
+            items(queued,key={"queued_"+it.getString("id")}) { job ->
+                val song=runCatching {com.yonzmusic.app.playback.StreamRepository.decode(job.getJSONObject("song"))}.getOrNull()
+                val id=job.getString("id");val status=job.optString("status")
+                Surface(Modifier.fillMaxWidth().padding(horizontal=Design.page),shape=Design.card,color=MaterialTheme.colorScheme.surfaceVariant.copy(alpha=.35f)) {
+                    Column(Modifier.padding(Design.md),verticalArrangement=Arrangement.spacedBy(Design.xs)) {
+                        Row(horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+                            SourceThumbnail(song?.artwork.orEmpty())
+                            Column(Modifier.weight(1f)) {
+                                Text(song?.title ?: "Unduhan",maxLines=2,style=MaterialTheme.typography.titleMedium)
+                                if(song?.credit?.isNotBlank()==true)Text(if(song.artistVerified)song.credit else "Kanal: ${song.credit}",maxLines=1,style=MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                        if(status=="running" && activeRequest==id)DownloadProgress()else DownloadStatusLabel(when(status){"queued"->"Menunggu giliran · mulai saat koneksi tersedia";"running"->"Memproses";"cancelling"->"Menghentikan unduhan…";"complete"->"Tersimpan offline";"cancelled"->"Dibatalkan";else->"Gagal · dapat dicoba ulang"})
+                        if(job.optString("error").isNotBlank())Text(job.optString("error"),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.error)
+                        Row {
+                            if(status in setOf("queued","running"))TextButton({repo.cancelQueued(id)}){Text("Batalkan")}
+                            if(status in setOf("failed","cancelled"))TextButton({repo.retryQueued(id)},enabled=activeRequest!=id){Text("Coba ulang")}
+                            if(status=="complete" && job.optString("uri").isNotBlank())TextButton({runCatching {context.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(job.getString("uri")),"audio/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))}.onFailure {vm.notify("Buka hasil melalui Library atau hubungkan ulang folder.")}}){Text("Buka hasil")}
+                        }
+                    }
+                }
+            }
             if(plans.isNotEmpty()) item { TextButton({chooser=true},Modifier.padding(horizontal=Design.page)){Text("${plan?.optString("name")} · pilih riwayat",maxLines=2)};Text("$done / ${rows.length()} selesai",Modifier.padding(horizontal=Design.page),style=MaterialTheme.typography.bodySmall) }
             if(plan!=null && !busy && (plan.optJSONObject("counts")?.optInt("ready") ?: 0)>0) item {
                 Column(Modifier.padding(horizontal=Design.page)) {
@@ -53,7 +81,7 @@ fun downloadStatus(value:String):String=when(value) {
                 }
             }
             if(message.isNotBlank())item { Text(message,Modifier.padding(horizontal=Design.page),style=MaterialTheme.typography.bodySmall) }
-            if(plans.isEmpty() && legacy.isEmpty()) item { Text("Belum ada unduhan. Periksa daftar melalui Import → Downloads.",Modifier.padding(Design.page)) }
+            if(plans.isEmpty() && queued.isEmpty() && legacy.isEmpty()) item { Text("Belum ada unduhan. Periksa daftar melalui Import → Downloads.",Modifier.padding(Design.page)) }
             items(rows.length(),key={rows.getJSONObject(it).optString("id",it.toString())}) { index ->
                 val row=rows.getJSONObject(index);val song=row.optJSONObject("song") ?: row.optJSONObject("request")?.optJSONObject("song") ?: JSONObject()
                 val artists=song.optJSONArray("artists") ?: JSONArray();val artist=(0 until artists.length()).joinToString("; "){artists.optString(it)}

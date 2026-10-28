@@ -12,7 +12,7 @@ import com.yonzmusic.app.data.Track
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /** A single controller mirrors the service. Progress is read only by visible player composables. */
-data class PlaybackUi(val id: String? = null, val playing: Boolean = false, val queue: List<String> = emptyList(), val index: Int = 0, val shuffle: Boolean = false, val repeat: Int = Player.REPEAT_MODE_OFF, val error: String? = null, val ready: Boolean = false, val queueKeys: List<String> = emptyList(), val playbackOrder: List<Int> = emptyList())
+data class PlaybackUi(val id: String? = null, val playing: Boolean = false, val queue: List<String> = emptyList(), val index: Int = 0, val shuffle: Boolean = false, val repeat: Int = Player.REPEAT_MODE_OFF, val error: String? = null, val ready: Boolean = false, val queueKeys: List<String> = emptyList(), val playbackOrder: List<Int> = emptyList(), val remoteTracks: List<Track> = emptyList(), val buffering: Boolean = false, val requested: Boolean = false)
 class PlaybackConnection(context: Context) {
     val state = MutableStateFlow(PlaybackUi())
     private var controller: MediaController? = null
@@ -23,7 +23,7 @@ class PlaybackConnection(context: Context) {
     }
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) = refresh()
-        override fun onPlayerError(error: PlaybackException) { state.value = state.value.copy(error = "Audio belum dapat diputar. Periksa lokasi file, izin folder, atau penyimpanan; rescan untuk menghubungkan ulang.") }
+        override fun onPlayerError(error: PlaybackException) { state.value = state.value.copy(error = if(controller?.currentMediaItem?.mediaId?.startsWith("engine:")==true)"Streaming gagal. Periksa koneksi dan coba Putar lagi."else "Audio belum dapat diputar. Periksa lokasi file, izin folder, atau penyimpanan; rescan untuk menghubungkan ulang.") }
     }
     init { Choreographer.getInstance().postFrameCallback(firstFrame) }
     private fun connect(context: Context) {
@@ -46,9 +46,11 @@ class PlaybackConnection(context: Context) {
             next = timeline.getNextWindowIndex(next, Player.REPEAT_MODE_OFF, p.shuffleModeEnabled)
         }
         state.value = PlaybackUi(p.currentMediaItem?.mediaId, p.isPlaying, (0 until p.mediaItemCount).map { p.getMediaItemAt(it).mediaId }, p.currentMediaItemIndex.coerceAtLeast(0), p.shuffleModeEnabled, p.repeatMode,
-            if (p.playerError != null) "Audio unavailable. Check file access and rescan your library." else null, true,
+            if (p.playerError != null) if(p.currentMediaItem?.mediaId?.startsWith("engine:")==true)"Streaming gagal. Periksa koneksi dan coba Putar lagi."else "Audio unavailable. Check file access and rescan your library." else null, true,
             (0 until p.mediaItemCount).map { p.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key") ?: "legacy:$it" },
-            order.takeIf { it.size == p.mediaItemCount } ?: (0 until p.mediaItemCount).toList())
+            order.takeIf { it.size == p.mediaItemCount } ?: (0 until p.mediaItemCount).toList(),
+            (0 until p.mediaItemCount).mapNotNull {i->remoteSong(p.getMediaItemAt(i))?.let {s->StreamRepository.display(s).copy(duration=if(i==p.currentMediaItemIndex && p.duration>0)p.duration else s.durationMs)}},
+            p.playbackState==Player.STATE_BUFFERING,p.playWhenReady)
     } }
     fun play(tracks: List<Track>, id: String) {
         val available = tracks.filter { it.available }.distinctBy { it.id }.take(10000)
@@ -56,6 +58,13 @@ class PlaybackConnection(context: Context) {
         if (index < 0) return
         queueGeneration++
         controller?.apply { setMediaItems(available.map(Track::mediaItem), index, 0); prepare(); play() }
+    }
+    fun playRemote(song:com.yonzmusic.app.search.OnlineSong,next:Boolean?=null) {
+        controller?.let {p->
+            val item=remoteMediaItem(song,next=next==true)
+            if(next==null){queueGeneration++;p.setMediaItem(item);p.prepare();p.play()}
+            else {p.addMediaItem(if(next && p.mediaItemCount>0)p.currentMediaItemIndex+1 else p.mediaItemCount,item);if(p.playbackState==Player.STATE_IDLE)p.prepare()}
+        }
     }
     fun toggle() { controller?.let { if (it.playWhenReady && it.playbackState != Player.STATE_ENDED) it.pause() else { if (it.playbackState == Player.STATE_ENDED) it.seekTo(0); if (it.playbackState == Player.STATE_IDLE) it.prepare(); it.play() } } }
     fun pause() {controller?.pause()}
@@ -67,7 +76,7 @@ class PlaybackConnection(context: Context) {
     fun duration(): Long = controller?.duration?.coerceAtLeast(0) ?: 0
     fun shuffle() { controller?.let { it.shuffleModeEnabled = !it.shuffleModeEnabled } }
     fun repeat() { controller?.let { it.repeatMode = when (it.repeatMode) { Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL; Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE; else -> Player.REPEAT_MODE_OFF } } }
-    fun enqueue(track: Track, next: Boolean) { if (track.available) controller?.let { p -> p.addMediaItem(if (next && p.mediaItemCount > 0) p.currentMediaItemIndex + 1 else p.mediaItemCount, track.mediaItem()); if (p.playbackState == Player.STATE_IDLE) p.prepare() } }
+    fun enqueue(track: Track, next: Boolean) { if (track.available) controller?.let { p -> val original=track.mediaItem();val item=original.buildUpon().setMediaMetadata(original.mediaMetadata.buildUpon().setExtras(android.os.Bundle(original.mediaMetadata.extras ?: android.os.Bundle()).apply {putBoolean("yono.next",next)}).build()).build();p.addMediaItem(if (next && p.mediaItemCount > 0) p.currentMediaItemIndex + 1 else p.mediaItemCount,item); if (p.playbackState == Player.STATE_IDLE) p.prepare() } }
     fun remove(index: Int) { controller?.let { if (index in 0 until it.mediaItemCount) it.removeMediaItem(index) } }
     fun move(from: Int, to: Int) { controller?.let { if (from in 0 until it.mediaItemCount && to in 0 until it.mediaItemCount) it.moveMediaItem(from, to) } }
     private var queueGeneration = 0

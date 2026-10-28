@@ -1,0 +1,29 @@
+{
+  "emulator": "API29 x86_64,320dp width,640x1280px,software acceleration",
+  "physicalDevice": false,
+  "scope": [
+    "actual Search result using scoped QA metadata",
+    "remote view-only mini-player",
+    "shared native Now Playing Light/Dark",
+    "compact offline-save modal"
+  ],
+  "fontScales": [
+    1,
+    1.5
+  ],
+  "sourceMedia": "original generated20s PCM WAV through real Media3/DataSource with scoped test transport, not live platform media",
+  "artwork": "built-in original fallback; no live source artwork verified",
+  "screenshots": "docs/screenshots/v1.5.0-preview.3",
+  "findingsRepaired": [
+    "Light dialog navigation-button contrast",
+    "expanded modal top safe-area padding"
+  ],
+  "scrolling": "Large text uses scrollable modal/player/list viewports; Scaffold reserves mini-player/navigation space",
+  "unintendedOverlapObservedInInspectedStates": false,
+  "newKeyboardLandscapeAndPhysicalHyperOSCoverage": false,
+  "liveSourcePlaybackVerified": false,
+  "exactScopeAndFailures": "TEST_REPORT.md",
+  "finalPublicationArtifactNative": "2 cases passed75.113s; font1.0; final screenshot refresh",
+  "font150Scope": "same modal-repair layout, before control identity/notification credit refinement;2 cases passed83.814s",
+  "finalApkSha256": "2c87d5ad5b3d43a3a0ceeedb3a37d04b3ac2cdf7fc0bde409456408b8cde1850"
+}

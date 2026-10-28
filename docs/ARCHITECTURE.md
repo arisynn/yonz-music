@@ -15,3 +15,10 @@ The existing Kotlin/Compose MVVM application and four primary destinations remai
 - `native/` contains reviewed QuickJS-NG sources and the fixed restricted runner. `tools/native` reproducibly cross-compiles reviewed code for arm64-v8a/x86_64 with NDK r28c; no Termux binary is copied.
 
 The application is free/offline-first. Only optional source requests and production GitHub update checks use the network. No login, advertising, tracking, custom backend or broad storage permission is required.
+
+
+## 1.5.0-preview.3 streaming references
+
+Online Search → source metadata registry (Room AppState) → the existing MediaController/MediaSessionService → opaque yono-stream URI → bounded StreamDataSource → on-demand embedded yt-dlp resolver. Remote metadata has a view-only adapter for existing player/artwork composables; it does not enter the local tracks table. Signed audio URLs are held briefly in memory only. DefaultDataSource retains local SAF content handling.
+
+Save offline → compact approval → transactional durable request → the existing unique WorkManager queue → exact selected-source prepare/acquire → original audio validation → SAF commit/portable metadata/.cover → readable receipt → local Library indexing. A selected source bypasses catalogue substitution at both review and transfer. See STREAMING_PREVIEW.md and TEST_REPORT.md for the distinct host/native fixture and failed live-source evidence.

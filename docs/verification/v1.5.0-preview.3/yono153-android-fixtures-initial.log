@@ -1,0 +1,259 @@
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.StreamingIntegrationTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.StreamingIntegrationTest:
+INSTRUMENTATION_STATUS: test=durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.StreamingIntegrationTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stack=java.lang.NoSuchMethodError: No virtual method setSelectedScheduler$app_debug(Lkotlin/jvm/functions/Function2;)V in class Lcom/yonzmusic/engine/AcquisitionRepository; or its super classes (declaration of 'com.yonzmusic.engine.AcquisitionRepository' appears in /data/app/com.yonzmusic.app.dev-vjnnH24aJqRL-5KFVALENA==/base.apk!classes10.dex)
+	at com.yonzmusic.app.StreamingIntegrationTest$durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext$1.invokeSuspend(StreamingIntegrationTest.kt:115)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext(StreamingIntegrationTest.kt:114)
+
+INSTRUMENTATION_STATUS: stream=
+Error in durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext(com.yonzmusic.app.StreamingIntegrationTest):
+java.lang.NoSuchMethodError: No virtual method setSelectedScheduler$app_debug(Lkotlin/jvm/functions/Function2;)V in class Lcom/yonzmusic/engine/AcquisitionRepository; or its super classes (declaration of 'com.yonzmusic.engine.AcquisitionRepository' appears in /data/app/com.yonzmusic.app.dev-vjnnH24aJqRL-5KFVALENA==/base.apk!classes10.dex)
+	at com.yonzmusic.app.StreamingIntegrationTest$durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext$1.invokeSuspend(StreamingIntegrationTest.kt:115)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext(StreamingIntegrationTest.kt:114)
+
+INSTRUMENTATION_STATUS: test=durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.StreamingIntegrationTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.StreamingIntegrationTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stack=java.lang.NoSuchMethodError: No virtual method setStreamTestDataSource$app_debug(Landroidx/media3/datasource/DataSource$Factory;)V in class Lcom/yonzmusic/app/YonzApp; or its super classes (declaration of 'com.yonzmusic.app.YonzApp' appears in /data/app/com.yonzmusic.app.dev-vjnnH24aJqRL-5KFVALENA==/base.apk!classes8.dex)
+	at com.yonzmusic.app.StreamingIntegrationTest$oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion$1.invokeSuspend(StreamingIntegrationTest.kt:60)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(StreamingIntegrationTest.kt:32)
+
+INSTRUMENTATION_STATUS: stream=
+Error in oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(com.yonzmusic.app.StreamingIntegrationTest):
+java.lang.NoSuchMethodError: No virtual method setStreamTestDataSource$app_debug(Landroidx/media3/datasource/DataSource$Factory;)V in class Lcom/yonzmusic/app/YonzApp; or its super classes (declaration of 'com.yonzmusic.app.YonzApp' appears in /data/app/com.yonzmusic.app.dev-vjnnH24aJqRL-5KFVALENA==/base.apk!classes8.dex)
+	at com.yonzmusic.app.StreamingIntegrationTest$oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion$1.invokeSuspend(StreamingIntegrationTest.kt:60)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(StreamingIntegrationTest.kt:32)
+
+INSTRUMENTATION_STATUS: test=oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.OnlineSearchPreviewTest:
+INSTRUMENTATION_STATUS: test=actualPythonBridgeUsesFlatReadOnlySearchAndCancellation
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stack=com.yonzmusic.app.search.SearchFailure: Pencarian tidak valid.
+	at com.yonzmusic.app.search.SearchContract.engine(SearchModels.kt:27)
+	at com.yonzmusic.app.search.EngineSearchBackend$search$2$task$1.call(EngineSearchBackend.kt:33)
+	at com.yonzmusic.app.search.EngineSearchBackend$search$2$task$1.call(EngineSearchBackend.kt:24)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+	at java.lang.Thread.run(Thread.java:919)
+
+INSTRUMENTATION_STATUS: stream=
+Error in actualPythonBridgeUsesFlatReadOnlySearchAndCancellation(com.yonzmusic.app.OnlineSearchPreviewTest):
+com.yonzmusic.app.search.SearchFailure: Pencarian tidak valid.
+	at com.yonzmusic.app.search.SearchContract.engine(SearchModels.kt:27)
+	at com.yonzmusic.app.search.EngineSearchBackend$search$2$task$1.call(EngineSearchBackend.kt:33)
+	at com.yonzmusic.app.search.EngineSearchBackend$search$2$task$1.call(EngineSearchBackend.kt:24)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+	at java.lang.Thread.run(Thread.java:919)
+
+INSTRUMENTATION_STATUS: test=actualPythonBridgeUsesFlatReadOnlySearchAndCancellation
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=optionalHistoryAndObsoleteKeyRemovalKeepCollections
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.OnlineSearchPreviewTest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=optionalHistoryAndObsoleteKeyRemovalKeepCollections
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.ShufflePlaybackTest:
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.ShufflePlaybackTest
+INSTRUMENTATION_STATUS: current=5
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=shuffleVisitsWholeQueueFromMiddleAndNextFollowsServiceOrder
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.QueueGesture14Test:
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.QueueGesture14Test
+INSTRUMENTATION_STATUS: current=6
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=keyedMoveDuplicateOccurrencesSwipeUndoAndShuffleUseOneSession
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.PlaybackIntegrationTest:
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.PlaybackIntegrationTest
+INSTRUMENTATION_STATUS: current=7
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=localPlaybackSeekMediaCommandsFocusAndSleepTimer
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.UpdateProgressTest:
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=8
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=oldDeferredCalculationReproducesReportedExceptionWhileSnapshotSurvivesTransition
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=9
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.UpdateProgressTest
+INSTRUMENTATION_STATUS: current=9
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=actualUpdaterDialogSurvivesRepeatedCompletedUnknownAndVerifyingFrames
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.NewEngineBridgeTest
+INSTRUMENTATION_STATUS: current=10
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=
+com.yonzmusic.app.NewEngineBridgeTest:
+INSTRUMENTATION_STATUS: test=realDoctorAnd110LocalEntriesThroughChaquopy
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.yonzmusic.app.NewEngineBridgeTest
+INSTRUMENTATION_STATUS: current=10
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=10
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=realDoctorAnd110LocalEntriesThroughChaquopy
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 171.105
+There were 3 failures:
+1) durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext(com.yonzmusic.app.StreamingIntegrationTest)
+java.lang.NoSuchMethodError: No virtual method setSelectedScheduler$app_debug(Lkotlin/jvm/functions/Function2;)V in class Lcom/yonzmusic/engine/AcquisitionRepository; or its super classes (declaration of 'com.yonzmusic.engine.AcquisitionRepository' appears in /data/app/com.yonzmusic.app.dev-vjnnH24aJqRL-5KFVALENA==/base.apk!classes10.dex)
+	at com.yonzmusic.app.StreamingIntegrationTest$durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext$1.invokeSuspend(StreamingIntegrationTest.kt:115)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.durableDownloadQueueDeduplicatesRecoversAndCancelsOneWithoutDroppingNext(StreamingIntegrationTest.kt:114)
+2) oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(com.yonzmusic.app.StreamingIntegrationTest)
+java.lang.NoSuchMethodError: No virtual method setStreamTestDataSource$app_debug(Landroidx/media3/datasource/DataSource$Factory;)V in class Lcom/yonzmusic/app/YonzApp; or its super classes (declaration of 'com.yonzmusic.app.YonzApp' appears in /data/app/com.yonzmusic.app.dev-vjnnH24aJqRL-5KFVALENA==/base.apk!classes8.dex)
+	at com.yonzmusic.app.StreamingIntegrationTest$oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion$1.invokeSuspend(StreamingIntegrationTest.kt:60)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingIntegrationTest.oneNativeSessionPlaysRemoteReferenceSeekQueueAndBackgroundWithoutLibraryInsertion(StreamingIntegrationTest.kt:32)
+3) actualPythonBridgeUsesFlatReadOnlySearchAndCancellation(com.yonzmusic.app.OnlineSearchPreviewTest)
+com.yonzmusic.app.search.SearchFailure: Pencarian tidak valid.
+	at com.yonzmusic.app.search.SearchContract.engine(SearchModels.kt:27)
+	at com.yonzmusic.app.search.EngineSearchBackend$search$2$task$1.call(EngineSearchBackend.kt:33)
+	at com.yonzmusic.app.search.EngineSearchBackend$search$2$task$1.call(EngineSearchBackend.kt:24)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+	at java.lang.Thread.run(Thread.java:919)
+
+FAILURES!!!
+Tests run: 10,  Failures: 3
+
+
+INSTRUMENTATION_CODE: -1

@@ -58,23 +58,15 @@ import kotlinx.coroutines.delay
     return position
 }
 @Composable private fun MiniProgress(track: Track, connection: PlaybackConnection) {
+    val state by connection.state.collectAsState()
+    if(state.buffering){LinearProgressIndicator(Modifier.fillMaxWidth().height(2.dp));return}
     val position by playbackPosition(track, connection)
     val fraction=ProgressFraction.of(position,track.duration) ?: 0f
     LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth().height(2.dp), color = MaterialTheme.colorScheme.primary, trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f), gapSize = 0.dp, drawStopIndicator = {})
 }
 @Composable fun PlayerScreen(track: Track, state: PlaybackUi, connection: PlaybackConnection, favorite: Boolean, preferences: UserPreferences, sleepEnd: Long, close: () -> Unit, toggleFavorite: () -> Unit, queue: () -> Unit, options: () -> Unit) {
     val c = MaterialTheme.colorScheme
-    val view = LocalView.current
-    val dialogWindow = (view.parent as? DialogWindowProvider)?.window
-    SideEffect { dialogWindow?.let { window ->
-        WindowCompat.getInsetsController(window, view).apply {
-            isAppearanceLightStatusBars = c.background.luminance() > .5f
-            isAppearanceLightNavigationBars = c.background.luminance() > .5f
-        }
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        window.navigationBarColor = android.graphics.Color.TRANSPARENT
-        if (Build.VERSION.SDK_INT >= 29) { window.isStatusBarContrastEnforced = false; window.isNavigationBarContrastEnforced = false }
-    } }
+    DialogSystemBars()
     Surface(Modifier.fillMaxSize(), color = c.background) {
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
             val compact = maxHeight < 650.dp || LocalDensity.current.fontScale > 1.3f
@@ -102,15 +94,16 @@ import kotlinx.coroutines.delay
                             Text(track.artist, style = MaterialTheme.typography.bodyLarge, color = c.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         }
                         val scale by animateFloatAsState(if (favorite) 1.08f else 1f, if (preferences.reduceMotion) snap() else tween(Design.motion), label = "favorite")
-                        ActionIcon(if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, if (favorite) "Remove favorite" else "Favorite song", toggleFavorite, Modifier.graphicsLayer { scaleX = scale; scaleY = scale }, if (favorite) c.primary else c.onSurfaceVariant)
+                        ActionIcon(if(track.source=="stream")Icons.Rounded.Download else if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, if(track.source=="stream")"Simpan offline"else if (favorite) "Remove favorite" else "Favorite song", toggleFavorite, Modifier.graphicsLayer { scaleX = scale; scaleY = scale }, if (favorite) c.primary else c.onSurfaceVariant)
                     }
                     Spacer(Modifier.height(if (compact) Design.sm else Design.md))
+                    if(state.buffering) {Text("Menyiapkan audio…",style=MaterialTheme.typography.labelSmall,color=c.primary);LinearProgressIndicator(Modifier.fillMaxWidth())}
                     SeekControls(track, connection)
                     Spacer(Modifier.height(if (compact) Design.sm else Design.md))
                     GlassPanel(track, preferences.glass, Modifier.fillMaxWidth()) {
                         Row(Modifier.fillMaxWidth().padding(vertical = Design.sm, horizontal = Design.sm), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                             ActionIcon(Icons.Rounded.SkipPrevious, "Previous song", connection::previous)
-                            FilledIconButton(connection::toggle, modifier = Modifier.size(if (compact) 64.dp else 72.dp), shape = CircleShape, colors = IconButtonDefaults.filledIconButtonColors(containerColor = c.primary, contentColor = c.onPrimary)) { Icon(if (state.playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (state.playing) "Pause" else "Play", Modifier.size(36.dp)) }
+                            FilledIconButton(connection::toggle, modifier = Modifier.size(if (compact) 64.dp else 72.dp), shape = CircleShape, colors = IconButtonDefaults.filledIconButtonColors(containerColor = c.primary, contentColor = c.onPrimary)) { Icon(if (state.playing || state.requested) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (state.playing || state.requested) "Pause" else "Play", Modifier.size(36.dp)) }
                             ActionIcon(Icons.Rounded.SkipNext, "Next song", connection::next)
                         }
                     }
@@ -122,7 +115,7 @@ import kotlinx.coroutines.delay
                     }
                     if (state.error != null) Text(state.error, style = MaterialTheme.typography.bodySmall, color = c.error, modifier = Modifier.padding(vertical = Design.sm))
                     if (sleepEnd > 0) SleepRemaining(sleepEnd, Modifier.align(Alignment.CenterHorizontally))
-                    if (!compact) Text("LOCAL AUDIO · YOUR SPACE", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = Design.gap))
+                    if (!compact) Text(if(track.source=="stream")"STREAMING · YONO MUSIC"else "LOCAL AUDIO · YOUR SPACE", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = Design.gap))
                 }
             }
         }
@@ -134,7 +127,7 @@ import kotlinx.coroutines.delay
     val duration = track.duration.coerceAtLeast(1).toFloat()
     val value = dragging ?: position.toFloat().coerceIn(0f, duration)
     Column {
-        Slider(value, { dragging = it }, onValueChangeFinished = { dragging?.let { connection.seek(it.toLong()) }; dragging = null }, valueRange = 0f..duration, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Playback position" })
+        Slider(value, { dragging = it }, onValueChangeFinished = { dragging?.let { connection.seek(it.toLong()) }; dragging = null }, valueRange = 0f..duration, enabled=track.duration>0, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Playback position" })
         Row(Modifier.fillMaxWidth()) { Text(time(value.toLong()), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant); Spacer(Modifier.weight(1f)); Text(time(track.duration), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
     }
 }
