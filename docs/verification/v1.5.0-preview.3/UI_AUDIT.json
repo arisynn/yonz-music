@@ -25,5 +25,6 @@
   "exactScopeAndFailures": "TEST_REPORT.md",
   "finalPublicationArtifactNative": "2 cases passed75.113s; font1.0; final screenshot refresh",
   "font150Scope": "same modal-repair layout, before control identity/notification credit refinement;2 cases passed83.814s",
-  "finalApkSha256": "2c87d5ad5b3d43a3a0ceeedb3a37d04b3ac2cdf7fc0bde409456408b8cde1850"
+  "finalApkSha256": "2c87d5ad5b3d43a3a0ceeedb3a37d04b3ac2cdf7fc0bde409456408b8cde1850",
+  "discardedStaleCapture": "The final normal-font Light Now Playing capture duplicated the preceding Search frame; removed after visual inspection. Genuine Light player font150 and Dark player captures are retained."
 }
