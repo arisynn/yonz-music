@@ -1,5 +1,7 @@
 package com.yonzmusic.app.ui
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -101,12 +103,12 @@ internal object ArtCache {
         drawPath(y, accent.copy(alpha = .8f), style = Stroke(s * .023f, cap = StrokeCap.Round, join = StrokeJoin.Round))
     }
 }
-@Composable fun BrandMark(modifier: Modifier = Modifier) { Image(painterResource(R.drawable.brand_symbol), "Yono Music symbol", modifier.clip(Design.small).background(Design.brandMist)) }
+@Composable fun BrandMark(modifier: Modifier = Modifier) { Image(painterResource(R.drawable.brand_symbol), "Simbol Yono Music", modifier.clip(Design.small).background(Design.brandMist)) }
 
 @Composable fun ActionIcon(icon: ImageVector, label: String, onClick: () -> Unit, modifier: Modifier = Modifier, tint: Color = LocalContentColor.current, enabled: Boolean = true) {
     val duration=if(LocalReducedMotion.current)0 else 160
     IconButton(onClick, modifier.sizeIn(minWidth = Design.touch, minHeight = Design.touch), enabled = enabled) {
-        AnimatedContent(icon,transitionSpec={ fadeIn(tween(duration)) togetherWith fadeOut(tween(duration)) },label="control icon") { value ->
+        AnimatedContent(icon,transitionSpec={ fadeIn(tween(duration)) togetherWith fadeOut(tween(duration)) },label="Ikon kontrol") { value ->
             Icon(value,label,tint=if(enabled)tint else tint.copy(alpha=.38f),modifier=Modifier.size(Design.icon))
         }
     }
@@ -147,10 +149,10 @@ internal object ArtCache {
         }
         Column(Modifier.weight(1f)) {
             Text(track.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium, color = if (active) c.primary else c.onSurface)
-            Text(if (track.available) track.artist.ifBlank { "Artis belum diketahui" } else Availability.label(track.availability), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = if (track.available) c.onSurfaceVariant else c.error)
+            Text(if (track.available) Bahasa.artis(track.artist) else Availability.label(track.availability), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall, color = if (track.available) c.onSurfaceVariant else c.error)
         }
-        if (favorite) Icon(Icons.Rounded.Favorite, "Favorite", Modifier.size(14.dp), tint = c.primary)
-        if (trailing != null) trailing() else ActionIcon(Icons.Rounded.MoreHoriz, "Options for ${track.title}", onMenu)
+        if (favorite) Icon(Icons.Rounded.Favorite, "Favorit", Modifier.size(14.dp), tint = c.primary)
+        if (trailing != null) trailing() else ActionIcon(Icons.Rounded.MoreHoriz, "Opsi ${track.title}", onMenu)
     }
 }
 @Composable fun GlassPanel(track: Track?, enabled: Boolean, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
@@ -172,4 +174,4 @@ fun sortedTracks(tracks: List<Track>, sort: String): List<Track> = when (sort) {
     else -> tracks.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.title })
 }
 
-fun songCount(count: Int): String = if (count == 1) "1 song" else "$count songs"
+fun songCount(count: Int): String = "$count lagu"

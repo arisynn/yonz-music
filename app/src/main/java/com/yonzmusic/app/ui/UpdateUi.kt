@@ -1,5 +1,7 @@
 package com.yonzmusic.app.ui
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -18,10 +20,10 @@ import com.yonzmusic.app.YonzApp
 @Composable fun UpdateSettings() {
     val app = LocalContext.current.applicationContext as YonzApp
     val state by app.updates.ui.collectAsStateWithLifecycle()
-    MenuAction(Icons.Rounded.Refresh, "Check for updates") { app.updates.check(true) }
-    if (state.message.isNotBlank()) Text(state.message, Modifier.padding(horizontal = Design.page, vertical = Design.sm), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    if (state.status in setOf("Ready", "Permission")) TextButton({ app.updates.install() }, Modifier.padding(horizontal = Design.page)) { Text("Install downloaded update") }
-    TextButton(app.updates::discard, Modifier.padding(horizontal = Design.page)) { Text("Clear app update cache") }
+    MenuAction(Icons.Rounded.Refresh, "Periksa pembaruan") { app.updates.check(true) }
+    if (state.message.isNotBlank()) Text(Bahasa.pesan(state.message), Modifier.padding(horizontal = Design.page, vertical = Design.sm), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    if (state.status in setOf("Ready", "Permission")) TextButton({ app.updates.install() }, Modifier.padding(horizontal = Design.page)) { Text("Pasang pembaruan yang diunduh") }
+    TextButton(app.updates::discard, Modifier.padding(horizontal = Design.page)) { Text("Bersihkan berkas pembaruan") }
 }
 
 @Composable fun UpdateDialogs() {
@@ -33,21 +35,21 @@ import com.yonzmusic.app.YonzApp
         "Available" -> state.artifact?.let { artifact ->
             AlertDialog(onDismissRequest = manager::dismiss, title = { Text("Yono Music ${artifact.versionName}") }, text = {
                 Column(Modifier.heightIn(max = 340.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Design.sm)) {
-                    Text("A compatible update is available · ${"%.1f".format(java.util.Locale.ROOT, artifact.size / 1048576.0)} MB")
+                    Text("Pembaruan yang sesuai tersedia · ${"%.1f".format(java.util.Locale.forLanguageTag("id-ID"), artifact.size / 1048576.0)} MB")
                     Text(artifact.summary, style = MaterialTheme.typography.bodyMedium)
-                    Text("Unduh downloads the APK. Android will ask you to confirm installation.", style = MaterialTheme.typography.bodySmall)
+                    Text("Tombol Unduh akan mengunduh APK. Android akan meminta konfirmasi sebelum memasangnya.", style = MaterialTheme.typography.bodySmall)
                 }
             }, confirmButton = { TextButton(manager::download) { Text("Unduh") } }, dismissButton = { TextButton(manager::dismiss) { Text("Batal") } })
         }
-        "Downloading", "Verifying" -> AlertDialog(onDismissRequest = {}, title = { Text(if (state.status == "Verifying") "Verifying update" else "Downloading update") }, text = {
+        "Downloading", "Verifying" -> AlertDialog(onDismissRequest = {}, title = { Text(if (state.status == "Verifying") "Memverifikasi pembaruan" else "Mengunduh pembaruan") }, text = {
             Column(verticalArrangement = Arrangement.spacedBy(Design.gap)) {
                 if (fraction != null && state.status == "Downloading") LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth()) else LinearProgressIndicator(Modifier.fillMaxWidth())
-                Text(if (state.status == "Verifying") "Checking the package, version, checksum and APK signature." else "${state.received / 1024} / ${state.total / 1024} KB")
+                Text(if (state.status == "Verifying") "Memeriksa paket, versi, checksum, dan tanda tangan APK." else "${state.received / 1024} / ${state.total / 1024} KB")
             }
         }, confirmButton = {}, dismissButton = { TextButton(manager::cancelDownload) { Text("Batal") } })
-        "Permission" -> AlertDialog(onDismissRequest = { manager.ui.value = state.copy(status = "Ready") }, title = { Text("Allow Android installation") }, text = { Text(state.message) }, confirmButton = { TextButton({
-            manager.ui.value = state.copy(status = "Ready", message = "Return here and tap Install when Android allows this source.")
+        "Permission" -> AlertDialog(onDismissRequest = { manager.ui.value = state.copy(status = "Ready") }, title = { Text("Izinkan pemasangan melalui Android") }, text = { Text(Bahasa.pesan(state.message)) }, confirmButton = { TextButton({
+            manager.ui.value = state.copy(status = "Ready", message = "Kembali ke sini lalu ketuk Pasang setelah Android mengizinkan sumber ini.")
             runCatching { context.startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))) }
-        }) { Text("Open Android settings") } }, dismissButton = { TextButton({ manager.ui.value = state.copy(status = "Ready") }) { Text("Later") } })
+        }) { Text("Buka pengaturan Android") } }, dismissButton = { TextButton({ manager.ui.value = state.copy(status = "Ready") }) { Text("Nanti") } })
     }
 }

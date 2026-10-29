@@ -1,5 +1,7 @@
 package com.yonzmusic.app.ui
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import android.app.Activity
@@ -120,8 +122,8 @@ import org.json.JSONArray
             val offered = flags and Intent.FLAG_GRANT_READ_URI_PERMISSION
             if (flags and Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0 && offered != 0) {
                 runCatching { context.contentResolver.takePersistableUriPermission(uri, offered) }
-                    .onFailure { vm.notify("Temporary access only. Select this source again after a restart if needed.") }
-            } else vm.notify("This provider offered temporary access. Select it again if access expires.")
+                    .onFailure { vm.notify("Akses hanya sementara. Pilih kembali sumber ini setelah aplikasi dimulai ulang jika diperlukan.") }
+            } else vm.notify("Penyedia ini hanya memberi akses sementara. Pilih kembali sumber jika aksesnya berakhir.")
         }
         val files = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             val data = result.data
@@ -140,8 +142,8 @@ import org.json.JSONArray
         val manifestExport=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri -> if(uri!=null)manifestId?.let { vm.exportMetadata(it,uri) };manifestId=null }
         val list = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> if (uri != null) vm.readList(uri) }
         val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("audio/x-mpegurl")) { uri -> if (uri != null) vm.export(uri, exportTracks) }
-        LaunchedEffect(vm) { vm.messages.collect { snackbar.showSnackbar(it) } }
-        LaunchedEffect(playback.error) { playback.error?.let { snackbar.showSnackbar(it) } }
+        LaunchedEffect(vm) { vm.messages.collect { snackbar.showSnackbar(Bahasa.pesan(it)) } }
+        LaunchedEffect(playback.error) { playback.error?.let { snackbar.showSnackbar(Bahasa.pesan(it)) } }
         BackHandler(enabled = destination !in primaryDestinations && !playerOpen && !queueOpen && menuId == null && addIds == null) { back() }
         val detailTracks = remember(tracks, collectionTracks, favorites, entries, history, detailKind, detailKey, selectedPlaylist) {
             when (detailKind) {
@@ -164,14 +166,14 @@ import org.json.JSONArray
                         if (destination == "home") Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
                             BrandMark(Modifier.size(40.dp))
                             Text("Yono Music", style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        } else Text(when (destination) { "library" -> "Your library"; "search" -> "Search"; "playlists" -> "Playlists"; "settings" -> "Settings"; "import" -> "Import music"; else -> if (detailKind == "playlist") playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle else if(detailKind=="online")onlineCollections.find{it.id==detailKey}?.name ?: detailTitle else detailTitle }, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        } else Text(when (destination) { "library" -> "Pustaka musik"; "search" -> "Cari"; "playlists" -> "Daftar putar"; "settings" -> "Pengaturan"; "import" -> "Impor musik"; else -> if (detailKind == "playlist") playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle else if(detailKind=="online")onlineCollections.find{it.id==detailKey}?.name ?: detailTitle else detailTitle }, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     },
-                    navigationIcon = { if (destination !in primaryDestinations) ActionIcon(Icons.AutoMirrored.Rounded.ArrowBack, "Back", { back() }) },
+                    navigationIcon = { if (destination !in primaryDestinations) ActionIcon(Icons.AutoMirrored.Rounded.ArrowBack, "Kembali", { back() }) },
                     actions = {
                         if (destination in primaryDestinations) {
                             if(downloading) ActionIcon(Icons.Rounded.PlaylistPlay,"Daftar unduhan aktif",{downloadsOpen=true})
-                            ActionIcon(Icons.Rounded.LibraryAdd, "Import music", { vm.resetImport(); navigate("import") })
-                            ActionIcon(Icons.Rounded.Tune, "Settings", { navigate("settings") })
+                            ActionIcon(Icons.Rounded.LibraryAdd, "Impor musik", { vm.resetImport(); navigate("import") })
+                            ActionIcon(Icons.Rounded.Tune, "Pengaturan", { navigate("settings") })
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.background)
@@ -181,10 +183,10 @@ import org.json.JSONArray
                 if(!(destination=="search" && WindowInsets.ime.getBottom(LocalDensity.current)>0)) Column(Modifier.background(colors.background).navigationBarsPadding()) {
                     if (current != null && playback.queue.isNotEmpty()) MiniPlayer(current, playback.playing || playback.requested, preferences.glass, vm.playback, { playerOpen = true })
                     if (destination in primaryDestinations || destination == "detail") NavigationBar(containerColor = colors.background, tonalElevation = 0.dp, windowInsets = WindowInsets(0)) {
-                        val labels = listOf("Home", "Library", "Search", "Playlists")
+                        val labels = listOf("Beranda", "Pustaka", "Cari", "Daftar putar")
                         val icons = listOf(Icons.Rounded.Home, Icons.Rounded.LibraryMusic, Icons.Rounded.Search, Icons.Rounded.QueueMusic)
                         primaryDestinations.forEachIndexed { i, route ->
-                            NavigationBarItem(selected = destination == route || (destination == "detail" && parent == route), onClick = { destination = route; parent = route }, icon = { Icon(icons[i], null) }, label = { Text(labels[i], maxLines = 1, overflow = TextOverflow.Ellipsis) }, colors = NavigationBarItemDefaults.colors(indicatorColor = colors.primaryContainer))
+                            NavigationBarItem(selected = destination == route || (destination == "detail" && parent == route), onClick = { destination = route; parent = route }, icon = { Icon(icons[i], null) }, label = { Text(labels[i], maxLines = 2, overflow = TextOverflow.Ellipsis) }, colors = NavigationBarItemDefaults.colors(indicatorColor = colors.primaryContainer))
                         }
                     }
                 }
@@ -194,18 +196,18 @@ import org.json.JSONArray
             val modifier = Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize()
             Box(modifier) {
                 Crossfade(destination,modifier=Modifier.fillMaxSize(),animationSpec=tween(if(LocalReducedMotion.current)0 else 160),label="page") { route -> when (route) {
-                    "home" -> HomeScreen(tracks, favorites, history, current, playback.id, { vm.play(it.first, it.second) }, { menuId = it.id }, { detail("favorites", "", "Favorites") }, { detail("history", "", "Recently played") }, { k, t -> detail("album", k, t) }, { vm.resetImport(); navigate("import") }, { destination = "library" }, { playerOpen = true },scrollState=homeScroll,mixes=mixes)
+                    "home" -> HomeScreen(tracks, favorites, history, current, playback.id, { vm.play(it.first, it.second) }, { menuId = it.id }, { detail("favorites", "", "Favorit") }, { detail("history", "", "Terakhir diputar") }, { k, t -> detail("album", k, t) }, { vm.resetImport(); navigate("import") }, { destination = "library" }, { playerOpen = true },scrollState=homeScroll,mixes=mixes)
                     "library" -> LibraryScreen(tracks, favorites, playback.id, preferences.sort, scanning, { vm.resetImport(); navigate("import") }, vm::scan, vm::sort, { t, id -> vm.play(t, id) }, { menuId = it.id }, { kind, key, title -> detail(kind, key, title) })
                     "search" -> SearchScreen(vm,tracks, playlists, favorites, playback.id, { t, id -> vm.play(t, id) }, { menuId = it.id }, { p -> detail("playlist", "", p.name, p.id) },{song->
                         vm.downloadOnline(song){streamDownload=song}
                     },{song->streamDownload=song})
-                    "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorites") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") }, onlineCollections, {p->detail("online",p.id,p.name)},{onlineLink=true})
+                    "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorit") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") }, onlineCollections, {p->detail("online",p.id,p.name)},{onlineLink=true})
                     "detail" -> if(detailKind=="online")OnlineCollectionDetail(vm,onlineCollections.find{it.id==detailKey},playback.id,{vm.searchOnline.value=true;destination="search"},{song->vm.downloadOnline(song){streamDownload=song}},{destination="playlists"}) else DetailScreen(detailTracks, favorites, playback.id, detailKind == "playlist", { t, id -> vm.play(t, id) }, { menuId = it.id }, { nameAction = "rename" }, { deleteId = selectedPlaylist }, { exportTracks = detailTracks; export.launch((playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle).take(60) + ".m3u8") }, { from, to -> vm.move(selectedPlaylist, from, to) }, { addIds = emptyList() })
                     "settings" -> SettingsScreen(preferences, tracks, scanning, sleepEnd, vm::theme, vm::motion, vm::glass, vm::scan, { minutes -> vm.playback.timer(minutes) }, {
                         val sessionId = vm.playback.audioSessionId()
-                        if (sessionId <= 0) vm.notify("Play a song before opening system audio effects.") else {
+                        if (sessionId <= 0) vm.notify("Putar lagu terlebih dahulu sebelum membuka efek audio sistem.") else {
                             val intent = Intent(AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId).putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName).putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
-                            runCatching { context.startActivity(intent) }.onFailure { vm.notify("Your device does not provide a system equalizer panel.") }
+                            runCatching { context.startActivity(intent) }.onFailure { vm.notify("Perangkat ini tidak menyediakan panel ekualiser sistem.") }
                         }
                     }, { vm.resetImport(); navigate("import") }, {
                         context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
@@ -215,7 +217,7 @@ import org.json.JSONArray
                 if (scanning && destination != "library" && destination != "settings") LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))
             }
         }
-        if (migrationNotice) AlertDialog(onDismissRequest = { vm.dismissMigration() }, title = { Text("Choose your music sources") }, text = { Text("Yono Music now shows only the files and folders you choose. Your playlists, favorites, history and original audio are preserved. Choose sources in Import to reconnect your collection; uncertain recordings stay unavailable.") }, confirmButton = { TextButton({ vm.dismissMigration(); vm.resetImport(); navigate("import") }) { Text("Choose sources") } }, dismissButton = { TextButton({ vm.dismissMigration() }) { Text("Later") } })
+        if (migrationNotice) AlertDialog(onDismissRequest = { vm.dismissMigration() }, title = { Text("Pilih sumber musikmu") }, text = { Text("Yono Music hanya menampilkan berkas dan folder yang kamu pilih. Daftar putar, favorit, riwayat, dan audio asli tetap disimpan. Pilih sumber melalui Impor untuk menghubungkan kembali koleksimu. Rekaman yang belum pasti tetap tidak tersedia.") }, confirmButton = { TextButton({ vm.dismissMigration(); vm.resetImport(); navigate("import") }) { Text("Pilih sumber") } }, dismissButton = { TextButton({ vm.dismissMigration() }) { Text("Nanti") } })
         if (playerOpen && current != null) Dialog(onDismissRequest = { playerOpen = false }, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
             PlayerReveal { PlayerScreen(current, playback, vm.playback, current.id in favorites, preferences, sleepEnd, { playerOpen = false }, { if(current.source=="stream")downloadRemote(current)else vm.favorite(current.id) }, { queueOpen = true }, { if(current.source=="stream")downloadRemote(current)else menuId = current.id }) }
         }
@@ -224,15 +226,15 @@ import org.json.JSONArray
         if (menuTrack != null) ModalBottomSheet(onDismissRequest = { menuId = null }) {
             Column(Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding().padding(bottom = Design.page)) {
                 TrackRow(menuTrack, playback.id == menuTrack.id, menuTrack.id in favorites, { vm.play(listOf(menuTrack), menuTrack.id); menuId = null }, {}, trailing = {})
-                MenuAction(if (menuTrack.id in favorites) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, if (menuTrack.id in favorites) "Remove from favorites" else "Add to favorites") { vm.favorite(menuTrack.id); menuId = null }
-                MenuAction(Icons.Rounded.PlaylistPlay, "Play next") { if (menuTrack.available) vm.playback.enqueue(menuTrack, true) else vm.notify("This file is unavailable. Rescan to retry."); menuId = null }
-                MenuAction(Icons.Rounded.QueueMusic, "Add to queue") { if (menuTrack.available) vm.playback.enqueue(menuTrack, false) else vm.notify("This file is unavailable. Rescan to retry."); menuId = null }
-                MenuAction(Icons.Rounded.PlaylistAdd, "Add to playlist") { addIds = listOf(menuTrack.id); menuId = null }
-                if (destination == "detail" && detailKind == "playlist") MenuAction(Icons.Rounded.RemoveCircleOutline, "Remove from this playlist") { removeId = menuTrack.id; menuId = null }
-                MenuAction(Icons.Rounded.Edit,"Edit metadata dan sampul") { metadataId=menuTrack.id;menuId=null }
+                MenuAction(if (menuTrack.id in favorites) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, if (menuTrack.id in favorites) "Hapus dari favorit" else "Tambah ke favorit") { vm.favorite(menuTrack.id); menuId = null }
+                MenuAction(Icons.Rounded.PlaylistPlay, "Putar berikutnya") { if (menuTrack.available) vm.playback.enqueue(menuTrack, true) else vm.notify("Berkas tidak tersedia. Sinkronkan pustaka untuk mencoba lagi."); menuId = null }
+                MenuAction(Icons.Rounded.QueueMusic, "Tambah ke antrean") { if (menuTrack.available) vm.playback.enqueue(menuTrack, false) else vm.notify("Berkas tidak tersedia. Sinkronkan pustaka untuk mencoba lagi."); menuId = null }
+                MenuAction(Icons.Rounded.PlaylistAdd, "Tambah ke daftar putar") { addIds = listOf(menuTrack.id); menuId = null }
+                if (destination == "detail" && detailKind == "playlist") MenuAction(Icons.Rounded.RemoveCircleOutline, "Hapus dari daftar putar ini") { removeId = menuTrack.id; menuId = null }
+                MenuAction(Icons.Rounded.Edit,"Ubah metadata dan sampul") { metadataId=menuTrack.id;menuId=null }
                 MenuAction(Icons.Rounded.Refresh,"Ambil sampul dari sumber lama") { acquisition.repairTrack(menuTrack.id);downloadsOpen=true;menuId=null }
                 MenuAction(Icons.Rounded.FolderOpen,"Pilih lokasi baru / hubungkan folder") { relocationId=menuTrack.id;menuId=null }
-                MenuAction(Icons.Rounded.Info, "Track details") { infoId = menuTrack.id; menuId = null }
+                MenuAction(Icons.Rounded.Info, "Rincian lagu") { infoId = menuTrack.id; menuId = null }
             }
         }
         streamDownload?.let {song->StreamDownloadSheet(song,vm,{streamDownload=null},{downloadsOpen=true})}
@@ -246,29 +248,29 @@ import org.json.JSONArray
             if (addIds!!.isEmpty()) AddTracksDialog(tracks, detailTracks.map { it.id }.toSet(), { addIds = null }) { ids -> vm.add(selectedPlaylist, ids); addIds = null }
             else ModalBottomSheet(onDismissRequest = { addIds = null }) {
                 LazyColumn(Modifier.fillMaxWidth().heightIn(max = 480.dp).navigationBarsPadding(), contentPadding = PaddingValues(bottom = Design.page)) {
-                    item { SectionTitle("Add to playlist") }
-                    if (playlists.isEmpty()) item { EmptyState("A home for this song", "Create your first playlist, then add songs to it.", "playlist", { Button({ nameAction = "createWithTracks" }) { Text("Create playlist") } }) }
+                    item { SectionTitle("Tambah ke daftar putar") }
+                    if (playlists.isEmpty()) item { EmptyState("Tempat untuk lagu ini", "Buat daftar putar pertamamu, lalu tambahkan lagu.", "playlist", { Button({ nameAction = "createWithTracks" }) { Text("Buat daftar putar") } }) }
                     else {
-                        items(playlists, key = { it.id }) { p -> ListItem(headlineContent = { Text(p.name) }, supportingContent = { Text("${p.count} songs") }, leadingContent = { Icon(Icons.Rounded.QueueMusic, null) }, modifier = Modifier.clickable { vm.add(p.id, addIds.orEmpty()); addIds = null }) }
-                        item { TextButton({ nameAction = "createWithTracks" }, Modifier.padding(horizontal = Design.page)) { Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(Design.sm)); Text("New playlist") } }
+                        items(playlists, key = { it.id }) { p -> ListItem(headlineContent = { Text(p.name) }, supportingContent = { Text("${p.count} lagu") }, leadingContent = { Icon(Icons.Rounded.QueueMusic, null) }, modifier = Modifier.clickable { vm.add(p.id, addIds.orEmpty()); addIds = null }) }
+                        item { TextButton({ nameAction = "createWithTracks" }, Modifier.padding(horizontal = Design.page)) { Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(Design.sm)); Text("Daftar putar baru") } }
                     }
                 }
             }
         }
         if(onlineLink)OnlinePlaylistImportDialog(vm){onlineLink=false}
         if(nameAction=="create")CreateCollectionDialog({nameAction=""}){name,online->if(online)vm.createOnline(name)else vm.create(name);nameAction=""}
-        else if (nameAction.isNotEmpty()) NameDialog(if (nameAction == "rename") "Rename playlist" else "Create playlist", if (nameAction == "rename") playlists.find { it.id == selectedPlaylist }?.name.orEmpty() else "", { nameAction = "" }) { name ->
+        else if (nameAction.isNotEmpty()) NameDialog(if (nameAction == "rename") "Ubah nama daftar putar" else "Buat daftar putar", if (nameAction == "rename") playlists.find { it.id == selectedPlaylist }?.name.orEmpty() else "", { nameAction = "" }) { name ->
             if (nameAction == "rename") vm.rename(selectedPlaylist, name) else vm.create(name, if (nameAction == "createWithTracks") addIds.orEmpty() else emptyList())
             if (nameAction == "createWithTracks") addIds = null
             nameAction = ""
         }
-        if (removeId != null) AlertDialog(onDismissRequest = { removeId = null }, title = { Text("Remove song?") }, text = { Text("Remove this song from the playlist? The audio file stays on your device.") }, confirmButton = { TextButton({ vm.remove(selectedPlaylist, removeId!!); removeId = null }) { Text("Remove") } }, dismissButton = { TextButton({ removeId = null }) { Text("Cancel") } })
-        if (deleteId > 0) AlertDialog(onDismissRequest = { deleteId = 0 }, title = { Text("Delete playlist?") }, text = { Text("This removes the playlist and its song references. Your audio files and favorites stay safe.") }, confirmButton = { TextButton({ vm.delete(deleteId); deleteId = 0; destination = "playlists"; parent = "playlists" }) { Text("Delete", color = colors.error) } }, dismissButton = { TextButton({ deleteId = 0 }) { Text("Cancel") } })
-        collectionTracks.find { it.id == infoId }?.let { t -> AlertDialog(onDismissRequest = { infoId = null }, title = { Text("Track details") }, text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Design.sm)) { Text(t.title, style = MaterialTheme.typography.titleMedium); Text("${t.artist}\n${t.album}\n${time(t.duration)}\n${t.folder}\n${t.fileName}\n\n${Availability.label(t.availability)}\n${t.uri}", style = MaterialTheme.typography.bodySmall) } }, confirmButton = { TextButton({ infoId = null }) { Text("Done") } }) }
+        if (removeId != null) AlertDialog(onDismissRequest = { removeId = null }, title = { Text("Hapus lagu dari daftar putar?") }, text = { Text("Hapus lagu ini dari daftar putar? Berkas audio tetap tersimpan di perangkat.") }, confirmButton = { TextButton({ vm.remove(selectedPlaylist, removeId!!); removeId = null }) { Text("Hapus") } }, dismissButton = { TextButton({ removeId = null }) { Text("Batal") } })
+        if (deleteId > 0) AlertDialog(onDismissRequest = { deleteId = 0 }, title = { Text("Hapus daftar putar?") }, text = { Text("Daftar putar dan referensi lagunya akan dihapus. Berkas audio dan favorit tetap aman.") }, confirmButton = { TextButton({ vm.delete(deleteId); deleteId = 0; destination = "playlists"; parent = "playlists" }) { Text("Hapus", color = colors.error) } }, dismissButton = { TextButton({ deleteId = 0 }) { Text("Batal") } })
+        collectionTracks.find { it.id == infoId }?.let { t -> AlertDialog(onDismissRequest = { infoId = null }, title = { Text("Rincian lagu") }, text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Design.sm)) { Text(t.title, style = MaterialTheme.typography.titleMedium); Text("${Bahasa.artis(t.artist)}\n${Bahasa.album(t.album)}\n${time(t.duration)}\n${t.folder}\n${t.fileName}\n\n${Availability.label(t.availability)}\n${t.uri}", style = MaterialTheme.typography.bodySmall) } }, confirmButton = { TextButton({ infoId = null }) { Text("Selesai") } }) }
         historyReport?.let { report ->
             val rows by produceState<List<ImportRow>>(emptyList(), report.id) { value = vm.repository.dao.importDetails(report.id).map { ImportRow(it.input, it.status, it.detail) } }
             ModalBottomSheet(onDismissRequest = { historyReport = null }) {
-                LazyColumn(Modifier.fillMaxWidth().fillMaxHeight(.8f).navigationBarsPadding(), contentPadding = PaddingValues(bottom = Design.page)) { item { SectionTitle(report.name, "Import history") }; itemsIndexed(rows) { _, row -> ImportResultRow(row) } }
+                LazyColumn(Modifier.fillMaxWidth().fillMaxHeight(.8f).navigationBarsPadding(), contentPadding = PaddingValues(bottom = Design.page)) { item { SectionTitle(report.name, "Riwayat impor") }; itemsIndexed(rows) { _, row -> ImportResultRow(row) } }
             }
         }
     }
@@ -280,26 +282,26 @@ import org.json.JSONArray
 }
 @Composable fun NameDialog(title: String, initial: String, dismiss: () -> Unit, save: (String) -> Unit) {
     var value by rememberSaveable { mutableStateOf(initial) }
-    AlertDialog(onDismissRequest = dismiss, title = { Text(title) }, text = { OutlinedTextField(value, { value = it.take(100) }, label = { Text("Playlist name") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }, confirmButton = { TextButton({ save(value.trim()) }, enabled = value.isNotBlank()) { Text("Save") } }, dismissButton = { TextButton(dismiss) { Text("Cancel") } })
+    AlertDialog(onDismissRequest = dismiss, title = { Text(title) }, text = { OutlinedTextField(value, { value = it.take(100) }, label = { Text("Nama daftar putar") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }, confirmButton = { TextButton({ save(value.trim()) }, enabled = value.isNotBlank()) { Text("Simpan") } }, dismissButton = { TextButton(dismiss) { Text("Batal") } })
 }
 @Composable fun AddTracksDialog(tracks: List<Track>, existing: Set<String>, dismiss: () -> Unit, save: (List<String>) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     var selected by remember { mutableStateOf(setOf<String>()) }
     val filtered = remember(tracks, query) { tracks.filter { it.available && (it.title.contains(query, true) || it.artist.contains(query, true)) } }
-    AlertDialog(onDismissRequest = dismiss, title = { Text("Add songs") }, text = {
+    AlertDialog(onDismissRequest = dismiss, title = { Text("Tambah lagu") }, text = {
         Column(Modifier.fillMaxWidth()) {
-            OutlinedTextField(query, { query = it }, placeholder = { Text("Find a song") }, singleLine = true)
+            OutlinedTextField(query, { query = it }, placeholder = { Text("Cari lagu") }, singleLine = true)
             LazyColumn(Modifier.heightIn(max = 360.dp)) {
                 items(filtered, key = { it.id }) { t ->
                     Row(Modifier.fillMaxWidth().clickable(enabled = t.id !in existing) { selected = if (t.id in selected) selected - t.id else selected + t.id }.padding(vertical = Design.sm), verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(t.id in selected || t.id in existing, onCheckedChange = null, enabled = t.id !in existing)
                         Spacer(Modifier.width(Design.sm))
-                        Column(Modifier.weight(1f)) { Text(t.title, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(if (t.id in existing) "Already in playlist" else t.artist, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                        Column(Modifier.weight(1f)) { Text(t.title, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(if (t.id in existing) "Sudah ada di daftar putar" else t.artist, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                     }
                 }
-                if (filtered.isEmpty()) item { Text("No songs found", Modifier.padding(Design.gap)) }
+                if (filtered.isEmpty()) item { Text("Tidak ada lagu yang cocok", Modifier.padding(Design.gap)) }
             }
         }
-    }, confirmButton = { TextButton({ save(selected.toList()) }, enabled = selected.isNotEmpty()) { Text("Add (${selected.size})") } }, dismissButton = { TextButton(dismiss) { Text("Cancel") } })
+    }, confirmButton = { TextButton({ save(selected.toList()) }, enabled = selected.isNotEmpty()) { Text("Tambah (${selected.size})") } }, dismissButton = { TextButton(dismiss) { Text("Batal") } })
 }
 fun albumKey(track: Track) = "${track.album}\u0000${track.artist}"

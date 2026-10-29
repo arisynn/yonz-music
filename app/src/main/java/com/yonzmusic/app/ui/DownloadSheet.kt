@@ -1,5 +1,7 @@
 package com.yonzmusic.app.ui
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
@@ -26,7 +28,7 @@ fun downloadStatus(value:String):String=when(value) {
     "snapshot"->"Memeriksa koleksi pilihan";"source_warning"->"Memeriksa sumber"
     "downloading","Downloading","track_started" -> "Mengunduh";"saving","artwork","validating_audio","Validating","Publishing","Saved" -> "Memproses metadata/sampul"
     "downloaded","Complete" -> "Selesai";"exists","Existing" -> "Sudah ada";"duplicate","Duplicate" -> "Duplikat"
-    "failed","Failed","unmatched","invalid","ambiguous" -> "Gagal / perlu diperiksa";"cancelled","Cancelled" -> "Dibatalkan";else -> value
+    "failed","Failed","unmatched","invalid","ambiguous" -> "Gagal / perlu diperiksa";"cancelled","Cancelled" -> "Dibatalkan";else -> Bahasa.pilihan(value)
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun DownloadSheet(vm:MusicViewModel,dismiss:()->Unit) {
@@ -63,12 +65,12 @@ fun downloadStatus(value:String):String=when(value) {
                                 if(song?.credit?.isNotBlank()==true)Text(if(song.artistVerified)song.credit else "Kanal: ${song.credit}",maxLines=1,style=MaterialTheme.typography.bodySmall)
                             }
                         }
-                        if(status=="running" && activeRequest==id)DownloadProgress()else DownloadStatusLabel(when(status){"queued"->"Menunggu giliran · mulai saat koneksi tersedia";"running"->"Memproses";"cancelling"->"Menghentikan unduhan…";"complete"->"Tersimpan offline";"cancelled"->"Dibatalkan";else->"Gagal · dapat dicoba ulang"})
-                        if(job.optString("error").isNotBlank())Text(job.optString("error"),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.error)
+                        if(status=="running" && activeRequest==id)DownloadProgress()else DownloadStatusLabel(when(status){"queued"->"Menunggu giliran · mulai saat koneksi tersedia";"running"->"Memproses";"cancelling"->"Menghentikan unduhan…";"complete"->"Tersimpan untuk luring";"cancelled"->"Dibatalkan";else->"Gagal · dapat dicoba ulang"})
+                        if(job.optString("error").isNotBlank())Text(Bahasa.pesan(job.optString("error")),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.error)
                         Row {
                             if(status in setOf("queued","running"))TextButton({repo.cancelQueued(id)}){Text("Batalkan")}
                             if(status in setOf("failed","cancelled"))TextButton({repo.retryQueued(id)},enabled=activeRequest!=id){Text("Coba ulang")}
-                            if(status=="complete" && job.optString("uri").isNotBlank())TextButton({runCatching {context.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(job.getString("uri")),"audio/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))}.onFailure {vm.notify("Buka hasil melalui Library atau hubungkan ulang folder.")}}){Text("Buka hasil")}
+                            if(status=="complete" && job.optString("uri").isNotBlank())TextButton({runCatching {context.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(job.getString("uri")),"audio/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION))}.onFailure {vm.notify("Buka hasil melalui Pustaka atau hubungkan ulang folder.")}}){Text("Buka hasil")}
                         }
                     }
                 }
@@ -80,8 +82,8 @@ fun downloadStatus(value:String):String=when(value) {
                     Button({ val selectedIds=JSONArray();for(i in 0 until rows.length()){val row=rows.getJSONObject(i);if(row.optString("status") in setOf("ready","exists"))selectedIds.put(row.getString("id"))};repo.submit("acquire",JSONObject().put("plan_id",plan.getString("id")).put("entry_ids",selectedIds).put("format","original")) },enabled=authorized){Text("Unduh yang siap · format asli")}
                 }
             }
-            if(message.isNotBlank())item { Text(message,Modifier.padding(horizontal=Design.page),style=MaterialTheme.typography.bodySmall) }
-            if(plans.isEmpty() && queued.isEmpty() && legacy.isEmpty()) item { Text("Belum ada unduhan. Periksa daftar melalui Import → Downloads.",Modifier.padding(Design.page)) }
+            if(message.isNotBlank())item { Text(Bahasa.pesan(message),Modifier.padding(horizontal=Design.page),style=MaterialTheme.typography.bodySmall) }
+            if(plans.isEmpty() && queued.isEmpty() && legacy.isEmpty()) item { Text("Belum ada unduhan. Periksa daftar melalui Impor → Unduhan.",Modifier.padding(Design.page)) }
             items(rows.length(),key={rows.getJSONObject(it).optString("id",it.toString())}) { index ->
                 val row=rows.getJSONObject(index);val song=row.optJSONObject("song") ?: row.optJSONObject("request")?.optJSONObject("song") ?: JSONObject()
                 val artists=song.optJSONArray("artists") ?: JSONArray();val artist=(0 until artists.length()).joinToString("; "){artists.optString(it)}
@@ -95,7 +97,7 @@ fun downloadStatus(value:String):String=when(value) {
                         Column(Modifier.weight(1f)) { Text(song.optString("title").ifBlank { row.optJSONObject("request")?.optString("input") ?: "Entri ${index+1}" },maxLines=2,style=MaterialTheme.typography.titleSmall);if(artist.isNotBlank())Text(artist,maxLines=2,style=MaterialTheme.typography.bodySmall) }
                     }
                     if(isActive) DownloadProgress() else DownloadStatusLabel(downloadStatus(status))
-                    row.optJSONObject("error")?.let { Text(it.optString("message"),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.error) }
+                    row.optJSONObject("error")?.let { Text(Bahasa.pesan(it.optString("message")),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.error) }
                     Row {
                         if(status !in setOf("downloaded","exists","duplicate","cancelled")) TextButton({repo.cancelItem(planId,id)},enabled=!busy || (action=="acquire" && activePlan==planId)){Text("Batalkan")}
                         if(status in setOf("failed","cancelled","unmatched","invalid","pending"))TextButton({repo.retryItem(planId,row)},enabled=!busy){Text("Coba ulang")}
@@ -103,7 +105,7 @@ fun downloadStatus(value:String):String=when(value) {
                             scope.launch {
                                 val target=Uri.parse(bound?.uri ?: uri)
                                 val readable=withContext(Dispatchers.IO){runCatching{context.contentResolver.openFileDescriptor(target,"r")?.use{true} ?: false}.getOrDefault(false)}
-                                if(!readable)vm.notify("Lokasi hasil berubah. Pilih lokasi baru atau hubungkan folder melalui Library.")
+                                if(!readable)vm.notify("Lokasi hasil berubah. Pilih lokasi baru atau hubungkan folder melalui Pustaka.")
                                 else runCatching { context.startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(target,row.optJSONObject("audio")?.optString("mime","audio/*") ?: "audio/*").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)) }.onFailure {vm.notify("Tidak ada aplikasi untuk membuka hasil. Audio tetap di folder tujuan.")}
                             }
                         }){Text("Buka hasil")}
@@ -113,8 +115,8 @@ fun downloadStatus(value:String):String=when(value) {
             }
             if(legacy.isNotEmpty())item { SectionTitle("Riwayat versi sebelumnya") }
             items(legacy,key={"legacy_${it.id}"}) { job -> Column(Modifier.padding(horizontal=Design.page)) {
-                Text(job.title);Text("${job.artist} · ${downloadStatus(job.status)}",style=MaterialTheme.typography.bodySmall)
-                if(job.error.isNotBlank())Text(job.error,style=MaterialTheme.typography.bodySmall)
+                Text(job.title);Text("${Bahasa.artis(job.artist)} · ${downloadStatus(job.status)}",style=MaterialTheme.typography.bodySmall)
+                if(job.error.isNotBlank())Text(Bahasa.pesan(job.error),style=MaterialTheme.typography.bodySmall)
                 Row { if(job.status in setOf("Queued","Downloading","Validating","Publishing"))TextButton({vm.cancelDownload(job.batchId)}){Text("Batalkan antrean lama")}
                     if(job.status in setOf("Failed","Cancelled"))TextButton({vm.retryDownload(job.batchId)},enabled=!busy){Text("Coba ulang")}
                 }
@@ -136,5 +138,5 @@ fun downloadStatus(value:String):String=when(value) {
 }
 
 @Composable private fun DownloadStatusLabel(status:String) {
-    androidx.compose.animation.Crossfade(status,animationSpec=androidx.compose.animation.core.tween(if(LocalReducedMotion.current)0 else 140),label="download status") { value -> Text(value,style=MaterialTheme.typography.bodySmall) }
+    androidx.compose.animation.Crossfade(status,animationSpec=androidx.compose.animation.core.tween(if(LocalReducedMotion.current)0 else 140),label="Status unduhan") { value -> Text(value,style=MaterialTheme.typography.bodySmall) }
 }

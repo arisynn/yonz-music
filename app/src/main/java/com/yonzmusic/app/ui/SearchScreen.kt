@@ -1,5 +1,7 @@
 package com.yonzmusic.app.ui
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.*
@@ -74,7 +76,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
         if(BuildConfig.ONLINE_SEARCH_PREVIEW) {
             Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=Design.gap),horizontalArrangement=Arrangement.spacedBy(Design.sm),verticalAlignment=Alignment.CenterVertically) {
                 FilterChip(!online,{vm.searchOnline.value=false},label={Text("Koleksi")})
-                FilterChip(online,{vm.searchOnline.value=true},label={Text("Online")})
+                FilterChip(online,{vm.searchOnline.value=true},label={Text("Daring")})
                 if(online) {
 
                     ActionIcon(Icons.Rounded.Tune,"Pengaturan pencarian",{focus.clearFocus();keyboard?.hide();configure=true})
@@ -99,7 +101,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
                 else {
                     if(state.loading)item {LinearProgressIndicator(Modifier.fillMaxWidth());Text("Mencari…",style=MaterialTheme.typography.labelSmall)}
                     if(state.error.isNotBlank())item {
-                        Text(state.error,color=MaterialTheme.colorScheme.error,style=MaterialTheme.typography.bodyMedium)
+                        Text(Bahasa.pesan(state.error),color=MaterialTheme.colorScheme.error,style=MaterialTheme.typography.bodyMedium)
                         Row(horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
                             TextButton({vm.onlineSearch.query(query,provider,true)}){Text("Coba lagi")}
 
@@ -138,7 +140,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
     var historyEnabled by remember {mutableStateOf(vm.searchSettings.remembersHistory())}
     AlertDialog(onDismissRequest=close,title={Text("Pengaturan pencarian")},text={
         Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-            Text("Pencarian menggunakan mesin yt-dlp tertanam. Tidak memerlukan API key Google. Ketersediaan hasil mengikuti akses sumber.")
+            Text("Pencarian menggunakan mesin yt-dlp tertanam tanpa kunci API Google. Hasil bergantung pada akses sumber.")
             Row(verticalAlignment=Alignment.CenterVertically) {Text("Simpan riwayat di perangkat",Modifier.weight(1f));Switch(historyEnabled,{historyEnabled=it})}
             TextButton({vm.clearSearchHistory(historyEnabled)}){Text("Hapus riwayat")}
         }
@@ -162,7 +164,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
                 OnlineResultAction("Berikut","Putar berikutnya",Icons.Rounded.SkipNext,Modifier.weight(1f)){vm.playOnline(song,true);close()}
                 OnlineResultAction("Antrean","Tambah antrean",Icons.Rounded.QueueMusic,Modifier.weight(1f)){vm.playOnline(song,false);close()}
-                OnlineResultAction("Unduh","Simpan offline",Icons.Rounded.Download,Modifier.weight(1f)){onDownload(song);close()}
+                OnlineResultAction("Unduh","Simpan untuk luring",Icons.Rounded.Download,Modifier.weight(1f)){onDownload(song);close()}
             }
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
             TextButton({
@@ -170,7 +172,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
                     vm.playback.pause();context.startActivity(Intent(Intent.ACTION_VIEW,Uri.parse(song.page)))
                 }.onFailure {vm.notify("Tidak ada aplikasi untuk membuka sumber.")}
             },Modifier.weight(1f)){Text("Sumber")}
-            TextButton({onSave(song)},Modifier.weight(1f)){Text("Playlist")}
+            TextButton({onSave(song)},Modifier.weight(1f)){Text("Daftar putar")}
             TextButton({onDownloadSettings(song);close()},Modifier.weight(1f)){Text("Atur")}
             }
         }

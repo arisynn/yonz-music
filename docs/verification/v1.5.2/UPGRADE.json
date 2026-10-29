@@ -1,0 +1,36 @@
+{
+  "com.yonzmusic.app": {
+    "oldCode": 15,
+    "newCode": 16,
+    "exactRowsPreserved": true,
+    "counts": {
+      "tracks": 1,
+      "favorites": 0,
+      "playlists": 1,
+      "playlist_entries": 0,
+      "history": 1,
+      "sources": 1,
+      "listens": 1,
+      "app_state": 1
+    },
+    "method": "adb install -r, no uninstall or clear data",
+    "testedApkSha256": "f216f3f475a2c46d8ab99c0f1caf4f50a1d986f23b2bf12192e6b22b242229f4"
+  },
+  "com.yonzmusic.app.dev": {
+    "oldCode": 15,
+    "newCode": 16,
+    "exactRowsPreserved": true,
+    "counts": {
+      "tracks": 2,
+      "favorites": 0,
+      "playlists": 0,
+      "playlist_entries": 0,
+      "history": 0,
+      "sources": 2,
+      "listens": 0,
+      "app_state": 8
+    },
+    "method": "adb install -r, no uninstall or clear data",
+    "testedApkSha256": "0b6d83e58ccce6fc8a2f2c554ef68555101deb317cb30d59d99edd21105fe4b6"
+  }
+}

@@ -67,7 +67,7 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
             return OnlineSong("engine:$id",SearchProvider.ENGINE,SearchContract.text(j.getString("title")),SearchContract.text(j.optString("credit"),1000),SearchContract.text(j.optString("album")),j.optLong("duration").coerceIn(0,7*86400000L),j.optString("art").takeIf {SearchContract.https(it,SearchContract.artHosts)}.orEmpty(),"https://www.youtube.com/watch?v=$id",id,j.optBoolean("artist"))
         }
         /** View-only adapter for existing artwork/player composables; never inserted into Room. */
-        fun display(s:OnlineSong)=Track(s.id,"",s.title,if(s.artistVerified)s.credit else s.credit.takeIf {it.isNotBlank()}?.let {"Kanal: $it"}.orEmpty(),s.album.ifBlank {"Streaming online"},duration=s.durationMs,artUri=s.artwork,source="stream")
+        fun display(s:OnlineSong)=Track(s.id,"",s.title,if(s.artistVerified)s.credit else s.credit.takeIf {it.isNotBlank()}?.let {"Kanal: $it"}.orEmpty(),s.album.ifBlank {"Pemutaran daring"},duration=s.durationMs,artUri=s.artwork,source="stream")
     }
 }
 object StreamPolicy {

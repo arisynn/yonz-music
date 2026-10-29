@@ -61,6 +61,6 @@ import java.security.MessageDigest
         if(bitmap!=null)Image(bitmap!!.asImageBitmap(),null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
         else Text(initials,style=MaterialTheme.typography.titleLarge,color=MaterialTheme.colorScheme.onSecondaryContainer)
     }
-    if(options)AlertDialog(onDismissRequest={options=false},title={Text(artist)},text={Text("Gunakan foto pilihanmu. Foto disimpan di perangkat dan tetap tampil offline; sampul album tidak dianggap sebagai foto artis.")},confirmButton={TextButton({options=false;picker.launch(arrayOf("image/jpeg","image/png","image/webp"))}){Text("Pilih foto")}},dismissButton={TextButton({options=false;scope.launch { withContext(Dispatchers.IO){file.delete()};revision++ }}){Text("Gunakan inisial")}})
+    if(options)AlertDialog(onDismissRequest={options=false},title={Text(artist)},text={Text("Gunakan foto pilihanmu. Foto disimpan di perangkat dan tetap tampil tanpa internet; sampul album tidak dianggap sebagai foto artis.")},confirmButton={TextButton({options=false;picker.launch(arrayOf("image/jpeg","image/png","image/webp"))}){Text("Pilih foto")}},dismissButton={TextButton({options=false;scope.launch { withContext(Dispatchers.IO){file.delete()};revision++ }}){Text("Gunakan inisial")}})
     if(error.isNotBlank())AlertDialog(onDismissRequest={error=""},title={Text("Foto artis")},text={Text(error)},confirmButton={TextButton({error=""}){Text("Tutup")}})
 }

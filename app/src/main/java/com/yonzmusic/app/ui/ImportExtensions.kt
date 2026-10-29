@@ -1,5 +1,7 @@
 package com.yonzmusic.app.ui
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -33,36 +35,36 @@ import com.yonzmusic.app.ui.icons.*
     val restore = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { it?.let(vm::restoreBackup) }
     var restoreConfirmation by remember { mutableStateOf(false) }
     Column {
-        SectionTitle("Chosen sources", "Opening Yono reads the cache. Refresh checks only these sources.", { ActionIcon(Icons.Rounded.Refresh, "Refresh selected sources", vm::scan, enabled = !scanning) })
-        if (sources.isEmpty()) Text("Choose files or a folder above. No music-storage permission is needed.", Modifier.padding(horizontal = Design.page), style = MaterialTheme.typography.bodySmall)
+        SectionTitle("Sumber pilihan", "Saat dibuka, Yono membaca data tersimpan. Sinkronisasi hanya memeriksa sumber berikut.", { ActionIcon(Icons.Rounded.Refresh, "Sinkronkan sumber pilihan", vm::scan, enabled = !scanning) })
+        if (sources.isEmpty()) Text("Pilih berkas atau folder di atas. Akses penyimpanan musik secara menyeluruh tidak diperlukan.", Modifier.padding(horizontal = Design.page), style = MaterialTheme.typography.bodySmall)
         sources.take(visibleSources).forEach { source ->
             Surface(Modifier.fillMaxWidth().padding(horizontal = Design.page, vertical = Design.xs), shape = Design.small, color = MaterialTheme.colorScheme.surface) {
                 Column(Modifier.padding(Design.md)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
                         Column(Modifier.weight(1f)) {
                             Text(source.name, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleSmall)
-                            Text(source.status + if (source.persistent) "" else " · temporary grant", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(Bahasa.pesan(source.status) + if (source.persistent) "" else " · akses sementara", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Switch(source.enabled, { vm.sourceEnabled(source.id, it) }, enabled = !scanning)
                     }
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         if (source.kind == "tree") {
                             Checkbox(source.recursive, { vm.sourceRecursive(source.id, it) }, enabled = !scanning)
-                            Text("Subfolders", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                            Text("Subfolder", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
                         } else Spacer(Modifier.weight(1f))
-                        TextButton({ removing = source }, enabled = !scanning) { Text("Remove") }
+                        TextButton({ removing = source }, enabled = !scanning) { Text("Hapus") }
                     }
                 }
             }
         }
-        if (sources.size > visibleSources) TextButton({ visibleSources += 20 }, Modifier.padding(horizontal = Design.page)) { Text("Show more sources · ${sources.size - visibleSources}") }
+        if (sources.size > visibleSources) TextButton({ visibleSources += 20 }, Modifier.padding(horizontal = Design.page)) { Text("Tampilkan sumber lainnya · ${sources.size - visibleSources}") }
         Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = Design.page), horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
-            TextButton({ backup.launch("Yono_Collections.json") }) { Text("Export collections") }
-            TextButton({ restoreConfirmation = true }) { Text("Restore collections") }
+            TextButton({ backup.launch("Yono_Collections.json") }) { Text("Ekspor koleksi") }
+            TextButton({ restoreConfirmation = true }) { Text("Pulihkan koleksi") }
         }
     }
-    removing?.let { source -> AlertDialog(onDismissRequest = { removing = null }, title = { Text("Remove source?") }, text = { Text("Hide ${source.name} from the active library. Original audio, playlist references, favorites and history are preserved. Android access may still be used by overlapping selections.") }, confirmButton = { TextButton({ vm.removeSource(source.id); removing = null }) { Text("Remove") } }, dismissButton = { TextButton({ removing = null }) { Text("Cancel") } }) }
-    if (restoreConfirmation) AlertDialog(onDismissRequest = { restoreConfirmation = false }, title = { Text("Restore collection metadata?") }, text = { Text("This adds playlists, favorites and history from your backup. It contains no audio and grants no storage access. Select music sources afterward. Repeating a restore can add another copy of a playlist.") }, confirmButton = { TextButton({ restoreConfirmation = false; restore.launch(arrayOf("application/json", "text/*", "application/octet-stream")) }) { Text("Choose backup") } }, dismissButton = { TextButton({ restoreConfirmation = false }) { Text("Cancel") } })
+    removing?.let { source -> AlertDialog(onDismissRequest = { removing = null }, title = { Text("Hapus sumber?") }, text = { Text("Sembunyikan ${source.name} dari pustaka aktif. Audio asli, referensi daftar putar, favorit, dan riwayat tetap disimpan. Izin Android mungkin masih digunakan oleh pilihan sumber yang saling mencakup.") }, confirmButton = { TextButton({ vm.removeSource(source.id); removing = null }) { Text("Hapus") } }, dismissButton = { TextButton({ removing = null }) { Text("Batal") } }) }
+    if (restoreConfirmation) AlertDialog(onDismissRequest = { restoreConfirmation = false }, title = { Text("Pulihkan metadata koleksi?") }, text = { Text("Daftar putar, favorit, dan riwayat dari cadangan akan ditambahkan. Cadangan tidak berisi audio atau izin penyimpanan. Pilih sumber musik setelah pemulihan. Memulihkan cadangan yang sama lagi bisa membuat salinan daftar putar.") }, confirmButton = { TextButton({ restoreConfirmation = false; restore.launch(arrayOf("application/json", "text/*", "application/octet-stream")) }) { Text("Pilih cadangan") } }, dismissButton = { TextButton({ restoreConfirmation = false }) { Text("Batal") } })
 }
 
 @Composable fun LicensedDownloads(vm: MusicViewModel) { CompactDownloads(vm) }

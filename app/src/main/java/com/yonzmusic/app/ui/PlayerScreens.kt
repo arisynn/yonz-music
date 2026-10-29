@@ -1,5 +1,7 @@
 package com.yonzmusic.app.ui
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -38,14 +40,14 @@ import kotlinx.coroutines.delay
 @Composable fun MiniPlayer(track: Track, playing: Boolean, glass: Boolean, connection: PlaybackConnection, open: () -> Unit) {
     GlassPanel(track, glass, Modifier.fillMaxWidth().padding(horizontal = Design.md, vertical = Design.xs)) {
         Column {
-            Row(Modifier.fillMaxWidth().clickable(onClickLabel = "Open now playing", onClick = open).padding(start = Design.md, top = Design.sm, bottom = Design.sm, end = Design.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.md)) {
+            Row(Modifier.fillMaxWidth().clickable(onClickLabel = "Buka pemutaran saat ini", onClick = open).padding(start = Design.md, top = Design.sm, bottom = Design.sm, end = Design.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.md)) {
                 Artwork(track, Modifier.size(44.dp))
                 Column(Modifier.weight(1f)) {
                     Text(track.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(track.artist, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(Bahasa.artis(track.artist), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
-                ActionIcon(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (playing) "Pause" else "Play", connection::toggle, tint = MaterialTheme.colorScheme.primary)
-                if (LocalConfiguration.current.screenWidthDp >= 360 && LocalDensity.current.fontScale <= 1.3f) ActionIcon(Icons.Rounded.SkipNext, "Next song", connection::next)
+                ActionIcon(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (playing) "Jeda" else "Putar", connection::toggle, tint = MaterialTheme.colorScheme.primary)
+                if (LocalConfiguration.current.screenWidthDp >= 360 && LocalDensity.current.fontScale <= 1.3f) ActionIcon(Icons.Rounded.SkipNext, "Lagu berikutnya", connection::next)
             }
             MiniProgress(track, connection)
         }
@@ -74,16 +76,16 @@ import kotlinx.coroutines.delay
             val artSize = minOf(maxWidth - Design.page * 2, artBudget).coerceAtLeast(120.dp)
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = if (compact) Design.sm else Design.gap), horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = Design.md, vertical = Design.xs), verticalAlignment = Alignment.CenterVertically) {
-                    ActionIcon(Icons.Rounded.KeyboardArrowDown, "Close now playing", close)
+                    ActionIcon(Icons.Rounded.KeyboardArrowDown, "Tutup pemutaran saat ini", close)
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("NOW PLAYING", style = MaterialTheme.typography.labelSmall, color = c.primary)
-                        Text(track.album, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis, color = c.onSurfaceVariant)
+                        Text("SEDANG DIPUTAR", style = MaterialTheme.typography.labelSmall, color = c.primary)
+                        Text(Bahasa.album(track.album), style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis, color = c.onSurfaceVariant)
                     }
-                    ActionIcon(Icons.Rounded.MoreHoriz, "Song options", options)
+                    ActionIcon(Icons.Rounded.MoreHoriz, "Opsi lagu", options)
                 }
                 Spacer(Modifier.height(Design.sm))
                 Box(Modifier.size(artSize + Design.sm).background(Brush.radialGradient(listOf(c.primary.copy(alpha = .10f), c.background)), CircleShape), contentAlignment = Alignment.Center) {
-                    Artwork(track, Modifier.size(artSize).shadow(16.dp, Design.large, ambientColor = c.primary.copy(alpha = .15f), spotColor = c.primary.copy(alpha = .15f)).clip(Design.large), "Album artwork for ${track.album}")
+                    Artwork(track, Modifier.size(artSize).shadow(16.dp, Design.large, ambientColor = c.primary.copy(alpha = .15f), spotColor = c.primary.copy(alpha = .15f)).clip(Design.large), "Sampul album ${Bahasa.album(track.album)}")
                 }
                 Spacer(Modifier.height(if (compact) Design.md else Design.gap))
                 Column(Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = Design.page)) {
@@ -91,10 +93,10 @@ import kotlinx.coroutines.delay
                         Column(Modifier.weight(1f)) {
                             Text(track.title, style = MaterialTheme.typography.headlineMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
                             Spacer(Modifier.height(Design.xs))
-                            Text(track.artist, style = MaterialTheme.typography.bodyLarge, color = c.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            Text(Bahasa.artis(track.artist), style = MaterialTheme.typography.bodyLarge, color = c.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         }
                         val scale by animateFloatAsState(if (favorite) 1.08f else 1f, if (preferences.reduceMotion) snap() else tween(Design.motion), label = "favorite")
-                        ActionIcon(if(track.source=="stream")Icons.Rounded.Download else if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, if(track.source=="stream")"Simpan offline"else if (favorite) "Remove favorite" else "Favorite song", toggleFavorite, Modifier.graphicsLayer { scaleX = scale; scaleY = scale }, if (favorite) c.primary else c.onSurfaceVariant)
+                        ActionIcon(if(track.source=="stream")Icons.Rounded.Download else if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, if(track.source=="stream")"Simpan untuk luring"else if (favorite) "Hapus dari favorit" else "Jadikan favorit", toggleFavorite, Modifier.graphicsLayer { scaleX = scale; scaleY = scale }, if (favorite) c.primary else c.onSurfaceVariant)
                     }
                     Spacer(Modifier.height(if (compact) Design.sm else Design.md))
                     if(state.buffering) {Text("Menyiapkan audio…",style=MaterialTheme.typography.labelSmall,color=c.primary);LinearProgressIndicator(Modifier.fillMaxWidth())}
@@ -102,20 +104,20 @@ import kotlinx.coroutines.delay
                     Spacer(Modifier.height(if (compact) Design.sm else Design.md))
                     GlassPanel(track, preferences.glass, Modifier.fillMaxWidth()) {
                         Row(Modifier.fillMaxWidth().padding(vertical = Design.sm, horizontal = Design.sm), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                            ActionIcon(Icons.Rounded.SkipPrevious, "Previous song", connection::previous)
-                            FilledIconButton(connection::toggle, modifier = Modifier.size(if (compact) 64.dp else 72.dp), shape = CircleShape, colors = IconButtonDefaults.filledIconButtonColors(containerColor = c.primary, contentColor = c.onPrimary)) { Icon(if (state.playing || state.requested) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (state.playing || state.requested) "Pause" else "Play", Modifier.size(36.dp)) }
-                            ActionIcon(Icons.Rounded.SkipNext, "Next song", connection::next)
+                            ActionIcon(Icons.Rounded.SkipPrevious, "Lagu sebelumnya", connection::previous)
+                            FilledIconButton(connection::toggle, modifier = Modifier.size(if (compact) 64.dp else 72.dp), shape = CircleShape, colors = IconButtonDefaults.filledIconButtonColors(containerColor = c.primary, contentColor = c.onPrimary)) { Icon(if (state.playing || state.requested) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (state.playing || state.requested) "Jeda" else "Putar", Modifier.size(36.dp)) }
+                            ActionIcon(Icons.Rounded.SkipNext, "Lagu berikutnya", connection::next)
                         }
                     }
                     Spacer(Modifier.height(if (compact) Design.xs else Design.sm))
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceEvenly) {
-                        ActionIcon(Icons.Rounded.Shuffle, if (state.shuffle) "Shuffle on" else "Shuffle off", connection::shuffle, tint = if (state.shuffle) c.primary else c.onSurfaceVariant)
-                        ActionIcon(if (state.repeat == Player.REPEAT_MODE_ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat, when (state.repeat) { Player.REPEAT_MODE_ALL -> "Repeat all"; Player.REPEAT_MODE_ONE -> "Repeat one"; else -> "Repeat off" }, connection::repeat, tint = if (state.repeat != Player.REPEAT_MODE_OFF) c.primary else c.onSurfaceVariant)
-                        ActionIcon(Icons.Rounded.QueueMusic, "Open playback queue", queue)
+                        ActionIcon(Icons.Rounded.Shuffle, if (state.shuffle) "Acak aktif" else "Acak nonaktif", connection::shuffle, tint = if (state.shuffle) c.primary else c.onSurfaceVariant)
+                        ActionIcon(if (state.repeat == Player.REPEAT_MODE_ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat, when (state.repeat) { Player.REPEAT_MODE_ALL -> "Ulangi semua"; Player.REPEAT_MODE_ONE -> "Ulangi satu"; else -> "Pengulangan nonaktif" }, connection::repeat, tint = if (state.repeat != Player.REPEAT_MODE_OFF) c.primary else c.onSurfaceVariant)
+                        ActionIcon(Icons.Rounded.QueueMusic, "Buka antrean pemutaran", queue)
                     }
-                    if (state.error != null) Text(state.error, style = MaterialTheme.typography.bodySmall, color = c.error, modifier = Modifier.padding(vertical = Design.sm))
+                    if (state.error != null) Text(Bahasa.pesan(state.error), style = MaterialTheme.typography.bodySmall, color = c.error, modifier = Modifier.padding(vertical = Design.sm))
                     if (sleepEnd > 0) SleepRemaining(sleepEnd, Modifier.align(Alignment.CenterHorizontally))
-                    if (!compact) Text(if(track.source=="stream")"STREAMING · YONO MUSIC"else "LOCAL AUDIO · YOUR SPACE", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = Design.gap))
+                    if (!compact) Text(if(track.source=="stream")"PUTAR DARING · YONO MUSIC"else "MUSIK LOKAL · RUANGMU", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = Design.gap))
                 }
             }
         }
@@ -127,7 +129,7 @@ import kotlinx.coroutines.delay
     val duration = track.duration.coerceAtLeast(1).toFloat()
     val value = dragging ?: position.toFloat().coerceIn(0f, duration)
     Column {
-        Slider(value, { dragging = it }, onValueChangeFinished = { dragging?.let { connection.seek(it.toLong()) }; dragging = null }, valueRange = 0f..duration, enabled=track.duration>0, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Playback position" })
+        Slider(value, { dragging = it }, onValueChangeFinished = { dragging?.let { connection.seek(it.toLong()) }; dragging = null }, valueRange = 0f..duration, enabled=track.duration>0, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Posisi pemutaran" })
         Row(Modifier.fillMaxWidth()) { Text(time(value.toLong()), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant); Spacer(Modifier.weight(1f)); Text(time(track.duration), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
     }
 }
@@ -135,5 +137,5 @@ import kotlinx.coroutines.delay
     var remaining by remember(end) { mutableLongStateOf((end - System.currentTimeMillis()).coerceAtLeast(0)) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(end, lifecycle) { lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { while (true) { remaining = (end - System.currentTimeMillis()).coerceAtLeast(0); delay(1000) } } }
-    Text("Sleep timer · ${time(remaining)} remaining", modifier, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+    Text("Waktu tidur · tersisa ${time(remaining)}", modifier, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
 }

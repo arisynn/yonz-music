@@ -1,5 +1,7 @@
 package com.yonzmusic.app.update
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -222,9 +224,9 @@ class UpdateManager(private val context: Context) {
     }
     private fun readyNotification(title: String, confirmation: Intent? = null) {
         val manager = context.getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(NotificationChannel("app-updates", "App updates", NotificationManager.IMPORTANCE_DEFAULT))
+        manager.createNotificationChannel(NotificationChannel("app-updates", "Pembaruan aplikasi", NotificationManager.IMPORTANCE_DEFAULT))
         val open = PendingIntent.getActivity(context, 4200, confirmation ?: Intent(context, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        runCatching { manager.notify(4200, NotificationCompat.Builder(context, "app-updates").setSmallIcon(R.drawable.brand_y).setContentTitle(title)
-            .setContentText("Tap to continue with Android's confirmation.").setContentIntent(open).setAutoCancel(true).build()) }
+        runCatching { manager.notify(4200, NotificationCompat.Builder(context, "app-updates").setSmallIcon(R.drawable.brand_y).setContentTitle(Bahasa.pesan(title))
+            .setContentText("Ketuk untuk melanjutkan ke konfirmasi Android.").setContentIntent(open).setAutoCancel(true).build()) }
     }
 }

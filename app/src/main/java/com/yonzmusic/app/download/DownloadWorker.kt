@@ -41,14 +41,14 @@ class DownloadWorker(context: Context, params: WorkerParameters) : CoroutineWork
     }
     private fun foreground(title: String, received: Long, total: Long, activeBatch: String): ForegroundInfo {
         val manager = applicationContext.getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(NotificationChannel("audio-downloads", "Music downloads", NotificationManager.IMPORTANCE_LOW))
+        manager.createNotificationChannel(NotificationChannel("audio-downloads", "Unduhan musik", NotificationManager.IMPORTANCE_LOW))
         val open = PendingIntent.getActivity(applicationContext, 4, Intent(applicationContext, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val cancelIntent = Intent(applicationContext, DownloadCancelReceiver::class.java).setData(android.net.Uri.parse("yono-download://cancel/$activeBatch")).putExtra("batch", activeBatch)
         val cancel = PendingIntent.getBroadcast(applicationContext, activeBatch.hashCode(), cancelIntent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val notification = NotificationCompat.Builder(applicationContext, "audio-downloads").setSmallIcon(R.drawable.brand_y)
-            .setContentTitle("Downloading music").setContentText(title.take(100)).setContentIntent(open).setOngoing(true)
+            .setContentTitle("Mengunduh musik").setContentText(title.take(100)).setContentIntent(open).setOngoing(true)
             .setProgress(100, if (total > 0) (received * 100 / total).toInt().coerceIn(0, 100) else 0, total <= 0)
-            .addAction(0, "Cancel", cancel).build()
+            .addAction(0, "Batal", cancel).build()
         return if (Build.VERSION.SDK_INT >= 29) ForegroundInfo(4100, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC) else ForegroundInfo(4100, notification)
     }
     companion object {

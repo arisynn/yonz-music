@@ -1,12 +1,12 @@
-# Build Yono Music 1.5.1
+# Build Yono Music 1.5.2
 
 Use JDK 17, Gradle 8.11.1 (included wrapper), Android SDK platform/build-tools 35/35.0.0, NDK 28.2.13676358 and CMake 3.22.1. A Linux x86_64 build host with Python 3.12 is the verified environment. Set ANDROID_HOME and JAVA_HOME normally, or use an ignored `local.properties` for sdk.dir.
 
 `bash ./gradlew -PtestBuildType=preview --max-workers=1 :app:testDebugUnitTest :app:lintPreview :app:assemblePreview :app:assemblePreviewAndroidTest`
 
-Official build: `bash ./gradlew -PonlineSearchEnabled=true --max-workers=1 :app:assembleRelease :app:lintRelease`. This explicit property enables the online workflow in the production variant; the privacy/offline core remains independent. Use the existing ignored owner signing configuration as described below. Output: `app/build/outputs/apk/release/app-release.apk`, ID `com.yonzmusic.app`, code15, name1.5.1, existing production certificate. Do not publish an unsigned/wrong-key APK or reset app data to pass an upgrade.
+Official build: `bash ./gradlew -PonlineSearchEnabled=true --max-workers=1 :app:assembleRelease :app:lintRelease`. This explicit property enables the online workflow in the production variant; the privacy/offline core remains independent. Use the existing ignored owner signing configuration as described below. Output: `app/build/outputs/apk/release/app-release.apk`, ID `com.yonzmusic.app`, code16, name1.5.2, existing production certificate. Do not publish an unsigned/wrong-key APK or reset app data to pass an upgrade.
 
-Optional Dev build: `bash ./gradlew :app:assembleDebug` gives `com.yonzmusic.app.dev`,15/1.5.1-dev. The matching Preview instrumentation variant is15/1.5.1-preview.5. Dev/Preview and official collections remain separate. A stable release supplies verified `update.json`; private higher-code updater fixtures must never be installed or distributed.
+Optional Dev build: `bash ./gradlew :app:assembleDebug` gives `com.yonzmusic.app.dev`,16/1.5.2-dev. The matching Preview instrumentation variant is16/1.5.2-preview.5. Dev/Preview and official collections remain separate. A stable release supplies verified `update.json`; private higher-code updater fixtures must never be installed or distributed.
 
 AGP 8.9.1, Kotlin/Compose plugin 2.1.20, KSP 2.1.20-1.0.32, Compose BOM 2025.04.01, Media3 1.6.1, Room 2.7.1 and Chaquopy 17.1.0 are pinned in Gradle. Chaquopy bundles Python 3.12.15 with yt-dlp 2026.10.21, EJS 0.8.0, Mutagen 1.48.1 and certifi 2026.10.23. The native build script compiles the included QuickJS-NG source for arm64-v8a and x86_64; no device-side compiler, pip, Node or Termux is required. First build needs dependency downloads; the installed app's local core does not.
 
@@ -16,11 +16,11 @@ For owner release signing, see [secure configuration/recovery](docs/SIGNING_AND_
 
 Run normal Android tests with the AndroidX runner on the Dev package. `LiveEngineAcquisitionTest` is opt-in via `-e liveEngine true`; it requires a real user-selected SAF test destination and the environment-specific test proxy CA. Ordinary builds contain no such test network configuration. DownloadQueueTest also needs that real output grant. Fixtures are original generated tones. `tools/testing/generate_audio_fixtures.py` uses host FFmpeg to reproduce the test media; FFmpeg is not embedded in the app.
 
-An emulator-only higher code can be built with `-PtestVersionCode=16` for updater verification. Never upload that local fixture as a fake public version. The public release version remains the Gradle default and must be rebuilt without the override. Verify signature, package, code, SDK, ABI and hashes on every actual artifact before publication.
+An emulator-only higher code can be built with `-PtestVersionCode=17` for updater verification. Never upload that local fixture as a fake public version. The public release version remains the Gradle default and must be rebuilt without the override. Verify signature, package, code, SDK, ABI and hashes on every actual artifact before publication.
 
 ## Collection repair verification
 
-Default code15/name1.5.1; optional Preview suffix-preview.5; Room schema3. Official1.4.2/code9 upgrades to1.5.1/code15 with the same production certificate. Keep all schema JSON files and migration 1→2→3; never delete the database to make an upgrade pass.
+Default code16/name1.5.2; optional Preview suffix-preview.5; Room schema3. Official1.4.2/code9 upgrades to1.5.2/code16 with the same production certificate. Keep all schema JSON files and migration 1→2→3; never delete the database to make an upgrade pass.
 
 Host engine checks: install `app/requirements-android.lock` into a separate Python 3.12 virtual environment, then run `python tools/yono-engine/verify_host.py`. Reports default to `docs/verification/v1.3.0`; `--output` selects a different evidence directory. Host FFmpeg creates/inspects owned fixture audio only; it is not an app dependency. After building, `PYTHONPATH=app/build/python/pip/debug/common python3 tools/yono-engine/verify_host.py` can reuse the resolved pure-Python dependencies.
 

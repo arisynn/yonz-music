@@ -1,5 +1,7 @@
 package com.yonzmusic.app.ui
 
+import com.yonzmusic.app.i18n.Bahasa
+
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -101,7 +103,7 @@ import androidx.compose.foundation.lazy.LazyColumn
         if (!busy && (editing || plan == null)) Button({ repo.submit("prepare", JSONObject().put("kind", kind).put("content", text).put("resume_existing",true)) }, enabled = authorized && text.isNotBlank() && destination.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Periksa daftar") }
         else if (busy) {
             val stage = event.optString("stage")
-            Text(when(stage) { "cancelling" -> "Membatalkan…"; "matching", "verifying" -> "Memeriksa rekaman…"; "downloading" -> "Mengunduh audio…"; "saving" -> "Menyimpan…"; "snapshot" -> "Memeriksa koleksi pilihan…"; else -> event.optString("message", "Membaca daftar…") }, style = MaterialTheme.typography.bodyMedium)
+            Text(when(stage) { "cancelling" -> "Membatalkan…"; "matching", "verifying" -> "Memeriksa rekaman…"; "downloading" -> "Mengunduh audio…"; "saving" -> "Menyimpan…"; "snapshot" -> "Memeriksa koleksi pilihan…"; else -> Bahasa.pesan(event.optString("message", "Membaca daftar…")) }, style = MaterialTheme.typography.bodyMedium)
             val total = event.optInt("total"); if (total > 0) Text("${event.optInt("completed")} / $total", style = MaterialTheme.typography.bodySmall)
             val bytes = event.optLong("downloaded_bytes"); val totalBytes = event.optLong("total_bytes")
             val fraction = ProgressFraction.of(bytes,totalBytes)
@@ -110,7 +112,7 @@ import androidx.compose.foundation.lazy.LazyColumn
             TextButton(repo::cancel, enabled = stage != "cancelling") { Text("Batal") }
         }
         if (plan == null && !busy && text.isBlank()) TextButton({ repo.submit("get_last") }, enabled = destination.isNotBlank()) { Text("Pulihkan pemeriksaan terakhir") }
-        if (message.isNotBlank()) Text(message, style = MaterialTheme.typography.bodySmall)
+        if (message.isNotBlank()) Text(Bahasa.pesan(message), style = MaterialTheme.typography.bodySmall)
         if (!editing) plan?.let { p ->
             val counts = p.optJSONObject("counts") ?: JSONObject()
             if(p.optString("reuse_reason").isNotBlank())Text(p.optString("reuse_reason"),style=MaterialTheme.typography.bodySmall)
@@ -121,15 +123,15 @@ import androidx.compose.foundation.lazy.LazyColumn
             val ready=chosen.count { it.optString("status")=="ready" }
             Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
                 Checkbox(createPlaylist,{createPlaylist=it;persistReview()},enabled=!busy && !p.optBoolean("layout_locked"))
-                Text("Buat playlist di aplikasi",Modifier.weight(1f),style=MaterialTheme.typography.bodyMedium)
+                Text("Buat daftar putar di aplikasi",Modifier.weight(1f),style=MaterialTheme.typography.bodyMedium)
             }
-            if(createPlaylist) OutlinedTextField(name,{name=it.take(100);persistReview()},label={Text("Nama playlist · otomatis jika kosong")},singleLine=true,modifier=Modifier.fillMaxWidth(),enabled=!busy && !p.optBoolean("layout_locked"))
+            if(createPlaylist) OutlinedTextField(name,{name=it.take(100);persistReview()},label={Text("Nama daftar putar · otomatis jika kosong")},singleLine=true,modifier=Modifier.fillMaxWidth(),enabled=!busy && !p.optBoolean("layout_locked"))
             Text(if(chosen.size<=1 || !createPlaylist) "Audio langsung di folder tujuan · sampul di .cover" else "Audio di subfolder ${name.ifBlank { p.optString("name") }} · sampul di .cover",style=MaterialTheme.typography.bodySmall)
             Button({
                 persistReview()
                 repo.submit("acquire",draft().put("entry_ids",JSONArray(chosen.map { it.getString("id") })).put("format","original"))
             },enabled=!busy && authorized && chosen.isNotEmpty() && (ready>0 || createPlaylist),modifier=Modifier.fillMaxWidth()) {
-                Text(if(ready>0) "Unduh $ready · format asli" else if(createPlaylist) "Buat playlist · ${chosen.size} lagu lokal" else "Lagu pilihan sudah tersedia")
+                Text(if(ready>0) "Unduh $ready · format asli" else if(createPlaylist) "Buat daftar putar · ${chosen.size} lagu lokal" else "Lagu pilihan sudah tersedia")
             }
 
             Row {

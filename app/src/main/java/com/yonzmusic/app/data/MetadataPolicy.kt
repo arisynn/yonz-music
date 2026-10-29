@@ -9,12 +9,12 @@ object Availability {
     const val AMBIGUOUS = "ambiguous_location"
     const val ALIAS = "retained_alias"
     fun label(status: String): String = when(status) {
-        AVAILABLE -> "File tersedia"; MISSING -> "Lokasi lama tidak ditemukan · pilih lokasi baru"
+        AVAILABLE -> "Berkas tersedia"; MISSING -> "Lokasi lama tidak ditemukan · pilih lokasi baru"
         PERMISSION -> "Izin folder hilang · hubungkan ulang folder"
         STORAGE -> "Penyimpanan sementara tidak tersedia"
         UNREADABLE -> "Audio tidak dapat dibaca atau format belum didukung"
         AMBIGUOUS -> "Beberapa lokasi cocok · pilih lokasi yang benar"
-        ALIAS -> "Referensi lama dipertahankan"; else -> "Periksa lokasi dan akses file"
+        ALIAS -> "Referensi lama dipertahankan"; else -> "Periksa lokasi dan akses berkas"
     }
 }
 

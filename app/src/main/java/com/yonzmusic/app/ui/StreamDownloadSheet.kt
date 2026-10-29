@@ -51,8 +51,8 @@ import com.yonzmusic.app.search.OnlineSong
                     Text(if(destination.isBlank())"Pilih folder tujuan"else runCatching {android.provider.DocumentsContract.getTreeDocumentId(Uri.parse(destination)).substringAfter(':').ifBlank {"Folder tujuan"}+" · Ubah"}.getOrDefault("Folder tujuan · Ubah"),maxLines=2,overflow=TextOverflow.Ellipsis)
                 }
                 Column(horizontalAlignment=Alignment.CenterHorizontally) {
-                    Text("Playlist",style=MaterialTheme.typography.labelMedium)
-                    Switch(playlist,{playlist=it},modifier=Modifier.semantics {contentDescription="Buat playlist"})
+                    Text("Daftar putar",style=MaterialTheme.typography.labelMedium)
+                    Switch(playlist,{playlist=it},modifier=Modifier.semantics {contentDescription="Buat daftar putar"})
                 }
             }
             Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically){Checkbox(authorized,{authorized=it});Text("Saya berhak mengunduh audio ini dan sumber mengizinkan.",Modifier.weight(1f),style=MaterialTheme.typography.bodySmall)}

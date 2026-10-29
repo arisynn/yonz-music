@@ -9,6 +9,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.yonzmusic.app.ui.YonzRoot
 
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(base: android.content.Context) {
+        super.attachBaseContext(com.yonzmusic.app.i18n.BahasaLocale.wrap(base))
+    }
     override fun onResume() { super.onResume(); (application as YonzApp).updates.apply { interaction(true); resume() } }
     override fun onPause() {(application as YonzApp).updates.interaction(false);super.onPause()}
     override fun onCreate(savedInstanceState: Bundle?) {

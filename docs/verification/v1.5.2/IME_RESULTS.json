@@ -1,0 +1,23 @@
+{
+  "imeActuallyVisible": true,
+  "fontScale": 1.5,
+  "widthDp": 320,
+  "buttonBounds": {
+    "Batal": [
+      311,
+      564,
+      413,
+      627
+    ],
+    "Buat": [
+      477,
+      564,
+      568,
+      627
+    ]
+  },
+  "keyboardTop": 691,
+  "stableSamples": 3,
+  "confirmationButtonEnabled": true,
+  "method": "Wait for repeated identical XML positions with both buttons above actual IME, then screenshot and actual Batal tap"
+}

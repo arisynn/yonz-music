@@ -1,5 +1,14 @@
 # 1.5.0-preview.4 — 2026-10-28
 
+## 1.5.2 · 2026-10-29
+
+- Antarmuka Indonesia untuk navigasi, pustaka, pencarian, pemutar, antrean, daftar putar, impor, metadata/sampul, pengaturan, unduhan dan pembaruan; label aksesibilitas ikut disesuaikan.
+- Label tampilan dan255 pesan lama/runtime dipetakan saat ditampilkan. Kode tema/pengurutan/status, skema Room3, ID lagu, nama koleksi pengguna, metadata musik dan format audio asli tidak diterjemahkan atau ditulis ulang.
+- Sumber daya Material/Media3, tanggal dan kanal notifikasi mengikuti bahasa Indonesia di dalam aplikasi. Konfigurasi kanal lama diperbarui namanya sambil mempertahankan suara/tingkat notifikasi pengguna. Penanganan pencatatan bahasa OS bersifat opsional dan tidak menghalangi startup.
+- Label Daftar putar dapat memakai dua baris pada navigasi saat font besar. Dialog, tombol, dan mini-player diperiksa pada320dp/light100%/dark150%, termasuk keyboard aktif pada150%.
+- Package dan signing official tetap sama; versionCode16. Tidak ada izin, layanan jaringan, ketergantungan atau fitur unduhan baru.
+
+
 ## 1.5.1 · 2026-10-28
 
 - Default-on “Sembunyikan unduhan dari Galeri”, persisted in DataStore. Applies only to explicit download destination folders, including their descendants. Existing selected destination reconciles on foreground; no whole-storage/media-library scan.

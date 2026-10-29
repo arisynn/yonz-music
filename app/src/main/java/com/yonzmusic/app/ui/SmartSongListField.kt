@@ -41,16 +41,16 @@ import com.yonzmusic.app.importer.PasteListFormatter
         OutlinedTextField(field, ::accept, enabled = enabled, label = { Text(label) },
             placeholder = { Text("Artis - Judul, satu per baris") }, minLines = 2, maxLines = 3,
             modifier = Modifier.fillMaxWidth(), trailingIcon = {
-                IconButton({ expanded = true }, enabled = enabled) { Icon(Icons.Rounded.Edit, "Edit daftar lengkap") }
+                IconButton({ expanded = true }, enabled = enabled) { Icon(Icons.Rounded.Edit, "Ubah daftar lengkap") }
             })
         if (original != null || review) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(if (review) "Batas belum jelas: gunakan enter atau ;" else "${text.lineSequence().count { it.isNotBlank() }} baris · dirapikan", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+            Text(if (review) "Batas lagu belum jelas: gunakan baris baru atau ;" else "${text.lineSequence().count { it.isNotBlank() }} baris · dirapikan", Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
             if (original != null && text == formattedText) TextButton({
                 val raw = original!!; field = TextFieldValue(raw, TextRange(raw.length)); original = null; formattedText = null; review = false; onTextChange(raw)
             }, enabled = enabled) { Text("Urungkan") }
         }
     }
-    if (expanded) AlertDialog(onDismissRequest = { expanded = false }, title = { Text("Edit daftar lagu") }, text = {
+    if (expanded) AlertDialog(onDismissRequest = { expanded = false }, title = { Text("Ubah daftar lagu") }, text = {
         OutlinedTextField(field, ::accept, modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp), minLines = 3, maxLines = 10,
             label = { Text("Satu lagu per baris") }, enabled = enabled)
     }, confirmButton = { TextButton({ expanded = false }) { Text("Selesai") } })

@@ -21,12 +21,15 @@ import com.yonzmusic.app.data.Track
 import kotlinx.coroutines.*
 
 fun Track.mediaItem(): MediaItem = MediaItem.Builder().setMediaId(id).setUri(uri)
-    .setMediaMetadata(MediaMetadata.Builder().setTitle(title).setArtist(artist).setAlbumTitle(album)
+    .setMediaMetadata(MediaMetadata.Builder().setTitle(title).setArtist(com.yonzmusic.app.i18n.Bahasa.artis(artist)).setAlbumTitle(com.yonzmusic.app.i18n.Bahasa.album(album))
         .setExtras(Bundle().apply { putString("yono.queue.key", java.util.UUID.randomUUID().toString()) })
         .setArtworkUri(artUri.takeIf { it.isNotBlank() }?.let(android.net.Uri::parse)).build()).build()
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class PlaybackService : MediaSessionService() {
+    override fun attachBaseContext(base: android.content.Context) {
+        super.attachBaseContext(com.yonzmusic.app.i18n.BahasaLocale.wrap(base))
+    }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var player: ExoPlayer
     private var session: MediaSession? = null
@@ -117,6 +120,14 @@ class PlaybackService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
+        setMediaNotificationProvider(androidx.media3.session.DefaultMediaNotificationProvider.Builder(this)
+            .setChannelName(com.yonzmusic.app.R.string.playback_channel).build())
+        // Rename the existing channel without changing the user's importance/sound preferences.
+        val notifications = getSystemService(android.app.NotificationManager::class.java)
+        runCatching { notifications.getNotificationChannel(androidx.media3.session.DefaultMediaNotificationProvider.DEFAULT_CHANNEL_ID)?.let {
+            it.name = getString(com.yonzmusic.app.R.string.playback_channel)
+            notifications.createNotificationChannel(it)
+        } }
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this).setLoadErrorHandlingPolicy(StreamLoadPolicy()).setDataSourceFactory(androidx.media3.datasource.DefaultDataSource.Factory(this, app.streamTestDataSource ?: androidx.media3.datasource.DataSource.Factory {StreamDataSource(app.streams)})))
             .setLoadControl(androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(3000,20000,700,1500).build())

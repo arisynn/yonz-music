@@ -122,7 +122,7 @@ internal val LocalPlayingState = compositionLocalOf<StateFlow<PlaybackUi>?> { nu
             val bounds = it.boundsInWindow()
             visible = bounds.width > 0 && bounds.height > 0
         }.clearAndSetSemantics { },
-        animationSpec = androidx.compose.animation.core.tween(if (reduced) 0 else 600), label = "home local covers") { bitmap ->
+        animationSpec = androidx.compose.animation.core.tween(if (reduced) 0 else 600), label = "Sampul musik lokal di beranda") { bitmap ->
         if (bitmap != null) androidx.compose.foundation.Image(bitmap.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
         else DefaultArt(Modifier.fillMaxSize())
     }

@@ -10,6 +10,9 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 
 class YonzApp : Application() {
+    override fun attachBaseContext(base: android.content.Context) {
+        super.attachBaseContext(com.yonzmusic.app.i18n.BahasaLocale.wrap(base))
+    }
     val persistenceScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO.limitedParallelism(1))
     val database by lazy { Room.databaseBuilder(this, MusicDatabase::class.java, "yonz-music.db").addMigrations(MusicDatabase.MIGRATION_1_2, MusicDatabase.MIGRATION_2_3).build() }
     val repository by lazy { Repository(this, database) }
@@ -23,6 +26,7 @@ class YonzApp : Application() {
     val updates by lazy { com.yonzmusic.app.update.UpdateManager(this) }
     override fun onCreate() {
         super.onCreate()
+        com.yonzmusic.app.i18n.BahasaLocale.apply(this)
         // Retire only the obsolete account credential; leave all music/collections intact.
         persistenceScope.launch {
             android.util.AtomicFile(java.io.File(noBackupFilesDir,"spotify-oauth.enc")).delete()

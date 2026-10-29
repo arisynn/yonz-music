@@ -53,7 +53,7 @@ import com.yonzmusic.app.data.Availability
 @Composable fun RelocationDialog(track:Track, candidates:List<String>, dismiss:()->Unit, choose:()->Unit, reconnect:()->Unit, use:(Uri)->Unit) {
     AlertDialog(onDismissRequest=dismiss,title={Text("Hubungkan lokasi audio")},text={ Column(Modifier.heightIn(max=300.dp).verticalScroll(rememberScrollState())) {
         Text(Availability.label(track.availability))
-        Text("ID track, favorit, playlist dan riwayat dipertahankan. Hanya folder pilihan yang diperiksa. Jika hash lama belum tersedia, pemilihan file adalah konfirmasi manual rekaman asli; durasi tetap diperiksa.",style=MaterialTheme.typography.bodySmall)
+        Text("ID lagu, favorit, daftar putar, dan riwayat dipertahankan. Hanya folder pilihan yang diperiksa. Jika hash lama belum tersedia, pemilihan berkas menjadi konfirmasi manual rekaman asli. Durasi tetap diperiksa.",style=MaterialTheme.typography.bodySmall)
         candidates.forEach { value -> TextButton({use(Uri.parse(value))}){Text(Uri.decode(value.substringAfterLast('/')),maxLines=3)} }
         TextButton(reconnect){Text("Hubungkan ulang folder")}
     } },confirmButton={TextButton(choose){Text("Pilih lokasi baru")}},dismissButton={TextButton(dismiss){Text("Tutup")}})
