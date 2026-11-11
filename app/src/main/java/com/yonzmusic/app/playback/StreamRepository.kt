@@ -1,6 +1,7 @@
 package com.yonzmusic.app.playback
 
 import android.content.Context
+import androidx.room.withTransaction
 import android.net.Uri
 import androidx.annotation.Keep
 import com.yonzmusic.app.YonzApp
@@ -21,8 +22,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 class StreamRepository(private val app:YonzApp):StreamResolver {
     suspend fun register(song:OnlineSong) {
         require((valid(song.videoId) && song.page=="https://www.youtube.com/watch?v=${song.videoId}") || (song.id.startsWith("mb:recording:") && song.catalogJson.isNotBlank()))
-        val merged=app.metadata.publish(song)
-        app.repository.dao.state(AppState("stream:${if(merged.id.startsWith("mb:"))merged.id else merged.videoId}",encode(merged).toString()))
+        app.database.withTransaction {
+            val key="stream:${if(song.id.startsWith("mb:"))song.id else song.videoId}"
+            val previous=app.repository.dao.state(key)?.value?.let {runCatching {decode(JSONObject(it))}.getOrNull()}
+                ?.takeIf {it.id==song.id && (it.videoId.isBlank() || song.videoId.isBlank() || it.videoId==song.videoId)}
+            val merged=app.metadata.publish(com.yonzmusic.app.metadata.MetadataPolicy.merge(previous,song))
+            app.repository.dao.state(AppState(key,encode(merged).toString()))
+        }
     }
     suspend fun lookup(mediaId:String):OnlineSong?=withContext(Dispatchers.IO) {
         val id=mediaId.removePrefix("engine:");if(!mediaId.isRemoteId() || (!mediaId.startsWith("mb:") && !valid(id)))return@withContext null

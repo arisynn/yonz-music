@@ -31,6 +31,19 @@ import java.util.concurrent.atomic.AtomicInteger
 @RunWith(AndroidJUnit4::class)
 class MetadataSyncTest {
     private fun image(color:Int)=Bitmap.createBitmap(40,40,Bitmap.Config.ARGB_8888).let {b->b.eraseColor(color);java.io.ByteArrayOutputStream().use {b.compress(Bitmap.CompressFormat.PNG,100,it);b.recycle();it.toByteArray()}}
+    @Test fun storedFullMetadataSurvivesLightRegistrationWithoutAnInMemoryEntry():Unit=runBlocking {
+        val app=ApplicationProvider.getApplicationContext<YonzApp>();val id="QAmg0000001";val key="stream:$id";val old=app.repository.dao.state(key)
+        val full=OnlineSong("engine:$id",SearchProvider.ENGINE,"Complete title","Credited artist","Verified album",page="https://www.youtube.com/watch?v=$id",videoId=id,artistVerified=true,metadataSource=MetadataSource.EXTRACTION,metadataUpdatedAt=123)
+        try {
+            assertFalse(app.metadata.state.value.containsKey(full.id))
+            app.repository.dao.state(com.yonzmusic.app.data.AppState(key,StreamRepository.encode(full).toString()))
+            app.streams.register(full.copy(title="Light title",credit="Generic uploader",album="",artistVerified=false,metadataSource=MetadataSource.SEARCH,metadataUpdatedAt=0))
+            val found=app.streams.lookup(full.id)!!
+            assertEquals("Credited artist",found.credit);assertEquals("Verified album",found.album);assertEquals("Complete title",found.title)
+            val stored=StreamRepository.decode(JSONObject(app.repository.dao.state(key)!!.value))
+            assertEquals(found.copy(artworkUri=""),stored)
+        }finally {if(old==null)app.repository.dao.deleteState(key)else app.repository.dao.state(old)}
+    }
     @Test fun serviceMetadataAndArtworkUpdateInPlaceAndObsoleteArtworkCannotWin():Unit=runBlocking {
         val app=ApplicationProvider.getApplicationContext<YonzApp>();val inst=InstrumentationRegistry.getInstrumentation()
         fun main(block:()->Unit)=inst.runOnMainSync(block)

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 /** A single controller mirrors the service. Progress is read only by visible player composables. */
 data class PlaybackUi(val id: String? = null, val playing: Boolean = false, val queue: List<String> = emptyList(), val index: Int = 0, val shuffle: Boolean = false, val repeat: Int = Player.REPEAT_MODE_OFF, val error: String? = null, val ready: Boolean = false, val queueKeys: List<String> = emptyList(), val playbackOrder: List<Int> = emptyList(), val remoteTracks: List<Track> = emptyList(), val buffering: Boolean = false, val requested: Boolean = false, val radioNotice: String = "")
 class PlaybackConnection(context: Context) {
+    private val metadata=(context.applicationContext as com.yonzmusic.app.YonzApp).metadata
     val state = MutableStateFlow(PlaybackUi())
     private var controller: MediaController? = null
     private var future: ListenableFuture<MediaController>? = null
@@ -55,7 +56,7 @@ class PlaybackConnection(context: Context) {
             if (p.playerError != null) if(p.currentMediaItem?.mediaId?.isRemoteId()==true)streamingError(p)else "Audio unavailable. Check file access and rescan your library." else null, true,
             (0 until p.mediaItemCount).map { p.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key") ?: "legacy:$it" },
             order.takeIf { it.size == p.mediaItemCount } ?: (0 until p.mediaItemCount).toList(),
-            (0 until p.mediaItemCount).mapNotNull {i->remoteSong(p.getMediaItemAt(i))?.let {s->StreamRepository.display(s).copy(duration=if(i==p.currentMediaItemIndex && p.duration>0)p.duration else s.durationMs)}},
+            (0 until p.mediaItemCount).mapNotNull {i->remoteSong(p.getMediaItemAt(i))?.let(metadata::current)?.let {s->StreamRepository.display(s).copy(duration=if(i==p.currentMediaItemIndex && p.duration>0)p.duration else s.durationMs)}},
             p.playbackState==Player.STATE_BUFFERING,p.playWhenReady,p.sessionExtras.getString(PlaybackService.RADIO_NOTICE).orEmpty())
     } }
     fun play(tracks: List<Track>, id: String) {
