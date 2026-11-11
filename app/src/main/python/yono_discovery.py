@@ -12,7 +12,7 @@ from yono_search import clean, video_id
 PAGE = 12
 VIDEO = re.compile(r"[A-Za-z0-9_-]{11}\Z")
 ARTIST = re.compile(r"UC[A-Za-z0-9_-]{22}\Z")
-ART_HOSTS = {"i.ytimg.com", "img.youtube.com", "lh3.googleusercontent.com"}
+ART_HOSTS = {"i.ytimg.com", "img.youtube.com", "lh3.googleusercontent.com", "lh4.googleusercontent.com", "yt3.googleusercontent.com", "yt3.ggpht.com"}
 # These describe alternate recordings, not proof of who recorded a song first.
 ALTERNATES = {"cover", "karaoke", "remix", "remixed", "nightcore", "slowed", "sped", "reverb", "live"}
 COMPILATION = re.compile(r"\b(?:full album|nonstop|non stop|kumpulan lagu|best of|dj mix|megamix|mashup)\b", re.I)
@@ -30,9 +30,13 @@ class MusicCatalogue(Catalogue):
 
 def artwork(images):
     valid = []
+    if isinstance(images, dict):
+        images = images.get("thumbnails") or images.get("thumbnail") or []
     for image in images if isinstance(images, list) else []:
         try:
             url = image.get("url", "")
+            if url.startswith("//"):
+                url = "https:" + url
             p = urlsplit(url)
             if (len(url) <= 4096 and p.scheme == "https" and p.hostname in ART_HOSTS
                     and not p.username and not p.password and p.port in (None, 443) and not p.fragment):
@@ -127,6 +131,17 @@ def run(payload, control, catalogue):
                 pass  # An unavailable artist shelf must not hide matching songs.
         return {"ok": True, "songs": songs[page * PAGE:(page + 1) * PAGE], "artists": artists[:5],
                 "next": str(page + 1) if len(raw) > (page + 1) * PAGE and page < 2 else ""}
+    if op == "artwork":
+        ident = payload.get("video_id", "")
+        if not isinstance(ident, str) or not VIDEO.fullmatch(ident):
+            raise ValueError("invalid artwork identity")
+        details = catalogue.call("get_song", ident)
+        video = details.get("videoDetails") or {}
+        if video.get("videoId") != ident:
+            raise ValueError("artwork identity changed")
+        # Prefer the extractor's actual video thumbnail; never manufacture thumbnail URLs.
+        images = video.get("thumbnail") or {}
+        return {"ok": True, "video_id": ident, "artwork": artwork(images)}
     if op == "artist":
         ident = payload.get("artist_id", "")
         if not isinstance(ident, str) or not ARTIST.fullmatch(ident):

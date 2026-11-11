@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.rounded.*
 import com.yonzmusic.app.ui.icons.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,19 +32,23 @@ import kotlinx.coroutines.withContext
     onPlay: (Pair<List<Track>, String>) -> Unit, onMenu: (Track) -> Unit, onFavorites: () -> Unit, onHistory: () -> Unit,
     onAlbum: (String, String) -> Unit, onImport: () -> Unit, onLibrary: () -> Unit, onContinue: () -> Unit = {},
     scrollState: LazyListState = rememberLazyListState(), mixes: List<SmartMix.Mix> = emptyList(),
-    vm:com.yonzmusic.app.MusicViewModel?=null,onArtist:(com.yonzmusic.app.search.OnlineArtist)->Unit = {}
+    vm:com.yonzmusic.app.MusicViewModel?=null,onSearch:()->Unit = {}
 ) {
     val recent=remember(tracks,history) { val map=tracks.filter { it.available }.associateBy { it.id };history.mapNotNull { map[it.trackId] }.take(2) }
     val added=remember(tracks) { tracks.filter { it.available }.sortedByDescending { it.added }.take(6) }
     val albums=remember(tracks) { tracks.filter { it.available && MetadataPolicy.known(it.album).isNotBlank() }.distinctBy(::albumKey).take(5) }
     var mix by remember { mutableStateOf<SmartMix.Mix?>(null) }
     LazyColumn(state=scrollState,contentPadding=PaddingValues(bottom=Design.page)) {
-        item { HomeIdentity(tracks) }
-        if(vm!=null) {
-            item("discovery_controls") {DiscoveryControls(vm)}
-            item("popular_songs") {PopularSongs(vm)}
-            item("popular_artists") {PopularArtists(vm,onArtist)}
+        if(current!=null && vm!=null)item("continue_listening") {
+            SectionTitle("Lanjutkan mendengarkan")
+            ListItem(headlineContent={Text(current.title,maxLines=1,overflow=TextOverflow.Ellipsis)},
+                supportingContent={Text(current.artist,maxLines=1,overflow=TextOverflow.Ellipsis)},
+                leadingContent={Artwork(current,Modifier.size(56.dp))},trailingContent={
+                    val playback by vm.playback.state.collectAsStateWithLifecycle()
+                    ActionIcon(if(playback.playing)Icons.Rounded.Pause else Icons.Rounded.PlayArrow,"Putar atau jeda",vm.playback::toggle)
+                },modifier=Modifier.clickable(onClick=onContinue).padding(horizontal=Design.md))
         }
+        if(vm!=null)item("for_you") {MusicForYou(vm,onSearch)}
         if(tracks.isEmpty() && vm==null) item { EmptyState("Mulai dari musikmu", "Pilih berkas atau folder. Koleksi dan pemutaran tetap berfungsi tanpa internet.",action={ Button(onImport) { Text("Pilih musik") } }) }
         if(recent.isNotEmpty()) {
             item { SectionTitle("Terakhir diputar",action={ TextButton(onHistory) { Text("Semua") } }) }

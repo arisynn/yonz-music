@@ -124,7 +124,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
                             focus.clearFocus();keyboard?.hide()
                             if(current)vm.playback.toggle()else vm.playOnline(song)
                         }.padding(vertical=Design.sm),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-                                    SourceThumbnail(song.artwork)
+                                    SongThumbnail(song)
                                     Column(Modifier.weight(1f)) {
                                         Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium,color=if(current)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                                         Text(song.credit.takeIf {it.isNotBlank()}?.let {if(song.artistVerified)it else "Kanal: $it"} ?: "Kredit belum tersedia",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)
@@ -165,7 +165,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
         DialogSystemBars()
         Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(Design.page),verticalArrangement=Arrangement.spacedBy(Design.md)) {
             Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-                SourceThumbnail(song.artwork)
+                SongThumbnail(song)
                 Column(Modifier.weight(1f)) {
                     Text(song.title,style=MaterialTheme.typography.titleMedium,maxLines=2,overflow=TextOverflow.Ellipsis)
                     val credit=song.credit.takeIf {it.isNotBlank()}?.let {if(song.artistVerified)it else "Kanal: $it"}

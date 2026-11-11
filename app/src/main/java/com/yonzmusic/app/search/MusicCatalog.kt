@@ -37,14 +37,16 @@ class MusicCatalog(context:Context) {
                 if(continuation.isActive)continuation.resumeWithException(error as? SearchFailure ?: SearchFailure("Katalog musik belum tersedia. Coba lagi."))
             }
         }
-        continuation.invokeOnCancellation {stop.set(true);task.cancel(false);workers.purge()}
-        try {workers.execute(task)}catch(_:RejectedExecutionException) {
+        continuation.invokeOnCancellation {stop.set(true);task.cancel(false);workers.purge();artWorkers.purge()}
+        try {(if(payload.optString("operation")=="artwork")artWorkers else workers).execute(task)}catch(_:RejectedExecutionException) {
             if(continuation.isActive)continuation.resumeWithException(SearchFailure("Katalog sedang sibuk. Coba lagi sebentar."))
         }
     }
     suspend fun radio(videoId:String):List<OnlineSong> = SearchContract.engine(request(JSONObject()
         .put("operation","radio").put("video_id",videoId)).toString(),20).songs
     private companion object {
+        val artWorkers=ThreadPoolExecutor(1,1,30,TimeUnit.SECONDS,ArrayBlockingQueue<Runnable>(4),
+            {r->Thread(r,"yono-artwork-metadata").apply {isDaemon=true}})
         val workers=ThreadPoolExecutor(2,2,30,TimeUnit.SECONDS,ArrayBlockingQueue<Runnable>(4),
             {r->Thread(r,"yono-music-catalog").apply {isDaemon=true}})
     }

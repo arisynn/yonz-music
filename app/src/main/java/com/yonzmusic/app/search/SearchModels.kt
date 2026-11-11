@@ -17,7 +17,7 @@ class SearchFailure(val userMessage: String): Exception(userMessage)
 /** Remote metadata never becomes a local track or evidence of a licensed download. */
 object SearchContract {
     val sourceHosts=setOf("www.youtube.com","youtube.com","music.youtube.com","youtu.be")
-    val artHosts=setOf("i.ytimg.com","img.youtube.com","lh3.googleusercontent.com")
+    val artHosts=setOf("i.ytimg.com","img.youtube.com","lh3.googleusercontent.com","lh4.googleusercontent.com","yt3.googleusercontent.com","yt3.ggpht.com")
     fun https(value: String,hosts: Set<String>): Boolean=runCatching {
         val u=URI(value);value.length<=4096 && u.scheme=="https" && u.host?.lowercase() in hosts && u.userInfo==null && u.port in setOf(-1,443) && u.fragment==null
     }.getOrDefault(false)

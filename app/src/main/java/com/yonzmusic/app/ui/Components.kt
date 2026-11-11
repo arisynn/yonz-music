@@ -67,6 +67,7 @@ internal object ArtCache {
                 else {
                     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+                    require(bounds.outWidth>0 && bounds.outHeight>0 && bounds.outWidth.toLong()*bounds.outHeight<=40_000_000)
                     var sample = 1
                     while (bounds.outWidth / (sample*2) >= bucket || bounds.outHeight / (sample*2) >= bucket) sample *= 2
                     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
@@ -83,11 +84,20 @@ internal object ArtCache {
     val density=androidx.compose.ui.platform.LocalDensity.current
     BoxWithConstraints(modifier.clip(Design.small).semantics { if(description!=null)contentDescription=description }) {
         val pixels=with(density) { maxWidth.takeIf { it.value.isFinite() }?.roundToPx() ?: 512 }.coerceIn(64,1536)
-        val bitmap by produceState<Bitmap?>(null,track?.uri,track?.artUri,track?.sha256,track?.artRevision,pixels) {
-            value=if(track!=null) withContext(Dispatchers.IO) { runCatching { ArtCache.load(context,track,pixels) }.getOrNull() } else null
+        key(track?.id,track?.artUri,track?.sha256,track?.artRevision,pixels) {
+            val bitmap by produceState<Bitmap?>(null) {
+                value=if(track!=null)withContext(Dispatchers.IO) {
+                    val loaded=runCatching {ArtCache.load(context,track,pixels)}.getOrNull()
+                    if(loaded==null && track.source=="stream") {
+                        val streams=(context as? com.yonzmusic.app.YonzApp)?.streams
+                        streams?.lookup(track.id)?.let {streams.requestArtwork(it,repair=true)}
+                    }
+                    loaded
+                }else null
+            }
+            if(bitmap!=null)Image(bitmap!!.asImageBitmap(),contentDescription=null,modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
+            else DefaultArt(Modifier.fillMaxSize(),track?.album ?: "")
         }
-        if(bitmap!=null)Image(bitmap!!.asImageBitmap(),contentDescription=null,modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
-        else DefaultArt(Modifier.fillMaxSize(),track?.album ?: "")
     }
 }
 @Composable fun DefaultArt(modifier: Modifier = Modifier, seed: String = "") {

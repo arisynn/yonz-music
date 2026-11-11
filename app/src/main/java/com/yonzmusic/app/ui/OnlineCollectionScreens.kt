@@ -82,7 +82,7 @@ import com.yonzmusic.app.search.OnlineSong
         itemsIndexed(p.songs,key={_,s->s.id}){index,song->
             var options by remember{mutableStateOf(false)}
             Row(Modifier.fillMaxWidth().clickable{vm.playOnlineCollection(p,index)}.padding(horizontal=Design.page,vertical=Design.sm),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-                SourceThumbnail(song.artwork)
+                SongThumbnail(song)
                 Column(Modifier.weight(1f)) {
                     Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,color=if(song.id==activeId)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                     Text(if(song.artistVerified)song.credit else song.credit.takeIf{it.isNotBlank()}?.let{"Kanal: $it"} ?: "Kredit belum tersedia",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall)

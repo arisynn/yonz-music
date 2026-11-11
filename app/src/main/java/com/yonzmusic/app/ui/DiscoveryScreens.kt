@@ -17,59 +17,46 @@ import com.yonzmusic.app.ui.icons.ChevronRight
 import com.yonzmusic.app.MusicViewModel
 import com.yonzmusic.app.search.*
 
-@Composable internal fun DiscoveryControls(vm:MusicViewModel) {
-    val region by vm.discovery.region.collectAsStateWithLifecycle()
-    Row(Modifier.fillMaxWidth().padding(horizontal=Design.page),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
-        Text("Jelajahi",Modifier.weight(1f),style=MaterialTheme.typography.titleMedium)
-        FilterChip(region=="ID",{vm.discovery.selectRegion("ID")},label={Text("Indonesia")})
-        FilterChip(region=="ZZ",{vm.discovery.selectRegion("ZZ")},label={Text("Global")})
-    }
-}
-@Composable private fun ShelfHeading(title:String,state:DiscoveryShelf,refresh:()->Unit) {
-    SectionTitle(title,action={ActionIcon(Icons.Rounded.Refresh,"Muat ulang $title",refresh,enabled=!state.loading)})
-    Column(Modifier.padding(horizontal=Design.page),verticalArrangement=Arrangement.spacedBy(Design.xs)) {
-        if(state.source.isNotBlank())Text(state.source,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-        if(state.fetchedAt>0)Text("Diambil ${java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT,java.text.DateFormat.SHORT).format(java.util.Date(state.fetchedAt))}",style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-        if(state.loading)LinearProgressIndicator(Modifier.fillMaxWidth())
-        if(state.error.isNotBlank())Text(state.error,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.error)
-        else if(!state.loading && state.songs.isEmpty() && state.artists.isEmpty())Text("Belum tersedia untuk wilayah ini.",style=MaterialTheme.typography.bodySmall)
-    }
-}
-@Composable internal fun PopularSongs(vm:MusicViewModel) {
-    val region by vm.discovery.region.collectAsStateWithLifecycle()
-    val shelf by vm.discovery.songs.collectAsStateWithLifecycle()
+@Composable internal fun MusicForYou(vm:MusicViewModel,onSearch:()->Unit) {
+    val state by vm.forYou.state.collectAsStateWithLifecycle()
     val playback by vm.playback.state.collectAsStateWithLifecycle()
-    LaunchedEffect(region) {vm.discovery.load("songs")}
-    Column(verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-        ShelfHeading("Lagu populer",shelf) {vm.discovery.load("songs",true)}
-        LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-            items(shelf.songs,key={it.id}) {song ->
-                val current=playback.id==song.id || vm.isCurrentOnline(song)
-                Column(Modifier.width(144.dp).clip(Design.small).clickable {vm.selectOnline(song)}.padding(bottom=Design.sm)) {
-                    SourceThumbnail(song.artwork,Modifier.size(144.dp))
-                    Spacer(Modifier.height(Design.sm))
-                    Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium,color=if(current)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
-                    Text(song.credit,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+    Column(verticalArrangement=Arrangement.spacedBy(Design.md)) {
+        Row(Modifier.fillMaxWidth().padding(horizontal=Design.page),verticalAlignment=Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Musik untukmu",style=MaterialTheme.typography.headlineMedium)
+                Text(state.seed?.let {"Karena kamu memutar ${it.title}"} ?: "Mulai dari lagu yang kamu suka.",
+                    maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if(state.seed!=null)ActionIcon(Icons.Rounded.Refresh,"Perbarui rekomendasi",{vm.playback.refreshRecommendations()},enabled=playback.playing && state.seed?.let(vm::isCurrentOnline)==true && !state.loading)
+        }
+        if(state.seed==null)Column(Modifier.padding(horizontal=Design.page),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
+            Text("Cari dan putar sebuah lagu. Pilihan berikutnya akan disiapkan dari musik yang kamu dengarkan.",style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            FilledTonalButton(onSearch) {Text("Cari lagu")}
+        }
+        if(state.loading)LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal=Design.page))
+        if(state.error.isNotBlank())Text(state.error,Modifier.padding(horizontal=Design.page),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        if(state.seed!=null && !state.loading && state.songs.isEmpty() && state.error.isBlank())
+            Text("Pilihan musik akan disiapkan saat lagu mulai diputar.",Modifier.padding(horizontal=Design.page),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        if(state.songs.isNotEmpty())LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+            items(state.songs,key={it.id}) {song->ForYouCard(song,vm)}
+        }
+        if(state.recent.isNotEmpty()) {
+            SectionTitle("Baru kamu putar")
+            LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+                items(state.recent,key={it.id}) {song->ForYouCard(song,vm,120)}
             }
         }
     }
 }
-@Composable internal fun PopularArtists(vm:MusicViewModel,onArtist:(OnlineArtist)->Unit) {
-    val region by vm.discovery.region.collectAsStateWithLifecycle()
-    val shelf by vm.discovery.artists.collectAsStateWithLifecycle()
-    LaunchedEffect(region) {vm.discovery.load("artists")}
-    Column(verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-        ShelfHeading("Artis populer",shelf) {vm.discovery.load("artists",true)}
-        LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-            items(shelf.artists,key={it.id}) {artist ->
-                Column(Modifier.width(120.dp).clip(Design.small).clickable {onArtist(artist)}.padding(bottom=Design.sm)) {
-                    SourceThumbnail(artist.artwork,Modifier.size(120.dp))
-                    Spacer(Modifier.height(Design.sm))
-                    Text(artist.name,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium)
-                }
-            }
-        }
+@Composable private fun ForYouCard(song:OnlineSong,vm:MusicViewModel,size:Int=152) {
+    val playback by vm.playback.state.collectAsStateWithLifecycle()
+    val current=playback.id==song.id || vm.isCurrentOnline(song)
+    Column(Modifier.width(size.dp).clip(Design.small).clickable {vm.selectOnline(song)}.padding(bottom=Design.sm)) {
+        SongThumbnail(song,Modifier.size(size.dp))
+        Spacer(Modifier.height(Design.sm))
+        Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium,
+            color=if(current)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+        Text(song.credit,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 @Composable internal fun OnlineArtistRow(artist:OnlineArtist,open:()->Unit) {
@@ -99,7 +86,7 @@ import com.yonzmusic.app.search.*
         }
         items(page.songs,key={it.id}) {song ->
             Row(Modifier.fillMaxWidth().clickable {vm.selectOnline(song)}.padding(vertical=Design.sm),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-                SourceThumbnail(song.artwork)
+                SongThumbnail(song)
                 Column(Modifier.weight(1f)) {
                     Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium,color=if(playback.id==song.id || vm.isCurrentOnline(song))MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                     Text(song.credit,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)

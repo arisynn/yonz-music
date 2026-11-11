@@ -38,13 +38,18 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
         }
         return result
     }
+    private fun cancelPending() {
+        generation++;job?.cancel();job=null;loading=false
+        app.forYou.state.value.seed?.videoId?.let(app.forYou::finish)
+    }
     fun setEnabled(value:Boolean,persistDefault:Boolean=true) {
         if(!available)return
-        enabled=value;failedSeed="";error="";generation++;job?.cancel();job=null;loading=false
+        enabled=value;failedSeed="";error="";cancelPending()
         if(persistDefault && origin=="direct")scope.launch {app.preferences.onlineRadio(value)}
         if(!value)upcoming().filter {player.getMediaItemAt(it).generatedRadio()}.sortedDescending().forEach(player::removeMediaItem)
         publish();update()
     }
+    fun refreshRecommendations() {app.forYou.refresh();failedSeed="";update()}
     fun update() {
         val items=(0 until player.mediaItemCount).map(player::getMediaItemAt)
         val keys=items.map {it.mediaMetadata.extras?.getString("yono.queue.key") ?: it.mediaId}
@@ -60,7 +65,7 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
         }
         val nextKey=player.currentMediaItem?.mediaMetadata?.extras?.getString("yono.queue.key")
         if(signature!=keys || activeKey!=nextKey) {
-            signature=keys;activeKey=nextKey;generation++;job?.cancel();job=null;loading=false;changed=true
+            signature=keys;activeKey=nextKey;cancelPending();changed=true
         }
         items.forEach {item->
             seenIds+=item.mediaId
@@ -71,18 +76,24 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
             remoteSong(item)?.let {seenRecordings+=RadioQueuePolicy.recording(it.title,it.credit)}
         }
         if(changed)publish()
-        if(job?.isActive==true && ((!player.isPlaying && player.playbackState!=Player.STATE_ENDED) || player.repeatMode!=Player.REPEAT_MODE_OFF)) {
-            generation++;job?.cancel();job=null;loading=false;publish()
+        if(job?.isActive==true && ((!player.isPlaying && player.playbackState!=Player.STATE_ENDED))) {
+            cancelPending();publish()
         }
-        if(!enabled || !available || !player.isPlaying || player.repeatMode!=Player.REPEAT_MODE_OFF || job?.isActive==true)return
-        val ahead=upcoming()
-        if(ahead.size>=2)return
         val current=player.currentMediaItem ?: return
-        val seed=remoteSong(current)?.videoId ?: current.mediaMetadata.extras?.getString(RADIO_SEED) ?: return
+        val song=remoteSong(current)
+        if(player.isPlaying && !current.generatedRadio()) {
+            if(song!=null)app.forYou.remember(song)
+            else current.mediaMetadata.extras?.getString(RADIO_SEED)?.let {id->app.streams.metadata.value["engine:$id"]?.let(app.forYou::remember)}
+        }
+        if(!available || !player.isPlaying || job?.isActive==true)return
+        val seed=song?.videoId ?: current.mediaMetadata.extras?.getString(RADIO_SEED) ?: return
+        val needsHome=app.forYou.needs(seed)
+        val ahead=upcoming()
+        if((!enabled || player.repeatMode!=Player.REPEAT_MODE_OFF || ahead.size>=2) && !needsHome)return
         if(!StreamRepository.valid(seed) || seed==failedSeed)return
         val serial=generation;val currentKey=current.mediaMetadata.extras?.getString("yono.queue.key")
         val currentSession=session
-        loading=true;error="";publish()
+        loading=true;error="";app.forYou.begin(seed);publish()
         job=scope.launch(start=CoroutineStart.LAZY) {
             try {
                 // Metadata requests wait for stable playback; current audio keeps network priority.
@@ -97,10 +108,12 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
                     if(!player.playWhenReady || serial!=generation)return@launch
                     delay(500)
                 }
-                if(!stable() || player.repeatMode!=Player.REPEAT_MODE_OFF)return@launch
+                if(!stable())return@launch
                 val candidates=withTimeout(22000) {app.musicCatalog.radio(seed)}
                 ensureActive()
                 if(!valid(serial,currentSession,currentKey))return@launch
+                app.forYou.offer(seed,candidates)
+                if(!enabled || player.repeatMode!=Player.REPEAT_MODE_OFF || upcoming().size>=2)return@launch
                 val slots=4-upcoming().size
                 val chosen=RadioQueuePolicy.pick(candidates,seenIds,seenRecordings,slots)
                 if(chosen.isEmpty()) {failedSeed=seed;error="Rekomendasi baru belum tersedia.";return@launch}
@@ -112,14 +125,14 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
                 if(ended && player.playbackState==Player.STATE_ENDED && player.playWhenReady && player.currentMediaItem?.mediaMetadata?.extras?.getString("yono.queue.key")==currentKey && player.hasNextMediaItem()) {player.seekToNextMediaItem();player.prepare()}
             }catch(exception:CancellationException){throw exception}
             catch(_:Exception) {
-                if(serial==generation){failedSeed=seed;error="Auto radio belum tersedia. Lagu dan antreanmu tetap bisa diputar."}
+                if(serial==generation){failedSeed=seed;error="Rekomendasi belum tersedia. Lagu dan antreanmu tetap bisa diputar.";app.forYou.fail(seed,error)}
             }finally {
-                if(job==currentCoroutineContext()[Job]) {loading=false;job=null;publish()}
+                if(job==currentCoroutineContext()[Job]) {loading=false;job=null;app.forYou.finish(seed);publish()}
             }
         }
         job?.start()
     }
-    private fun valid(serial:Long,expectedSession:String,key:String?)=serial==generation && session==expectedSession && enabled &&
-        player.playWhenReady && player.repeatMode==Player.REPEAT_MODE_OFF && player.playerError==null &&
+    private fun valid(serial:Long,expectedSession:String,key:String?)=serial==generation && session==expectedSession &&
+        player.playWhenReady && player.playerError==null &&
         player.currentMediaItem?.mediaMetadata?.extras?.getString("yono.queue.key")==key
 }

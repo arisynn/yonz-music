@@ -178,7 +178,7 @@ class PlaybackService : MediaSessionService() {
             }
             override fun onCustomCommand(session: MediaSession, controller: MediaSession.ControllerInfo, customCommand: SessionCommand, args: Bundle): ListenableFuture<SessionResult> {
                 if(customCommand.customAction==RADIO) {
-                    radio?.setEnabled(args.getBoolean("enabled"))
+                    if(args.getBoolean("refresh"))radio?.refreshRecommendations()else radio?.setEnabled(args.getBoolean("enabled"))
                     return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
                 }
                 if (customCommand.customAction != TIMER) return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))
@@ -221,6 +221,22 @@ class PlaybackService : MediaSessionService() {
                 else player.pause()
             }
         })
+        // Same URI/source and occurrence key: Media3 updates metadata without preparing/seeking.
+        scope.launch {
+            app.streams.metadata.collectLatest {updates->
+                for(index in 0 until player.mediaItemCount) {
+                    val item=player.getMediaItemAt(index)
+                    val original=remoteSong(item) ?: continue
+                    val latest=updates[item.mediaId] ?: continue
+                    if(latest.videoId!=original.videoId || latest.artwork.isBlank() || latest.artwork==original.artwork)continue
+                    val song=original.copy(artwork=latest.artwork)
+                    val extras=android.os.Bundle(item.mediaMetadata.extras ?: android.os.Bundle()).apply {putString("yono.remote",StreamRepository.encode(song).toString())}
+                    val updated=item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon()
+                        .setArtworkUri(android.net.Uri.parse(song.artwork)).setExtras(extras).build()).build()
+                    player.replaceMediaItem(index,updated)
+                }
+            }
+        }
         // Rebind queue items after a committed relocation, keeping position and paused/playing state.
         scope.launch {
             app.repository.dao.collectionTracks().collectLatest { rows ->

@@ -2,6 +2,8 @@
 
 Your Music. Your Space.
 
+**1.5.4:** Beranda personal dengan Musik untukmu, Lanjutkan mendengarkan, dan Baru kamu putar. Banner dan daftar populer dihapus. Cover pencarian dipulihkan dari metadata ID lagu yang sama dan diteruskan ke player tanpa menyiapkan ulang audio. [Rincian, tes dan checklist HP](docs/SMART_HOME_1_5_4.md).
+
 **Pengembangan 1.5.3:** Beranda dengan lagu/artis populer Indonesia dan Global, pencarian katalog lagu/artis, auto radio yang menghormati antrean manual, serta tiga tab Beranda / Cari / Koleksi. Playlist dan musik perangkat berada di Koleksi. Engine streaming, persiapan dua lagu berikutnya dan data lokal tetap dipertahankan. [Implementasi, pengujian dan batasan](docs/MVP_DISCOVERY.md). Rilis stabil publik di bawah tetap 1.5.2 sampai pembaruan diterbitkan.
 
 **1.5.2:** antarmuka berbahasa Indonesia: Beranda / Pustaka / Cari / Daftar putar, pengaturan, pemutar, pencarian, impor, unduhan, aksesibilitas, serta pembaruan. Kode status/tema/pengurutan dan metadata musik lama tetap utuh; pesan lama diterjemahkan saat ditampilkan. Komponen Material/Media3 memakai sumber daya Indonesia. [Cakupan bahasa](docs/BAHASA_INDONESIA.md).

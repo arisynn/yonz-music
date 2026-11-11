@@ -48,7 +48,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val searchSettings = com.yonzmusic.app.search.SearchSettings(application)
     val recentSearch=MutableStateFlow(searchSettings.history())
     val onlineSearch = com.yonzmusic.app.search.OnlineSearch(viewModelScope,com.yonzmusic.app.search.EngineSearchBackend(application),onSuccess={query->searchSettings.rememberQuery(query);recentSearch.value=searchSettings.history()})
-    val discovery=com.yonzmusic.app.search.DiscoveryRepository(app,viewModelScope)
+    val forYou=app.forYou
     data class ArtistPage(val artist:com.yonzmusic.app.search.OnlineArtist?=null,val songs:List<com.yonzmusic.app.search.OnlineSong> = emptyList(),val loading:Boolean=false,val error:String="")
     val artistPage=MutableStateFlow(ArtistPage())
     private var artistJob:Job?=null

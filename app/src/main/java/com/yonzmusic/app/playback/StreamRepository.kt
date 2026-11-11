@@ -9,6 +9,13 @@ import com.yonzmusic.app.data.Track
 import com.yonzmusic.app.search.*
 import com.yonzmusic.engine.PythonRuntime
 import com.yonzmusic.app.network.AndroidNetworkContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -19,9 +26,60 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 /** Persisted source references, not media URLs or fake Library tracks. */
 class StreamRepository(private val app:YonzApp):StreamResolver {
+    val metadata=MutableStateFlow<Map<String,OnlineSong>>(emptyMap())
+    private val artJobs=mutableSetOf<String>()
+    private val artAttempts=mutableMapOf<String,Long>()
+    private val artPermit=Semaphore(1)
+    private val metadataMutex=Mutex()
     suspend fun register(song:OnlineSong) {
         require(valid(song.videoId) && song.page=="https://www.youtube.com/watch?v=${song.videoId}")
+        metadataMutex.withLock {
+            val old=metadata.value[song.id] ?: lookup(song.id)
+            val merged=if(old!=null && old.artwork.isNotBlank())song.copy(artwork=old.artwork)else song
+            store(merged)
+        }
+    }
+    private suspend fun store(song:OnlineSong) {
         app.repository.dao.state(AppState("stream:${song.videoId}",encode(song).toString()))
+        publishMetadata(song)
+    }
+    private fun publishMetadata(song:OnlineSong) {
+        metadata.update {old->(old-song.id+mapOf(song.id to song)).entries.toList().takeLast(100).associate {it.toPair()}}
+    }
+    /** At most one metadata-only image recovery. Independent of audio extraction and keyed by source ID. */
+    fun requestArtwork(song:OnlineSong,repair:Boolean=false) {
+        if(!valid(song.videoId))return
+        synchronized(artJobs) {
+            val now=android.os.SystemClock.elapsedRealtime()
+            if(song.id in artJobs || artJobs.size>=5 || artAttempts[song.id]?.let {now-it<300000}==true)return
+            artJobs+=song.id
+            artAttempts[song.id]=now
+            if(artAttempts.size>100)artAttempts.remove(artAttempts.keys.first())
+        }
+        app.persistenceScope.launch {
+            try {artPermit.withPermit {
+                val known=lookup(song.id)
+                if(!repair && known?.artwork?.isNotBlank()==true) {publishMetadata(known);return@withPermit}
+                val root=withTimeout(22000) {app.musicCatalog.request(JSONObject().put("operation","artwork").put("video_id",song.videoId))}
+                val url=root.optString("artwork")
+                if(root.optString("video_id")==song.videoId && SearchContract.https(url,SearchContract.artHosts))
+                    metadataMutex.withLock {store((lookup(song.id) ?: song).copy(artwork=url))}
+            }}catch(e:CancellationException){throw e}
+            catch(_:Exception) { /* Missing images must never fail playback or expose raw source errors. */ }
+            finally {synchronized(artJobs){artJobs-=song.id}}
+        }
+    }
+    private fun extractedArtwork(id:String,json:JSONObject) {
+        val supplied=json.optJSONObject("song") ?: return
+        if(supplied.optString("youtube_id")!=id)return
+        val url=supplied.optString("artwork_url")
+        if(!SearchContract.https(url,SearchContract.artHosts))return
+        app.persistenceScope.launch {
+            metadataMutex.withLock {
+                val old=lookup("engine:$id") ?: return@withLock
+                if(old.artwork!=url)store(old.copy(artwork=url))
+            }
+        }
     }
     suspend fun lookup(mediaId:String):OnlineSong?=withContext(Dispatchers.IO) {
         val id=mediaId.removePrefix("engine:");if(!mediaId.startsWith("engine:") || !valid(id))return@withContext null
@@ -54,6 +112,7 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         val j=JSONObject(raw);if(!j.optBoolean("ok"))throw StreamFailure(runCatching {StreamIssue.valueOf(j.optString("code","SOURCE"))}.getOrDefault(StreamIssue.SOURCE))
         val url=j.getString("url");runCatching {StreamPolicy.url(url)}.getOrElse {throw StreamFailure(StreamIssue.UNSAFE)}
         val headers=mutableMapOf<String,String>();j.optJSONObject("headers")?.let {h->h.keys().forEach {k->val v=h.optString(k);if(k.lowercase() in setOf("user-agent","accept","accept-language") && v.length<1500 && !v.contains('\r') && !v.contains('\n'))headers[k]=v}}
+        extractedArtwork(id,j)
         val result=Resolved(url,headers,((j.optJSONObject("song")?.optDouble("duration",0.0) ?: 0.0)*1000).toLong().coerceIn(0,7*86400000L),j.optString("format_id").take(100),j.optString("ext").take(20),j.optString("acodec").take(100))
         result
         }

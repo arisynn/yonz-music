@@ -79,7 +79,7 @@ import kotlinx.coroutines.delay
                     ActionIcon(Icons.Rounded.KeyboardArrowDown, "Tutup pemutaran saat ini", close)
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("SEDANG DIPUTAR", style = MaterialTheme.typography.labelSmall, color = c.primary)
-                        Text(Bahasa.album(track.album), style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis, color = c.onSurfaceVariant)
+                        Text(track.title, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis, color = c.onSurfaceVariant)
                     }
                     ActionIcon(Icons.Rounded.MoreHoriz, "Opsi lagu", options)
                 }

@@ -80,6 +80,23 @@ class DiscoveryTests(unittest.TestCase):
             {"url":"https://lh3.googleusercontent.com/original","width":2000},
             {"url":"https://lh3.googleusercontent.com/medium","width":512}]))
 
+    def test_artwork_recovery_uses_the_exact_video_identity(self):
+        class ArtworkCatalog:
+            def call(self,method,ident):
+                return {"videoDetails":{"videoId":ident,"thumbnail":{"thumbnails":[
+                    {"url":"https://i.ytimg.com/vi/"+ident+"/provided.jpg","width":480}]}}}
+        ident="00000000001"
+        result=run({"operation":"artwork","video_id":ident},Control("fixture"),ArtworkCatalog())
+        self.assertEqual(ident,result["video_id"])
+        self.assertEqual("https://i.ytimg.com/vi/"+ident+"/provided.jpg",result["artwork"])
+        class WrongIdentity:
+            def call(self,*a):return {"videoDetails":{"videoId":"00000000002"}}
+        with self.assertRaises(ValueError):run({"operation":"artwork","video_id":ident},Control("fixture"),WrongIdentity())
+
+    def test_nested_and_protocol_relative_thumbnails_are_normalized_safely(self):
+        self.assertEqual("https://lh3.googleusercontent.com/actual",artwork({"thumbnails":[{"url":"//lh3.googleusercontent.com/actual","width":512}]}))
+        self.assertEqual("",artwork({"thumbnails":[{"url":"https://yt3.ggpht.com.evil.test/image"}]}))
+
     def test_invalid_ids_and_regions_do_not_request_network(self):
         for payload in [{"operation":"radio","video_id":"bad"},{"operation":"artist","artist_id":"../bad"},{"operation":"popular_songs","region":"invalid"}]:
             catalog=FakeCatalog()

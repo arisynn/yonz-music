@@ -7,6 +7,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yonzmusic.app.YonzApp
+import com.yonzmusic.app.search.OnlineSong
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -16,11 +20,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fun sizeOf(key:String,value:Bitmap)=value.allocationByteCount}
-/** Only shown after explicit source review. No tracking pixels, arbitrary hosts, or persistent failure cache. */
-@Composable fun SourceThumbnail(url:String,modifier:Modifier=Modifier.size(44.dp)) {
-    key(url) {SourceThumbnailContent(url,modifier)}
+/** Public source artwork only, with exact host validation and bounded image decoding. */
+@Composable fun SongThumbnail(song:OnlineSong,modifier:Modifier=Modifier.size(44.dp)) {
+    val app=LocalContext.current.applicationContext as YonzApp
+    val metadata by app.streams.metadata.collectAsStateWithLifecycle()
+    val latest=metadata[song.id] ?: song
+    LaunchedEffect(song.id,latest.artwork) {if(latest.artwork.isBlank())app.streams.requestArtwork(song)}
+    SourceThumbnail(latest.artwork,modifier) {app.streams.requestArtwork(latest,repair=true)}
 }
-@Composable private fun SourceThumbnailContent(url:String,modifier:Modifier) {
+@Composable fun SourceThumbnail(url:String,modifier:Modifier=Modifier.size(44.dp),onFailure:(()->Unit)?=null) {
+    key(url) {SourceThumbnailContent(url,modifier,onFailure)}
+}
+@Composable private fun SourceThumbnailContent(url:String,modifier:Modifier,onFailure:(()->Unit)?) {
+    val failure by rememberUpdatedState(onFailure)
     val allowed=setOf("i.ytimg.com","img.youtube.com","i.scdn.co","lh3.googleusercontent.com")+com.yonzmusic.app.search.SearchContract.artHosts
     val image by produceState<Bitmap?>(sourceImages.get(url),url) {
         if(value==null && url.isNotBlank())value=withContext(Dispatchers.IO) { runCatching {
@@ -33,6 +45,7 @@ private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fu
             var sample=1;while(maxOf(bounds.outWidth,bounds.outHeight)/sample>256)sample*=2
             BitmapFactory.decodeByteArray(data,0,data.size,BitmapFactory.Options().apply {inSampleSize=sample})?.also {sourceImages.put(url,it)}
         }.getOrNull() }
+        if(value==null && url.isNotBlank())failure?.invoke()
     }
     if(image!=null)Image(image!!.asImageBitmap(),null,modifier.clip(Design.small),contentScale=ContentScale.Crop)
     else DefaultArt(modifier.clip(Design.small))
