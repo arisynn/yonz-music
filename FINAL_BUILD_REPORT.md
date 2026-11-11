@@ -1,9 +1,29 @@
-# Yono Music 2.0.0 candidate — delivery checkpoint
+# Yono Music 2.0.0 candidate — delivery
 
-Implementation is based on official stable v1.5.2. It adds streaming-first navigation/Home, online favorites and qualified history, public music catalogue/radio/autoplay, balanced quality, conditional one-track preload, bounded private cache and local diagnostics. Room3→4 and backup2 retain existing collections; backup1 is accepted.
+Built from the official stable v1.5.2 base. Implementation is pushed on `update/stable-v1.5.2`; no stable release/tag or updater metadata is published.
 
-Target production identity: com.yonzmusic.app / code17 /2.0.0, same owner certificate. Preview remains com.yonzmusic.app.dev /2.0.0-preview.1. Private signing files and credentials stay outside git and source artifacts.
+- Streaming-first minimal Beranda/Cari, retaining local collections, smart mixes and original-format SAF downloads.
+- Media3 single session, yt-dlp audio resolution, public music catalogue/radio without login/backend.
+- Balanced/economy/best quality, conditional one-track preload, private off/32/64MiB LRU cache and local timing diagnostics.
+- Online favorites/qualified history, personal shelves and bounded autoplay with pause/repeat/queue-change protection.
+- Additive Room3→4 migration and backup2 accepting backup1.
 
-189 Python and148 JVM tests passed. An API26 regression run had18 passing cases and one opt-in skip; standalone radio/native-session and preload reruns passed. The final production build, artifact signature/identity checks and actual1.5.2→candidate in-place upgrade are pending at this checkpoint. TEST_REPORT.md records failures, corrections and the limits of each check.
+## Artifact
 
-Real-source catalogue/resolution probes failed in this environment. No live performance improvement or physical-device qualification is claimed. This branch may be reviewed/tested, but no stable release, updater metadata publication or GitHub release/tag is authorized by these results. See NEXT_UPDATE_PLAN.md for the remaining verification gates.
+`artifacts/Yono_Music_v2.0.0_candidate.apk`
+
+Package com.yonzmusic.app · code17 ·2.0.0 · non-debuggable · minimum API26 / target35 · arm64-v8a/x86_64.
+
+30015136 bytes (39444 bytes above official1.5.2).
+
+APK SHA-256: `e80234a3d9d57912ac5a460b3f4efdcc6b59e09eb54b9264fcf506914bc7895b`
+
+Official certificate SHA-256: `ebefa44cc5fba1292fec9fc25bb4840e41e501bb0958a86931c046fd1be523e5`
+
+Preview uses the separate com.yonzmusic.app.dev package /2.0.0-preview.1. Source and checksums are packaged separately. Signing files, passwords, GitHub credentials and the private upgrade probe APK are excluded.
+
+## Validation and limits
+
+Final Preview/release builds and lint passed. 189 Python and148 JVM tests passed.20 distinct controlled Android cases passed across regression/final runs, with one opt-in live-source skip. The final6cases cover the latest hardening. Actual official1.5.2→candidate replacement preserved seeded collection data in the minified production package without uninstall or data reset.320dp dark150% UI was inspected. TEST_REPORT.md retains failure/correction history and practical limits.
+
+Public catalogue and known-video resolution probes failed in this environment. Successful live decoded playback, physical-device qualification and the25% Wi-Fi improvement target are not claimed. The APK is a candidate for further testing; public stable publication remains gated on NEXT_UPDATE_PLAN.md.

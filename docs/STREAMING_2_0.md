@@ -18,7 +18,9 @@ Media3 1.6.1 is still the only player. Bundled yt-dlp 2026.10.21 resolves exact 
 
 Quality defaults to Seimbang: prefer standalone original HTTPS audio up to about 144 kbps (target around 128). Hemat prefers up to about 80 kbps (target around 64). If a ceiling is unavailable, use the lowest available standalone audio; Terbaik requests the best. Actual source bitrate/codec varies. Downloads retain their existing original-format workflow. Quality changes apply on the next playback/open, with the current byte format pinned during seek/recovery.
 
-LoadControl: 5–30 seconds normal buffering, initial 1 second, rebuffer 2.5 seconds. One upcoming recording is resolved and up to 5 seconds preloaded only once at least 5 seconds of current audio is buffered. Foreground source opens/buffering preempt the single metadata worker through cooperative cancellation. Speculation is cancelled on pause/buffering/queue changes.
+LoadControl: 5–30 seconds normal buffering, initial 1 second, rebuffer 2.5 seconds. One upcoming recording is resolved and a 5-second preload target applied only once at least 5 seconds of current audio is buffered. Foreground source opens/buffering preempt the single metadata worker through cooperative cancellation. Speculation is cancelled on pause/buffering/queue changes.
+
+Media3 preparation/read granularity can overshoot a duration target; the cache limit and one-item speculation limit remain separate bounds.
 
 A process-wide Media3 SimpleCache uses private app cache storage. Default 64 MiB; options off/32/64 MiB. LRU eviction applies on write and capacity changes; active fragments can temporarily occupy staging space before commit. Cache is cleared separately from permanent SAF downloads. It is not a promise of offline playback: source validation may still need the network. Keys include source/format/codec/container and a revision derived from exact length plus source modification identity. Expiring signed URLs never enter persisted metadata. When revision evidence is unavailable, reuse is confined to that resolved reference; changed identities never share cached byte ranges. Local content handling remains in DefaultDataSource.
 

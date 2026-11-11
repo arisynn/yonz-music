@@ -18,4 +18,6 @@ Pending before stable publication:
 - Physical-device screen-off/audio focus/Bluetooth and Android16/HyperOS checks if those are target devices. Emulator evidence must remain identified as emulator evidence.
 - Only after the gates pass: create the stable release/tag and verified updater metadata. Recheck GitHub's latest public versionCode first. No publication/push is performed by this delivery.
 
+The signed candidate build and actual official1.5.2→candidate in-place upgrade passed; collection identities were retained without uninstall.
+
 Actual build, upgrade, and test results are recorded in TEST_REPORT.md and FINAL_BUILD_REPORT.md. Deferred product additions remain charts, full artist/album discovery, synchronized lyrics, accounts/cloud sync and a custom backend.

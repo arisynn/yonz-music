@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "productionUpgrade": true,
+  "finalControlledCases": 6,
+  "artifact": {
+    "package": "com.yonzmusic.app",
+    "versionName": "2.0.0",
+    "versionCode": 17,
+    "certificateSha256": "ebefa44cc5fba1292fec9fc25bb4840e41e501bb0958a86931c046fd1be523e5",
+    "apkSha256": "e80234a3d9d57912ac5a460b3f4efdcc6b59e09eb54b9264fcf506914bc7895b",
+    "bytes": 30015136
+  }
+}
