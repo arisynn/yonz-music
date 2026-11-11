@@ -34,7 +34,8 @@ class MetadataSyncTest {
     @Test fun serviceMetadataAndArtworkUpdateInPlaceAndObsoleteArtworkCannotWin():Unit=runBlocking {
         val app=ApplicationProvider.getApplicationContext<YonzApp>();val inst=InstrumentationRegistry.getInstrumentation()
         fun main(block:()->Unit)=inst.runOnMainSync(block)
-        suspend fun await(check:()->Boolean)=withTimeout(35000){while(true){var yes=false;main {yes=check()};if(yes)break;delay(30)}}
+        var phase=0
+        suspend fun await(check:()->Boolean) {val step=++phase;try {withTimeout(35000){while(true){var yes=false;main {yes=check()};if(yes)break;delay(30)}}}catch(e:TimeoutCancellationException){throw AssertionError("Metadata phase $step timed out",e)}}
         val ids=listOf("QAMD0000001","QAMD0000002")
         val previous=ids.associateWith {app.repository.dao.state("stream:$it")};val preferences=app.preferences.flow.first();val snapshot=app.preferences.snapshot()
         val red=image(Color.RED);val blue=image(Color.BLUE);val calls=AtomicInteger()
@@ -42,7 +43,7 @@ class MetadataSyncTest {
         wav.put("RIFF".toByteArray()).putInt(36+frames*2).put("WAVEfmt ".toByteArray()).putInt(16).putShort(1).putShort(1).putInt(16000).putInt(32000).putShort(2).putShort(16).put("data".toByteArray()).putInt(frames*2)
         val songs=ids.mapIndexed {i,id->OnlineSong("engine:$id",SearchProvider.ENGINE,"Search ${if(i==0)"A"else "B"}","QA credited artist",durationMs=30000,artwork="https://i.ytimg.com/vi/$id/${System.nanoTime()}.png",page="https://www.youtube.com/watch?v=$id",videoId=id,artistVerified=true)}
         lateinit var raw:MediaController;lateinit var connection:PlaybackConnection;var rawReady=false;var connectionReady=false
-        val opened=AtomicInteger()
+        val opened=AtomicInteger();val platformStats=JSONObject()
         try {
             app.preferences.autoplay(false);app.preferences.onlineHistory(false)
             app.artwork.fetch={url->calls.incrementAndGet();Thread.sleep(if(url.contains("slow"))800 else 120);SafeHttp.Response(200,if(url.contains(ids[1]))blue else red,null,null,"image/png")}
@@ -82,15 +83,25 @@ class MetadataSyncTest {
             // A platform controller reads the same session used by Android lock-screen/Bluetooth controls.
             var platform:android.media.session.MediaController?=null
             await {
-                val notification=(app.getSystemService(android.content.Context.NOTIFICATION_SERVICE) as NotificationManager).activeNotifications.firstOrNull {it.notification.extras.containsKey("android.mediaSession")}
-                val token=notification?.notification?.extras?.getParcelable<android.media.session.MediaSession.Token>("android.mediaSession")
+                val notifications=(app.getSystemService(android.content.Context.NOTIFICATION_SERVICE) as NotificationManager).activeNotifications
+                val notification=notifications.firstOrNull {it.notification.extras.containsKey("android.mediaSession")}
+                val notificationToken=notification?.notification?.extras?.getParcelable<android.media.session.MediaSession.Token>("android.mediaSession")
+                // Read our own session token even if the emulator has suppressed notifications.
+                val connected=raw.connectedToken
+                val direct=connected?.javaClass?.getDeclaredMethod("getPlatformToken")?.apply {isAccessible=true}?.invoke(connected) as? android.media.session.MediaSession.Token
+                val token=notificationToken ?: direct
                 if(token!=null)platform=android.media.session.MediaController(app,token)
-                platform?.metadata?.getString(android.media.MediaMetadata.METADATA_KEY_TITLE)=="Search B" && (platform?.metadata?.getBitmap(android.media.MediaMetadata.METADATA_KEY_ART)!=null || platform?.metadata?.getBitmap(android.media.MediaMetadata.METADATA_KEY_ALBUM_ART)!=null)
+                val title=platform?.metadata?.getString(android.media.MediaMetadata.METADATA_KEY_TITLE)=="Search B"
+                val bitmap=platform?.metadata?.getBitmap(android.media.MediaMetadata.METADATA_KEY_ART) ?: platform?.metadata?.getBitmap(android.media.MediaMetadata.METADATA_KEY_ALBUM_ART) ?: platform?.metadata?.getBitmap(android.media.MediaMetadata.METADATA_KEY_DISPLAY_ICON)
+                platformStats.put("notificationCount",notifications.size).put("notificationToken",notificationToken!=null).put("directToken",direct!=null).put("titleMatches",title).put("artworkBitmap",bitmap!=null).put("notificationIcon",notification?.notification?.getLargeIcon()!=null)
+                title && bitmap!=null
             }
-            val report=JSONObject().put("liveNetwork",false).put("metadataUpdateMs",updateMs).put("audioSourceReopensOnMetadata",metadataReopens).put("queueAndPositionPreserved",true).put("staleArtworkRejected",true).put("platformSessionArtwork",true).put("physicalBluetooth",false)
+            val report=JSONObject().put("liveNetwork",false).put("metadataUpdateMs",updateMs).put("audioSourceReopensOnMetadata",metadataReopens).put("queueAndPositionPreserved",true).put("staleArtworkRejected",true).put("platformSessionArtwork",true).put("physicalBluetooth",false).put("platform",platformStats)
             java.io.File(app.cacheDir,"metadata-sync.json").writeText(report.toString(2))
         }finally {
-            main{if(rawReady){raw.pause();raw.release()};if(connectionReady)connection.close();app.stopService(Intent(app,PlaybackService::class.java))};delay(400)
+            main{if(rawReady){
+                java.io.File(app.cacheDir,"metadata-stage.json").writeText(JSONObject().put("phase",phase).put("index",raw.currentMediaItemIndex).put("state",raw.playbackState).put("position",raw.currentPosition).put("playerArtworkBytes",raw.mediaMetadata.artworkData?.size ?: 0).put("itemArtworkBytes",raw.currentMediaItem?.mediaMetadata?.artworkData?.size ?: 0).put("fetches",calls.get()).put("platform",platformStats).put("hasLocalUri",raw.currentMediaItem?.mediaMetadata?.artworkUri?.toString()?.let {app.artwork.owns(it)}==true).toString(2))
+                raw.pause();raw.release()};if(connectionReady)connection.close();app.stopService(Intent(app,PlaybackService::class.java))};delay(400)
             app.streamTestDataSource=null;app.artwork.fetch=null
             app.preferences.autoplay(preferences.autoplay);app.preferences.onlineHistory(preferences.onlineHistory)
             if(snapshot!=null)app.preferences.save(snapshot)

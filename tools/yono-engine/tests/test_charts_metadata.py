@@ -22,6 +22,7 @@ class ChartsMetadataTests(unittest.TestCase):
         self.assertEqual('PLATFORM_OFFICIAL', content(self.row())['official_status'])
 
     def test_authorized_live_and_remix_are_classified_separately(self):
+        self.assertEqual('LIVE', content({**self.row(), 'was_live': True})['content_kind'])
         for title, kind in [('Owned Live', 'LIVE'), ('Owned DJ Remix', 'REMIX'), ('Owned nightcore', 'ALTERED'), ('Owned cover', 'COVER')]:
             self.assertEqual(kind, content({**self.row(), 'title': title})['content_kind'])
 
@@ -54,6 +55,7 @@ class ChartsMetadataTests(unittest.TestCase):
         self.assertEqual('unavailable', run({'category': 'weekly_shorts', 'country': 'ID'}, FakeCatalogue({}))['status'])
 
     def test_search_preserves_exact_identity_and_optional_fields(self):
+        self.assertEqual('Supplied full title', normalize({'id': 'QAMD0000001', 'fulltitle': 'Supplied full title'})['title'])
         result = normalize({'id': 'QAMD0000001', 'title': 'Owned fixture', 'thumbnail': 'https://i.ytimg.com/t.jpg', 'channel_id': 'UCexact', 'release_year': 2024})
         self.assertEqual('UCexact', result['channel_id']); self.assertEqual('https://i.ytimg.com/t.jpg', result['artwork'])
         self.assertEqual([], result['artists']); self.assertEqual('UNVERIFIED', result['official_status'])

@@ -32,7 +32,7 @@ def video_id(value):
 
 def normalize(row):
     ident = row.get("id", "")
-    title = clean(row.get("title"))
+    title = clean(row.get("title") or row.get("fulltitle"))
     if not isinstance(ident, str) or not ID.fullmatch(ident) or not title or row.get("is_live") or row.get("live_status") in {"is_live", "is_upcoming"}:
         return None
     duration = row.get("duration")

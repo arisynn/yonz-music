@@ -29,7 +29,8 @@ internal class PlaybackMetadataCoordinator(private val app:YonzApp,private val p
             val image=images.get(imageKey) ?: old.mediaMetadata.artworkData.takeIf {seed.artwork==song.artwork}
             val metadata=remoteMetadata(song,old.mediaMetadata.extras,image)
             // Identical localConfiguration lets ProgressiveMediaSource update metadata without reset.
-            if(metadata!=old.mediaMetadata)player.replaceMediaItem(i,old.buildUpon().setMediaMetadata(metadata).build())
+            // MediaMetadata.equals intentionally ignores extras, which hold normalized provenance.
+            if(metadata!=old.mediaMetadata || metadata.extras?.getString("yono.remote")!=old.mediaMetadata.extras?.getString("yono.remote"))player.replaceMediaItem(i,old.buildUpon().setMediaMetadata(metadata).build())
         }
         val current=player.currentMediaItem;val seed=current?.let(::remoteSong)
         val song=seed?.let {app.metadata.current(it)}

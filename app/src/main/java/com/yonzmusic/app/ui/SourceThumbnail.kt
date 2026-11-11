@@ -20,8 +20,8 @@ import com.yonzmusic.app.playback.StreamWork
 
 /** Compatibility bridge for existing artwork consumers; storage belongs to the shared resolver. */
 internal object CatalogArtBytes {
-    fun load(context:android.content.Context,url:String,limit:Int=2*1024*1024):ByteArray? = kotlinx.coroutines.runBlocking {
-        (context.applicationContext as com.yonzmusic.app.YonzApp).artwork.resolve("image:$url",url)?.bytes?.takeIf {it.size<=limit}
+    fun load(context:android.content.Context,url:String,limit:Int=2*1024*1024,identity:String=url):ByteArray? = kotlinx.coroutines.runBlocking {
+        (context.applicationContext as com.yonzmusic.app.YonzApp).artwork.resolve(identity,url)?.bytes?.takeIf {it.size<=limit}
     }
 }
 private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fun sizeOf(key:String,value:Bitmap)=value.allocationByteCount}

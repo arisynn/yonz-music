@@ -50,5 +50,6 @@ class UnifiedMetadataTest {
             assertFalse(page.available);assertTrue(page.entries.isEmpty());assertTrue(page.sourceUrl.startsWith("https://"));assertTrue(page.message.isNotBlank())
         }
         assertTrue(MusicCharts.fallback(ChartCategory.SEA,"ZZ").message.contains("tidak tersedia"))
+        assertTrue(MusicCharts.fallback(ChartCategory.SPOTIFY_50,"MY").message.contains("tidak tersedia"))
     }
 }

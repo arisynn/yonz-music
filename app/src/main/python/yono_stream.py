@@ -45,7 +45,7 @@ def inspect_video(ident, control, runtime=None, factory=youtube_dl, format_id=No
     artists=[str(a)[:250] for a in artists if isinstance(a,str)] if isinstance(artists,list) else []
     duration=data.get('duration')
     duration=duration if isinstance(duration,(int,float)) and math.isfinite(duration) and duration>0 else 0
-    song=Song(data.get('track') or data.get('title') or '',artists,duration,album=data.get('album') or '',youtube_id=ident,
+    song=Song(data.get('track') or data.get('title') or data.get('fulltitle') or '',artists,duration,album=data.get('album') or '',youtube_id=ident,
               artwork_url=thumbnail(data.get('thumbnails')),source_url='https://www.youtube.com/watch?v='+ident)
     headers={k:v for k,v in (data.get('http_headers') or {}).items() if k.lower() in {'user-agent','accept','accept-language'} and isinstance(v,str) and len(v)<1500 and '\r' not in v and '\n' not in v}
     # CDN lmt + exact length identify immutable source bytes across expiring URLs.

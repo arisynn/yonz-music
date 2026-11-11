@@ -56,7 +56,7 @@ internal object ArtCache {
         return try {
             cache.get(key) ?: run {
                 val bytes = runCatching {
-                    if(track.source=="stream" && com.yonzmusic.app.search.SearchContract.artwork(track.artUri))CatalogArtBytes.load(context,track.artUri,4*1024*1024)
+                    if(track.source=="stream" && com.yonzmusic.app.search.SearchContract.artwork(track.artUri))CatalogArtBytes.load(context,track.artUri,4*1024*1024,track.id)
                     else if (track.artUri.isNotEmpty()) context.contentResolver.openInputStream(Uri.parse(track.artUri))?.use { input ->
                         val out = java.io.ByteArrayOutputStream(); val buffer = ByteArray(8192)
                         while (true) { val n = input.read(buffer); if (n < 0) break; if (out.size() + n > 8 * 1024 * 1024) return@use null; out.write(buffer, 0, n) }
