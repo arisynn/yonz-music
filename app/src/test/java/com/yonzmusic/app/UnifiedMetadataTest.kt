@@ -37,6 +37,15 @@ class UnifiedMetadataTest {
         val json=StreamRepository.encode(old);val found=StreamRepository.decode(json)
         assertEquals(old.copy(artworkUri=""),found);assertFalse(json.toString().contains("private-cache"));assertFalse(json.has("url"))
     }
+    @Test fun legacyCanonicalReferencesKeepCatalogueCreditPriorityWithoutMigration() {
+        val id="mb:recording:12345678-1234-1234-1234-123456789012"
+        val old=JSONObject().put("id","").put("mediaId",id).put("catalog",JSONObject().put("id",id).toString()).put("title","Catalogue title").put("credit","Catalogue artist").put("artist",true).put("album","Catalogue album")
+        val restored=StreamRepository.decode(old)
+        assertEquals(MetadataSource.CATALOG,restored.metadataSource)
+        assertEquals(ArtworkSource.CATALOG,restored.artworkSource)
+        val merged=MetadataPolicy.merge(restored,restored.copy(credit="Source credit",album="Source album",metadataSource=MetadataSource.EXTRACTION))
+        assertEquals("Catalogue artist",merged.credit);assertEquals("Catalogue album",merged.album)
+    }
     @Test fun chartParserNeverInventsRankDateOrSourceStatistics() {
         val row=JSONObject().put("video_id","QAMD0000001").put("title","Owned fixture").put("page",song().page)
         val root=JSONObject().put("status","available").put("entries",JSONArray().put(JSONObject().put("song",row))).put("source","YouTube Music").put("sourceUrl","https://evil.test/chart")
