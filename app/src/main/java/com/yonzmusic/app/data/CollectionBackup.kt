@@ -27,7 +27,7 @@ class CollectionBackup(private val app: YonzApp) {
             document.put("playback", JSONObject().put("ids", JSONArray(ids)).put("index", snapshot.index).put("position", snapshot.position).put("shuffle", snapshot.shuffle).put("repeat", snapshot.repeat))
         }
         val preferences = app.preferences.flow.first()
-        document.put("preferences", JSONObject().put("theme", preferences.theme).put("sort", preferences.sort).put("reduceMotion", preferences.reduceMotion).put("glass", preferences.glass).put("smartMix",preferences.smartMix))
+        document.put("preferences", JSONObject().put("theme", preferences.theme).put("sort", preferences.sort).put("reduceMotion", preferences.reduceMotion).put("glass", preferences.glass).put("smartMix",preferences.smartMix).put("onlineRadio",preferences.onlineRadio))
         val text = document.toString(2); require(text.toByteArray().size <= LIMIT) { "Collection backup exceeds 10 MB." }
         app.contentResolver.openOutputStream(uri, "wt")?.bufferedWriter(Charsets.UTF_8)?.use { it.write(text) } ?: error("Backup could not be saved.")
     }
@@ -78,7 +78,7 @@ class CollectionBackup(private val app: YonzApp) {
         root.optJSONObject("preferences")?.let { p ->
             p.optString("theme").takeIf { it in setOf("System", "Dark", "Light") }?.let { app.preferences.theme(it) }
             p.optString("sort").takeIf { it in setOf("Title", "Artist", "Album", "Recently added", "Duration") }?.let { app.preferences.sort(it) }
-            app.preferences.motion(p.optBoolean("reduceMotion")); app.preferences.glass(p.optBoolean("glass", true));app.preferences.smartMix(p.optBoolean("smartMix",true))
+            app.preferences.motion(p.optBoolean("reduceMotion")); app.preferences.glass(p.optBoolean("glass", true));app.preferences.smartMix(p.optBoolean("smartMix",true));if(p.has("onlineRadio"))app.preferences.onlineRadio(p.optBoolean("onlineRadio",true))
         }
         "Collections restored. Choose music sources to reconnect unavailable tracks. Original audio was not changed."
     }

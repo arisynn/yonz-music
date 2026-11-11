@@ -2,6 +2,8 @@
 
 Your Music. Your Space.
 
+**Pengembangan 1.5.3:** Beranda dengan lagu/artis populer Indonesia dan Global, pencarian katalog lagu/artis, auto radio yang menghormati antrean manual, serta tiga tab Beranda / Cari / Koleksi. Playlist dan musik perangkat berada di Koleksi. Engine streaming, persiapan dua lagu berikutnya dan data lokal tetap dipertahankan. [Implementasi, pengujian dan batasan](docs/MVP_DISCOVERY.md). Rilis stabil publik di bawah tetap 1.5.2 sampai pembaruan diterbitkan.
+
 **1.5.2:** antarmuka berbahasa Indonesia: Beranda / Pustaka / Cari / Daftar putar, pengaturan, pemutar, pencarian, impor, unduhan, aksesibilitas, serta pembaruan. Kode status/tema/pengurutan dan metadata musik lama tetap utuh; pesan lama diterjemahkan saat ditampilkan. Komponen Material/Media3 memakai sumber daya Indonesia. [Cakupan bahasa](docs/BAHASA_INDONESIA.md).
 
 **1.5.1:** unduhan disembunyikan dari Galeri secara default menggunakan `.nomedia` hanya di folder tujuan yang dipilih. Bisa dimatikan di Settings; seluruh isi/subfolder tujuan terpengaruh, termasuk pemutar lain yang memakai indeks Android. JSON metadata baru disimpan rapi di `.yono/` dan sampul tetap `.cover/`. [Rincian tata letak dan batasannya](docs/DOWNLOAD_FOLDER_LAYOUT.md). JSON lama tetap dibaca. Audio, ID koleksi dan format aslinya tidak diubah. Galeri HyperOS mungkin perlu memperbarui indeks.
@@ -39,7 +41,7 @@ Downloaded audio retains its original encoding/container. MP3/FLAC/M4A/Ogg/Opus 
 
 [Panduan playlist online](docs/ONLINE_PLAYLISTS.md): Create → Playlist online, atau Link → tinjau → simpan. Tidak ada audio yang diunduh otomatis.
 
-Home, Library, Search and Playlists remain the four main destinations. One mini-player opens the shared Now Playing session. Favorites, custom playlist editing/reordering/export, queue, sleep timer, system equalizer intent, dark/light/system themes, reduced motion and glass settings remain available.
+Home, Search and Collection are the three main destinations. Collection contains playlists and the existing device library. One mini-player opens the shared Now Playing session. Favorites, custom playlist editing/reordering/export, queue, sleep timer, system equalizer intent, dark/light/system themes, reduced motion and glass settings remain available.
 
 ## Signing and installation
 

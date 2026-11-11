@@ -57,6 +57,19 @@ import kotlinx.coroutines.launch
     ModalBottomSheet(onDismissRequest=close,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(.85f).navigationBarsPadding()) {
             SectionTitle("Antreanmu",if(state.shuffle)"Acak aktif · matikan untuk mengurutkan"else "${state.queue.size} lagu · tahan pegangan untuk mengurutkan")
+            if(state.radioAvailable) {
+                Row(Modifier.fillMaxWidth().padding(horizontal=Design.page),verticalAlignment=Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Lanjutkan dengan radio",style=MaterialTheme.typography.titleSmall)
+                        Text(if(state.radioLoading)"Menyiapkan musik serupa…"else "Rekomendasi setelah antrean pilihanmu",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(state.radioEnabled,connection::radio)
+                }
+                if(state.radioError.isNotBlank()) {
+                    Text(state.radioError,Modifier.padding(horizontal=Design.page),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                    TextButton({connection.radio(true)},Modifier.padding(horizontal=Design.page)) {Text("Coba lagi")}
+                }
+            }
             SnackbarHost(snackbar,Modifier.padding(horizontal=Design.md))
             if(keys.isEmpty())EmptyState("Lagu berikutnya pilihanmu","Tambahkan lagu ke antrean untuk mulai mendengarkan.","playlist")
             LazyColumn(state=list,modifier=Modifier.weight(1f),contentPadding=PaddingValues(bottom=Design.page)) {

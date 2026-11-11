@@ -17,7 +17,10 @@ import kotlinx.coroutines.withContext
 
 private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fun sizeOf(key:String,value:Bitmap)=value.allocationByteCount}
 /** Only shown after explicit source review. No tracking pixels, arbitrary hosts, or persistent failure cache. */
-@Composable fun SourceThumbnail(url:String) {
+@Composable fun SourceThumbnail(url:String,modifier:Modifier=Modifier.size(44.dp)) {
+    key(url) {SourceThumbnailContent(url,modifier)}
+}
+@Composable private fun SourceThumbnailContent(url:String,modifier:Modifier) {
     val allowed=setOf("i.ytimg.com","img.youtube.com","i.scdn.co","lh3.googleusercontent.com")+com.yonzmusic.app.search.SearchContract.artHosts
     val image by produceState<Bitmap?>(sourceImages.get(url),url) {
         if(value==null && url.isNotBlank())value=withContext(Dispatchers.IO) { runCatching {
@@ -31,6 +34,6 @@ private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fu
             BitmapFactory.decodeByteArray(data,0,data.size,BitmapFactory.Options().apply {inSampleSize=sample})?.also {sourceImages.put(url,it)}
         }.getOrNull() }
     }
-    if(image!=null)Image(image!!.asImageBitmap(),null,Modifier.size(44.dp).clip(Design.small),contentScale=ContentScale.Crop)
-    else DefaultArt(Modifier.size(44.dp).clip(Design.small))
+    if(image!=null)Image(image!!.asImageBitmap(),null,modifier.clip(Design.small),contentScale=ContentScale.Crop)
+    else DefaultArt(modifier.clip(Design.small))
 }

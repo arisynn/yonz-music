@@ -19,8 +19,8 @@ android {
         applicationId = "com.yonzmusic.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(16)
-        versionName = "1.5.2"
+        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(17)
+        versionName = "1.5.3"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -52,7 +52,7 @@ android {
             matchingFallbacks += listOf("debug")
         }
         release {
-            buildConfigField("boolean","ONLINE_SEARCH_PREVIEW",providers.gradleProperty("onlineSearchEnabled").orElse("false").get().toBoolean().toString())
+            buildConfigField("boolean","ONLINE_SEARCH_PREVIEW",providers.gradleProperty("onlineSearchEnabled").orElse("true").get().toBoolean().toString())
             signingConfig = signingConfigs.findByName("ownerRelease")
             isMinifyEnabled = true
             isShrinkResources = true

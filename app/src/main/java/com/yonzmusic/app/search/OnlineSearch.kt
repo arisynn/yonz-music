@@ -37,8 +37,8 @@ class OnlineSearch(private val scope: CoroutineScope, private val backend: Searc
     private val requests=mutableMapOf<SearchProvider,ArrayDeque<Long>>()
     fun query(value: String, provider: SearchProvider, retry: Boolean = false) {
         val query=SearchContract.query(value);job?.cancel();val serial=++generation
-        state.value=OnlineSearchState(query,provider,loading=query.length>=3)
-        if(query.length<3)return
+        state.value=OnlineSearchState(query,provider,loading=query.length>=2)
+        if(query.length<2)return
         job=scope.launch {
             delay(if(retry)0 else debounceMs)
             load(query,provider,"",serial,retry)
@@ -73,7 +73,7 @@ class OnlineSearch(private val scope: CoroutineScope, private val backend: Searc
     private fun publish(result: SearchPage,query: String,provider: SearchProvider,page: String,serial: Long,cached: Boolean) {
         if(serial!=generation)return
         val combined=if(page.isBlank())result.songs else (state.value.songs+result.songs).distinctBy { it.id }.take(100)
-        state.value=OnlineSearchState(query,provider,songs=combined,next=result.next.takeIf { combined.size<100 }.orEmpty(),cached=cached)
+        state.value=OnlineSearchState(query,provider,songs=combined,next=result.next.takeIf { combined.size<100 }.orEmpty(),cached=cached,artists=if(page.isBlank())result.artists else state.value.artists)
         if(page.isBlank() && result.songs.isNotEmpty())runCatching {onSuccess(query)}
     }
     fun cancel() {job?.cancel();generation++;state.value=state.value.copy(loading=false)}

@@ -30,7 +30,8 @@ import kotlinx.coroutines.withContext
     tracks: List<Track>, favorites: Set<String>, history: List<History>, current: Track?, activeId: String?,
     onPlay: (Pair<List<Track>, String>) -> Unit, onMenu: (Track) -> Unit, onFavorites: () -> Unit, onHistory: () -> Unit,
     onAlbum: (String, String) -> Unit, onImport: () -> Unit, onLibrary: () -> Unit, onContinue: () -> Unit = {},
-    scrollState: LazyListState = rememberLazyListState(), mixes: List<SmartMix.Mix> = emptyList()
+    scrollState: LazyListState = rememberLazyListState(), mixes: List<SmartMix.Mix> = emptyList(),
+    vm:com.yonzmusic.app.MusicViewModel?=null,onArtist:(com.yonzmusic.app.search.OnlineArtist)->Unit = {}
 ) {
     val recent=remember(tracks,history) { val map=tracks.filter { it.available }.associateBy { it.id };history.mapNotNull { map[it.trackId] }.take(2) }
     val added=remember(tracks) { tracks.filter { it.available }.sortedByDescending { it.added }.take(6) }
@@ -38,7 +39,12 @@ import kotlinx.coroutines.withContext
     var mix by remember { mutableStateOf<SmartMix.Mix?>(null) }
     LazyColumn(state=scrollState,contentPadding=PaddingValues(bottom=Design.page)) {
         item { HomeIdentity(tracks) }
-        if(tracks.isEmpty()) item { EmptyState("Mulai dari musikmu", "Pilih berkas atau folder. Koleksi dan pemutaran tetap berfungsi tanpa internet.",action={ Button(onImport) { Text("Pilih musik") } }) }
+        if(vm!=null) {
+            item("discovery_controls") {DiscoveryControls(vm)}
+            item("popular_songs") {PopularSongs(vm)}
+            item("popular_artists") {PopularArtists(vm,onArtist)}
+        }
+        if(tracks.isEmpty() && vm==null) item { EmptyState("Mulai dari musikmu", "Pilih berkas atau folder. Koleksi dan pemutaran tetap berfungsi tanpa internet.",action={ Button(onImport) { Text("Pilih musik") } }) }
         if(recent.isNotEmpty()) {
             item { SectionTitle("Terakhir diputar",action={ TextButton(onHistory) { Text("Semua") } }) }
             items(recent,key={ "recent_${it.id}" }) { t -> TrackRow(t,t.id==activeId,t.id in favorites,{onPlay(recent to t.id)},{onMenu(t)}) }
@@ -146,7 +152,7 @@ import kotlinx.coroutines.withContext
         }
     }
 }
-@Composable fun PlaylistsScreen(playlists: List<PlaylistSummary>, tracks: List<Track>, entries: List<PlaylistEntry>, favoriteCount: Int, onCreate: () -> Unit, onFavorites: () -> Unit, onOpen: (PlaylistSummary) -> Unit, onImport: () -> Unit, online:List<OnlineCollection> = emptyList(),onOnline:(OnlineCollection)->Unit = {},onLink:()->Unit = {}) {
+@Composable fun PlaylistsScreen(playlists: List<PlaylistSummary>, tracks: List<Track>, entries: List<PlaylistEntry>, favoriteCount: Int, onCreate: () -> Unit, onFavorites: () -> Unit, onOpen: (PlaylistSummary) -> Unit, onImport: () -> Unit, online:List<OnlineCollection> = emptyList(),onOnline:(OnlineCollection)->Unit = {},onLink:()->Unit = {},onDevice:(()->Unit)?=null,deviceCount:Int=0,onHistory:(()->Unit)?=null) {
     LazyColumn(contentPadding = PaddingValues(bottom = Design.page)) {
         item { Row(Modifier.padding(horizontal = Design.page, vertical = Design.sm), horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
             Button(onCreate, Modifier.weight(1f),contentPadding=PaddingValues(horizontal=Design.sm,vertical=Design.sm)) { Text("Buat",maxLines=1) }
@@ -162,6 +168,12 @@ import kotlinx.coroutines.withContext
                 }
             }
         }
+        if(onDevice!=null)item {
+            ListItem(headlineContent={Text("Musik perangkat")},supportingContent={Text("$deviceCount lagu · offline")},
+                leadingContent={Icon(Icons.Rounded.LibraryMusic,null)},trailingContent={Icon(Icons.Rounded.ChevronRight,null)},
+                modifier=Modifier.clickable(onClick=onDevice).padding(horizontal=Design.md))
+        }
+        if(onHistory!=null)item {TextButton(onHistory,Modifier.padding(horizontal=Design.page)) {Text("Riwayat pemutaran")}}
         if(online.isNotEmpty()) {
             item {SectionTitle("Daring","${online.size} daftar putar")}
             items(online,key={"online:"+it.id}){p->

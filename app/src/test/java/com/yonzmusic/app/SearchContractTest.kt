@@ -21,6 +21,15 @@ class SearchContractTest {
         assertEquals(7*86400000L,parse(row().put("duration_ms",Long.MAX_VALUE)).single().durationMs)
         assertEquals(0,parse(row().put("duration_ms",-100)).single().durationMs)
     }
+    @Test fun catalogueArtistsAndArtworkKeepTheirValidatedIdentity() {
+        val id="UC"+"a".repeat(22)
+        val root=JSONObject().put("ok",true).put("songs",JSONArray().put(row().put("artwork","https://lh3.googleusercontent.com/cover")))
+            .put("artists",JSONArray().put(JSONObject().put("id",id).put("name","Artis"))
+                .put(JSONObject().put("id","../bad").put("name","Other")))
+        val parsed=SearchContract.engine(root.toString())
+        assertEquals(listOf(id),parsed.artists.map {it.id})
+        assertEquals("https://lh3.googleusercontent.com/cover",parsed.songs.single().artwork)
+    }
     @Test fun sourceFailureIsNeverPresentedAsEmptyResults() {
         try {SearchContract.engine("""{"ok":false,"error":{"code":"SOURCE_NETWORK","message":"Periksa koneksi"}}""");fail("must reject")}
         catch(e:SearchFailure){assertEquals("Periksa koneksi",e.userMessage)}

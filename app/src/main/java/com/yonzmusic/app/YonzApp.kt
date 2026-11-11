@@ -17,6 +17,7 @@ class YonzApp : Application() {
     val database by lazy { Room.databaseBuilder(this, MusicDatabase::class.java, "yonz-music.db").addMigrations(MusicDatabase.MIGRATION_1_2, MusicDatabase.MIGRATION_2_3).build() }
     val repository by lazy { Repository(this, database) }
     val preferences by lazy { Preferences(this) }
+    val musicCatalog by lazy { com.yonzmusic.app.search.MusicCatalog(this) }
     val streams by lazy { com.yonzmusic.app.playback.StreamRepository(this) }
     internal var streamTestDataSource: androidx.media3.datasource.DataSource.Factory? = null // Internal DI; no Intent/config hook.
     val downloadGallery by lazy { com.yonzmusic.engine.DownloadGalleryVisibility(this) }

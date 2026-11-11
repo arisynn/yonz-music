@@ -35,13 +35,14 @@ import com.yonzmusic.app.ui.icons.QueueMusic
 import com.yonzmusic.app.ui.icons.SkipNext
 
 @Composable fun SearchScreen(vm: MusicViewModel,tracks: List<Track>,playlists: List<PlaylistSummary>,favorites: Set<String>,activeId: String?,
-    onPlay: (List<Track>,String)->Unit,onMenu: (Track)->Unit,onPlaylist: (PlaylistSummary)->Unit,onDownload: (OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit) {
+    onPlay: (List<Track>,String)->Unit,onMenu: (Track)->Unit,onPlaylist: (PlaylistSummary)->Unit,onDownload: (OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit,onArtist:(OnlineArtist)->Unit = {}) {
     val query by vm.searchQuery.collectAsStateWithLifecycle()
     val onlineSelection by vm.searchOnline.collectAsStateWithLifecycle()
     val online=onlineSelection && BuildConfig.ONLINE_SEARCH_PREVIEW
     val provider by vm.searchProvider.collectAsStateWithLifecycle()
+    var kind by remember {mutableStateOf("all")}
     val response by vm.onlineSearch.state.collectAsStateWithLifecycle()
-    val state=response.takeIf {it.provider==provider && it.query==SearchContract.query(query)} ?: OnlineSearchState(query,provider,loading=query.trim().length>=3)
+    val state=response.takeIf {it.provider==provider && it.query==SearchContract.query(query)} ?: OnlineSearchState(query,provider,loading=query.trim().length>=2)
     val recent by vm.recentSearch.collectAsStateWithLifecycle()
     val playback by vm.playback.state.collectAsStateWithLifecycle()
     val localSource=remember(playback.id,tracks){tracks.firstOrNull {it.id==playback.id}?.sourceIdentity}
@@ -83,10 +84,15 @@ import com.yonzmusic.app.ui.icons.SkipNext
                 }
             }
         }
+        if(online)Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
+            listOf("all" to "Semua","songs" to "Lagu","artists" to "Artis").forEach {(value,label)->
+                FilterChip(kind==value,{kind=value},label={Text(label)})
+            }
+        }
         if(!online)Box(Modifier.weight(1f)) {LocalSearchResults(query,tracks,playlists,favorites,activeId,onPlay,onMenu,onPlaylist)}
         else {
             LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(horizontal=Design.page,vertical=Design.sm),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-                if(query.trim().length<3) {
+                if(query.trim().length<2) {
                     if(query.isBlank() && recent.isNotEmpty())item {
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically) {
                             Text("Pencarian terakhir",style=MaterialTheme.typography.titleSmall)
@@ -108,8 +114,11 @@ import com.yonzmusic.app.ui.icons.SkipNext
                         }
                     }
 
-                    if(!state.loading && state.error.isBlank() && state.songs.isEmpty())item {EmptyState("Belum ada hasil","Coba judul atau nama artis yang lebih lengkap. Hasil bergantung pada katalog dan wilayah sumber.","search")}
-                    items(state.songs,key={it.id}) { song->
+                    if(!state.loading && state.error.isBlank() && (kind=="artists" || state.songs.isEmpty()) && (kind=="songs" || state.artists.isEmpty()))item {EmptyState("Belum ada hasil","Coba judul atau nama artis yang lebih lengkap. Hasil bergantung pada katalog dan wilayah sumber.","search")}
+                    if(kind!="songs")items(state.artists,key={"artist:"+it.id}) {artist ->
+                        OnlineArtistRow(artist) {focus.clearFocus();keyboard?.hide();onArtist(artist)}
+                    }
+                    if(kind!="artists")items(state.songs,key={it.id}) { song->
                         val current=playback.id==song.id || localSource=="youtube:${song.videoId}"
                         Row(Modifier.fillMaxWidth().clickable(onClickLabel=if(current && playback.requested)"Jeda ${song.title}"else "Putar ${song.title}") {
                             focus.clearFocus();keyboard?.hide()
@@ -125,7 +134,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
                                         ActionIcon(Icons.Rounded.MoreVert,"Opsi ${song.title}",{choose(song)})
                         }
                     }
-                    if(state.next.isNotBlank())item {OutlinedButton(vm.onlineSearch::more,enabled=!state.loading,modifier=Modifier.fillMaxWidth()){Text("Muat lainnya")}}
+                    if(kind!="artists" && state.next.isNotBlank())item {OutlinedButton(vm.onlineSearch::more,enabled=!state.loading,modifier=Modifier.fillMaxWidth()){Text("Muat lainnya")}}
                     if(state.cached)item {Text("Hasil pencarian tersimpan sementara di perangkat.",style=MaterialTheme.typography.labelSmall)}
                 }
             }
@@ -140,7 +149,9 @@ import com.yonzmusic.app.ui.icons.SkipNext
     var historyEnabled by remember {mutableStateOf(vm.searchSettings.remembersHistory())}
     AlertDialog(onDismissRequest=close,title={Text("Pengaturan pencarian")},text={
         Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-            Text("Pencarian menggunakan mesin yt-dlp tertanam tanpa kunci API Google. Hasil bergantung pada akses sumber.")
+            Text("Lagu dan artis dicari dari katalog YouTube Music. Jika hanya judul yang ditulis, rilisan yang paling relevan diutamakan. Tambahkan nama artis untuk mencari versi tertentu.")
+            val preferences by vm.preferences.collectAsStateWithLifecycle()
+            Row(verticalAlignment=Alignment.CenterVertically) {Text("Auto radio dari Cari dan Beranda",Modifier.weight(1f));Switch(preferences.onlineRadio,vm::onlineRadio)}
             Row(verticalAlignment=Alignment.CenterVertically) {Text("Simpan riwayat di perangkat",Modifier.weight(1f));Switch(historyEnabled,{historyEnabled=it})}
             TextButton({vm.clearSearchHistory(historyEnabled)}){Text("Hapus riwayat")}
         }
@@ -148,7 +159,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable private fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit,onSave:(OnlineSong)->Unit,close:()->Unit) {
+@Composable internal fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit,onSave:(OnlineSong)->Unit,close:()->Unit) {
     val context=LocalContext.current
     ModalBottomSheet(onDismissRequest=close,modifier=Modifier.statusBarsPadding(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
         DialogSystemBars()

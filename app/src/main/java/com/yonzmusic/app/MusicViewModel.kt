@@ -48,7 +48,32 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val searchSettings = com.yonzmusic.app.search.SearchSettings(application)
     val recentSearch=MutableStateFlow(searchSettings.history())
     val onlineSearch = com.yonzmusic.app.search.OnlineSearch(viewModelScope,com.yonzmusic.app.search.EngineSearchBackend(application),onSuccess={query->searchSettings.rememberQuery(query);recentSearch.value=searchSettings.history()})
+    val discovery=com.yonzmusic.app.search.DiscoveryRepository(app,viewModelScope)
+    data class ArtistPage(val artist:com.yonzmusic.app.search.OnlineArtist?=null,val songs:List<com.yonzmusic.app.search.OnlineSong> = emptyList(),val loading:Boolean=false,val error:String="")
+    val artistPage=MutableStateFlow(ArtistPage())
+    private var artistJob:Job?=null
+    fun openArtist(artist:com.yonzmusic.app.search.OnlineArtist) {
+        artistJob?.cancel();artistPage.value=ArtistPage(artist,loading=true)
+        artistJob=viewModelScope.launch {
+            try {
+                val root=withTimeout(22000) {app.musicCatalog.request(org.json.JSONObject().put("operation","artist").put("artist_id",artist.id))}
+                val songs=com.yonzmusic.app.search.SearchContract.engine(root.toString(),36).songs
+                ensureActive();artistPage.value=ArtistPage(artist,songs)
+            }catch(e:CancellationException){throw e}
+            catch(e:Exception){artistPage.value=ArtistPage(artist,error=(e as? com.yonzmusic.app.search.SearchFailure)?.userMessage ?: "Lagu artis belum tersedia.")}
+        }
+    }
+    fun ensureArtist(artist:com.yonzmusic.app.search.OnlineArtist) {
+        if(artistPage.value.artist?.id!=artist.id || (artistPage.value.loading && artistJob?.isActive!=true))openArtist(artist)
+    }
+    fun closeArtist(){artistJob?.cancel()}
+    fun onlineRadio(enabled:Boolean){action {app.preferences.onlineRadio(enabled)}}
     private var streamPlayJob:Job?=null
+    fun isCurrentOnline(song:com.yonzmusic.app.search.OnlineSong):Boolean {
+        val id=playback.state.value.id
+        return id==song.id || collectionTracks.value.any {it.id==id && it.sourceIdentity=="youtube:${song.videoId}"}
+    }
+    fun selectOnline(song:com.yonzmusic.app.search.OnlineSong) {if(isCurrentOnline(song))playback.toggle()else playOnline(song)}
     fun playOnline(song:com.yonzmusic.app.search.OnlineSong,next:Boolean?=null) {
         streamPlayJob?.cancel()
         streamPlayJob=action {
@@ -62,7 +87,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             }
             withContext(Dispatchers.IO){app.streams.register(song)}
             withTimeout(6000){playback.state.first {it.ready}}
-            if(local!=null) {if(next==null)playback.play(listOf(local),local.id)else playback.enqueue(local,next)}else playback.playRemote(song,next)
+            if(local!=null) {if(next==null)playback.play(listOf(local),local.id,radioSeed=song)else playback.enqueue(local,next)}else playback.playRemote(song,next)
         }
     }
     val onlineCollections=app.onlineCollections.flow.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptyList())
@@ -103,7 +128,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun clearSearchHistory(enabled: Boolean=searchSettings.remembersHistory()) {searchSettings.clearHistory(enabled);recentSearch.value=emptyList()}
     val searchQuery=MutableStateFlow("")
-    val searchOnline=MutableStateFlow(false)
+    val searchOnline=MutableStateFlow(true)
     val searchProvider=MutableStateFlow(com.yonzmusic.app.search.SearchProvider.ENGINE)
     val pendingDownloadInput=MutableStateFlow("")
     val messages = MutableSharedFlow<String>(extraBufferCapacity = 8)

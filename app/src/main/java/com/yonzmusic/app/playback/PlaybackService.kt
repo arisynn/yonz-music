@@ -36,6 +36,7 @@ class PlaybackService : MediaSessionService() {
     private var snapshotJob: Job? = null
     private var sleepJob: Job? = null
     private var warmJob: Job? = null
+    private var radio:AutoRadio?=null
     private var warmIds = emptyList<String>()
     private val app get() = application as YonzApp
     private var streamIssue:StreamIssue?=null
@@ -43,6 +44,8 @@ class PlaybackService : MediaSessionService() {
     private fun publishExtras() {
         session?.setSessionExtras(Bundle().apply {
             putInt(AUDIO_SESSION,player.audioSessionId)
+            putBoolean(RADIO_AVAILABLE,radio?.available==true);putBoolean(RADIO_ENABLED,radio?.enabled==true)
+            putBoolean(RADIO_LOADING,radio?.loading==true);putString(RADIO_ERROR,radio?.error.orEmpty())
             streamIssue?.let {putString(STREAM_ISSUE,it.name);putString(STREAM_ISSUE_ID,issueMediaId)}
         })
     }
@@ -99,10 +102,16 @@ class PlaybackService : MediaSessionService() {
             val order=mutableListOf<Int>();val timeline=player.currentTimeline
             var i=timeline.getFirstWindowIndex(true)
             while(i in 0 until player.mediaItemCount && i !in order){order.add(i);i=timeline.getNextWindowIndex(i,Player.REPEAT_MODE_OFF,true)}
-            if(order.size==player.mediaItemCount)player.setShuffleOrder(ShuffleOrder.DefaultShuffleOrder((ShuffleCycle.insertNext(order.filter {it !in inserted},player.currentMediaItemIndex,insertedNext).toList()+inserted.filter {it !in insertedNext}).toIntArray(),kotlin.random.Random.nextLong()))
+            if(order.size==player.mediaItemCount) {
+                val proposed=ShuffleCycle.insertNext(order.filter {it !in inserted},player.currentMediaItemIndex,insertedNext).toList()+inserted.filter {it !in insertedNext}
+                val generated=(0 until player.mediaItemCount).filter {player.getMediaItemAt(it).generatedRadio()}.toSet()
+                player.setShuffleOrder(ShuffleOrder.DefaultShuffleOrder(RadioQueuePolicy.manualFirst(proposed,player.currentMediaItemIndex,generated).toIntArray(),kotlin.random.Random.nextLong()))
+            }
         }else if (startCycle && player.mediaItemCount > 0) {
+            val order=ShuffleCycle.indices(player.mediaItemCount, player.currentMediaItemIndex).toList()
+            val generated=(0 until player.mediaItemCount).filter {player.getMediaItemAt(it).generatedRadio()}.toSet()
             player.setShuffleOrder(ShuffleOrder.DefaultShuffleOrder(
-                ShuffleCycle.indices(player.mediaItemCount, player.currentMediaItemIndex), kotlin.random.Random.nextLong()))
+                RadioQueuePolicy.manualFirst(order,player.currentMediaItemIndex,generated).toIntArray(), kotlin.random.Random.nextLong()))
         }
     }
     private val listens=ListenAccumulator()
@@ -116,7 +125,11 @@ class PlaybackService : MediaSessionService() {
             }
         } }
     }
-    companion object { const val TIMER = "com.yonzmusic.app.SLEEP_TIMER"; const val AUDIO_SESSION = "com.yonzmusic.app.AUDIO_SESSION";const val STREAM_ISSUE="yono.stream.issue";const val STREAM_ISSUE_ID="yono.stream.issue.id" }
+    companion object {
+        const val RADIO="com.yonzmusic.app.AUTO_RADIO"
+        const val RADIO_AVAILABLE="yono.radio.available";const val RADIO_ENABLED="yono.radio.enabled"
+        const val RADIO_LOADING="yono.radio.loading";const val RADIO_ERROR="yono.radio.error"
+        const val TIMER = "com.yonzmusic.app.SLEEP_TIMER"; const val AUDIO_SESSION = "com.yonzmusic.app.AUDIO_SESSION";const val STREAM_ISSUE="yono.stream.issue";const val STREAM_ISSUE_ID="yono.stream.issue.id" }
 
     override fun onCreate() {
         super.onCreate()
@@ -141,7 +154,7 @@ class PlaybackService : MediaSessionService() {
             override fun onConnect(session: MediaSession, controller: MediaSession.ControllerInfo): MediaSession.ConnectionResult {
                 if (controller.packageName != packageName && !controller.isTrusted) return MediaSession.ConnectionResult.reject()
                 return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
-                    .setAvailableSessionCommands(MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon().add(SessionCommand(TIMER, Bundle.EMPTY)).build()).build()
+                    .setAvailableSessionCommands(MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon().add(SessionCommand(TIMER, Bundle.EMPTY)).add(SessionCommand(RADIO,Bundle.EMPTY)).build()).build()
             }
             override fun onAddMediaItems(session: MediaSession, controller: MediaSession.ControllerInfo, mediaItems: MutableList<MediaItem>): ListenableFuture<MutableList<MediaItem>> {
                 val result = SettableFuture.create<MutableList<MediaItem>>()
@@ -150,12 +163,12 @@ class PlaybackService : MediaSessionService() {
                         val local = withContext(Dispatchers.IO) { mediaItems.take(10000).mapNotNull { requested ->
                             if(requested.mediaId.startsWith("engine:")) {
                                 val remote=app.streams.lookup(requested.mediaId) ?: return@mapNotNull null
-                                return@mapNotNull remoteMediaItem(remote,requested.mediaMetadata.extras?.getString("yono.queue.key"),requested.mediaMetadata.extras?.getBoolean("yono.next")==true)
+                                return@mapNotNull preserveRadioContext(requested,remoteMediaItem(remote,requested.mediaMetadata.extras?.getString("yono.queue.key"),requested.mediaMetadata.extras?.getBoolean("yono.next")==true))
                             }
                             app.repository.dao.track(requested.mediaId)?.takeIf { t -> t.active && t.available && android.net.Uri.parse(t.uri).scheme == "content" }?.mediaItem()?.let { resolved ->
                                 val key=requested.mediaMetadata.extras?.getString("yono.queue.key")?.takeIf { it.matches(Regex("[a-fA-F0-9-]{36}")) }
-                                if(key==null)resolved else resolved.buildUpon().setMediaMetadata(resolved.mediaMetadata.buildUpon()
-                                    .setExtras(Bundle().apply {putString("yono.queue.key",key);putBoolean("yono.next",requested.mediaMetadata.extras?.getBoolean("yono.next")==true)}).build()).build()
+                                preserveRadioContext(requested,if(key==null)resolved else resolved.buildUpon().setMediaMetadata(resolved.mediaMetadata.buildUpon()
+                                    .setExtras(Bundle().apply {putString("yono.queue.key",key);putBoolean("yono.next",requested.mediaMetadata.extras?.getBoolean("yono.next")==true)}).build()).build())
                             }
                         }.toMutableList() }
                         result.set(local)
@@ -164,6 +177,10 @@ class PlaybackService : MediaSessionService() {
                 return result
             }
             override fun onCustomCommand(session: MediaSession, controller: MediaSession.ControllerInfo, customCommand: SessionCommand, args: Bundle): ListenableFuture<SessionResult> {
+                if(customCommand.customAction==RADIO) {
+                    radio?.setEnabled(args.getBoolean("enabled"))
+                    return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                }
                 if (customCommand.customAction != TIMER) return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))
                 val minutes = args.getInt("minutes").coerceIn(0, 180)
                 sleepJob?.cancel()
@@ -172,6 +189,8 @@ class PlaybackService : MediaSessionService() {
                 return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
             }
         }).build()
+        radio=AutoRadio(app,player,scope,::publishExtras)
+        scope.launch {app.preferences.flow.collectLatest {radio?.defaults(it.onlineRadio)}}
         publishExtras()
         player.addListener(object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) { listenTick(reason==Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) }
@@ -180,6 +199,7 @@ class PlaybackService : MediaSessionService() {
                 if(streamIssue!=null && (player.currentMediaItem?.mediaId!=issueMediaId || (player.playerError==null && player.playbackState!=Player.STATE_IDLE))) {streamIssue=null;issueMediaId=null;publishExtras()}
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)) updateShuffleCycle()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED, Player.EVENT_IS_PLAYING_CHANGED)) warmUpcoming()
+                radio?.update()
                 listenTick()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED)) persist()
             }
@@ -189,7 +209,7 @@ class PlaybackService : MediaSessionService() {
                 if (isPlaying) {
                     consecutiveErrors = 0
                     persist()
-                    snapshotJob = scope.launch { while (isActive) { delay(5000);listenTick();persist() } }
+                    snapshotJob = scope.launch { while (isActive) { delay(5000);listenTick();radio?.update();persist() } }
                 }
             }
             override fun onPlayerError(error: PlaybackException) {

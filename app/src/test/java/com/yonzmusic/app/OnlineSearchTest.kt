@@ -11,7 +11,7 @@ class OnlineSearchTest {
         val calls=mutableListOf<String>()
         val backend=object: SearchBackend {override suspend fun search(provider: SearchProvider,query: String,page: String): SearchPage {calls+=query;return SearchPage(listOf(row(query)))}}
         val search=OnlineSearch(this,backend,debounceMs=30,now={0})
-        search.query("ad",SearchProvider.ENGINE);delay(40);assertTrue(calls.isEmpty())
+        search.query("a",SearchProvider.ENGINE);delay(40);assertTrue(calls.isEmpty())
         search.query("ade",SearchProvider.ENGINE);delay(5);search.query("adele",SearchProvider.ENGINE);delay(60)
         assertEquals(listOf("adele"),calls);assertEquals("adele",search.state.value.songs.single().title);search.cancel()
     }
