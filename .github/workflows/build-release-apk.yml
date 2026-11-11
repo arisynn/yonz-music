@@ -1,8 +1,13 @@
-name: Build signed release APK (v2.0.0)
+name: Build signed release APK
 
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: 'Branch / ref to build from'
+        required: true
+        default: 'update/stable-v1.5.2'
+        type: string
       online_search:
         description: 'Enable online search in release build (true/false)'
         required: false
@@ -22,6 +27,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
 
       - uses: actions/setup-java@v4
         with:
@@ -102,7 +109,7 @@ jobs:
       - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: Yono-Music-v2.0.0-release
+          name: Yono-Music-${{ inputs.branch }}-release
           path: app/build/outputs/apk/release/app-release.apk
           retention-days: 30
           if-no-files-found: error
