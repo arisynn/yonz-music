@@ -79,7 +79,7 @@ class MusicCharts(private val app:YonzApp) {
         fun regionName(code:String)=if(code=="ZZ")"Global" else java.util.Locale("",code).getDisplayCountry(java.util.Locale("id"))
         fun fallback(category:ChartCategory,country:String):ChartPage {
             val spotify=category.key.startsWith("spotify_")
-            val supported=spotify || category==ChartCategory.SEA_DOMESTIC && country=="ID" || category==ChartCategory.SEA && country in setOf("ID","MY","SG","PH","TH","VN")
+            val supported=spotify && country in setOf("ID","ZZ") || category==ChartCategory.SEA_DOMESTIC && country=="ID" || category==ChartCategory.SEA && country in setOf("ID","MY","SG","PH","TH","VN")
             return ChartPage(source=if(spotify)"Spotify Charts" else "Official SEA Charts",sourceUrl=if(spotify)"https://charts.spotify.com/charts/overview/${if(country=="ID")"id" else "global"}" else "https://www.officialseacharts.com/weeklychart",
                 message=if(!supported)"Chart ini tidak tersedia untuk wilayah yang dipilih." else "Belum ada antarmuka data resmi tanpa akun yang terhubung. Lihat ranking, label, pergerakan dan tanggal langsung di situs sumber.",region=country)
         }

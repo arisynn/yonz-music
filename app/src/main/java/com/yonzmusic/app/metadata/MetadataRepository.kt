@@ -7,6 +7,7 @@ import com.yonzmusic.app.playback.StreamRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import org.json.JSONObject
 import org.json.JSONArray
 
@@ -24,7 +25,8 @@ class MetadataRepository(private val app:YonzApp) {
     fun current(song:OnlineSong)=mutable.value[song.id]?.let {MetadataPolicy.merge(song,it)} ?: song
     fun persist(song:OnlineSong) {app.persistenceScope.launch {
         val latest=state.value[song.id] ?: song
-        app.repository.dao.state(AppState("stream:${if(latest.id.startsWith("mb:"))latest.id else latest.videoId}",StreamRepository.encode(latest).toString()))
+        try {app.repository.dao.state(AppState("stream:${if(latest.id.startsWith("mb:"))latest.id else latest.videoId}",StreamRepository.encode(latest).toString()))}
+        catch(e:CancellationException){throw e}catch(_:Exception){} // Best-effort enrichment; playback keeps its in-memory metadata.
     }}
     fun extracted(videoId:String,song:JSONObject) {
         val artists=song.optJSONArray("artists") ?: JSONArray()

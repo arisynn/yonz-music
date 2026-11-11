@@ -67,7 +67,8 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         val url=j.getString("url");runCatching {StreamPolicy.url(url)}.getOrElse {throw StreamFailure(StreamIssue.UNSAFE)}
         val headers=mutableMapOf<String,String>();j.optJSONObject("headers")?.let {h->h.keys().forEach {k->val v=h.optString(k);if(k.lowercase() in setOf("user-agent","accept","accept-language") && v.length<1500 && !v.contains('\r') && !v.contains('\n'))headers[k]=v}}
         val result=Resolved(url,headers,((j.optJSONObject("song")?.optDouble("duration",0.0) ?: 0.0)*1000).toLong().coerceIn(0,7*86400000L),j.optString("format_id").take(100),j.optString("ext").take(20),j.optString("acodec").take(100),j.optLong("bitrate").coerceIn(0,10000),j.optString("revision").takeIf {it.matches(Regex("[a-f0-9]{64}"))} ?: "$sessionRevision:${java.util.UUID.randomUUID()}")
-        j.optJSONObject("song")?.let {app.metadata.extracted(id,it)}
+        // Optional metadata must never turn a valid audio resolution into a playback failure.
+        j.optJSONObject("song")?.let {runCatching {app.metadata.extracted(id,it)}}
         StreamTimings.record("resolve",android.os.SystemClock.elapsedRealtime()-started)
         result
         }.also {if(!loaded)StreamPerformance.mark("engine:$id",StreamPerformance.Stage.RESOLVER_HIT,android.os.SystemClock.elapsedRealtime()-started)}
