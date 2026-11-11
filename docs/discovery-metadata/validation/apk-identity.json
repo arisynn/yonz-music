@@ -1,0 +1,10 @@
+{
+  "package": "com.yonzmusic.app",
+  "versionCode": 20,
+  "versionName": "2.0.0-preview.4",
+  "certificateSha256": "ebefa44cc5fba1292fec9fc25bb4840e41e501bb0958a86931c046fd1be523e5",
+  "sha256": "22015e6467e94f506a831a9dbb980a6df279afce5b2c46b22da708b59d952ed7",
+  "bytes": 30176372,
+  "debuggable": false,
+  "codeCommit": "449349b"
+}

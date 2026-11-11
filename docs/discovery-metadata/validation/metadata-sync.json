@@ -1,0 +1,17 @@
+{
+  "liveNetwork": false,
+  "metadataUpdateMs": 900,
+  "audioSourceReopensOnMetadata": 0,
+  "queueAndPositionPreserved": true,
+  "staleArtworkRejected": true,
+  "platformSessionArtwork": true,
+  "physicalBluetooth": false,
+  "platform": {
+    "notificationCount": 1,
+    "notificationToken": true,
+    "directToken": true,
+    "titleMatches": true,
+    "artworkBitmap": true,
+    "notificationIcon": true
+  }
+}

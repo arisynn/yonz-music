@@ -1,0 +1,50 @@
+test_aggregate_song_chart_is_not_automatically_an_official_video (test_charts_metadata.ChartsMetadataTests.test_aggregate_song_chart_is_not_automatically_an_official_video) ... ok
+test_authorized_live_and_remix_are_classified_separately (test_charts_metadata.ChartsMetadataTests.test_authorized_live_and_remix_are_classified_separately) ... ok
+test_daily_and_weekly_never_fall_back_to_first_unrelated_playlist (test_charts_metadata.ChartsMetadataTests.test_daily_and_weekly_never_fall_back_to_first_unrelated_playlist) ... ok
+test_explore_does_not_claim_regional_chart_and_missing_data_is_unavailable (test_charts_metadata.ChartsMetadataTests.test_explore_does_not_claim_regional_chart_and_missing_data_is_unavailable) ... ok
+test_indonesia_and_global_region_reach_source_without_fake_stats (test_charts_metadata.ChartsMetadataTests.test_indonesia_and_global_region_reach_source_without_fake_stats) ... ok
+test_search_preserves_exact_identity_and_optional_fields (test_charts_metadata.ChartsMetadataTests.test_search_preserves_exact_identity_and_optional_fields) ... ok
+test_thumbnail_is_supplied_bounded_choice_not_guessed (test_charts_metadata.ChartsMetadataTests.test_thumbnail_is_supplied_bounded_choice_not_guessed) ... ok
+test_title_or_generic_verified_badge_never_proves_official (test_charts_metadata.ChartsMetadataTests.test_title_or_generic_verified_badge_never_proves_official) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.001s
+
+OK
+
+test_error_boundary_returns_codes_without_exception_urls_or_tokens (test_stream.StreamTests.test_error_boundary_returns_codes_without_exception_urls_or_tokens) ... ok
+test_expired_reference_can_only_request_the_same_format (test_stream.StreamTests.test_expired_reference_can_only_request_the_same_format) ... ok
+test_explicit_metadata_retry_keeps_recording_and_row_identity (test_stream.StreamTests.test_explicit_metadata_retry_keeps_recording_and_row_identity) ... ok
+test_invalid_source_identity_never_enters_extractor (test_stream.StreamTests.test_invalid_source_identity_never_enters_extractor) ... ok
+test_never_substitutes_other_video (test_stream.StreamTests.test_never_substitutes_other_video) ... ok
+test_rejects_arbitrary_stream_hosts_and_credentials (test_stream.StreamTests.test_rejects_arbitrary_stream_hosts_and_credentials) ... ok
+test_rejects_drm_private_live_and_merged_formats (test_stream.StreamTests.test_rejects_drm_private_live_and_merged_formats) ... ok
+test_resolution_is_read_only_and_does_not_guess_artist (test_stream.StreamTests.test_resolution_is_read_only_and_does_not_guess_artist) ... ok
+test_selected_source_does_not_reuse_same_title_from_different_video (test_stream.StreamTests.test_selected_source_does_not_reuse_same_title_from_different_video) ... ok
+test_verified_reuse_keeps_requested_source_and_receipt_hash (test_stream.StreamTests.test_verified_reuse_keeps_requested_source_and_receipt_hash) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.084s
+
+OK
+
+test_catalog_failure_uses_existing_search_but_cancellation_never_falls_back (test_streaming_v2.StreamingV2Tests.test_catalog_failure_uses_existing_search_but_cancellation_never_falls_back) ... ok
+test_expiring_url_is_not_part_of_stable_cache_identity (test_streaming_v2.StreamingV2Tests.test_expiring_url_is_not_part_of_stable_cache_identity) ... ok
+test_metadata_and_error_boundary_do_not_invent_credits_or_leak_secrets (test_streaming_v2.StreamingV2Tests.test_metadata_and_error_boundary_do_not_invent_credits_or_leak_secrets) ... ok
+test_public_radio_is_bounded_deduplicated_and_keeps_recording_ids (test_streaming_v2.StreamingV2Tests.test_public_radio_is_bounded_deduplicated_and_keeps_recording_ids) ... ok
+test_real_ytdlp_selector_balances_available_audio_and_never_selects_video (test_streaming_v2.StreamingV2Tests.test_real_ytdlp_selector_balances_available_audio_and_never_selects_video) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.074s
+
+OK
+
+test_chart_uses_real_playlist_and_does_not_invent_artist_rank (test_discovery_preview2.DiscoveryPreview2Test.test_chart_uses_real_playlist_and_does_not_invent_artist_rank) ... ok
+test_incomplete_playlist_is_reported_instead_of_silently_truncated (test_discovery_preview2.DiscoveryPreview2Test.test_incomplete_playlist_is_reported_instead_of_silently_truncated) ... ok
+test_live_metadata_cannot_replace_studio_recording_and_ambiguous_matches_stay_original (test_discovery_preview2.DiscoveryPreview2Test.test_live_metadata_cannot_replace_studio_recording_and_ambiguous_matches_stay_original) ... ok
+test_real_opus_remux_tags_and_aac_rejection (test_discovery_preview2.DiscoveryPreview2Test.test_real_opus_remux_tags_and_aac_rejection) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.807s
+
+OK

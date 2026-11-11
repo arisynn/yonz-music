@@ -1,0 +1,24 @@
+[
+  {
+    "kind": "live host public-web diagnostic, not Android",
+    "region": "ID",
+    "ok": false,
+    "status": "unavailable",
+    "code": "CHART_UNAVAILABLE",
+    "entries": 0,
+    "items": 0,
+    "sourceUpdated": "",
+    "elapsedMs": 5242
+  },
+  {
+    "kind": "live host public-web diagnostic, not Android",
+    "region": "ZZ",
+    "ok": false,
+    "status": "unavailable",
+    "code": "CHART_UNAVAILABLE",
+    "entries": 0,
+    "items": 0,
+    "sourceUpdated": "",
+    "elapsedMs": 52
+  }
+]

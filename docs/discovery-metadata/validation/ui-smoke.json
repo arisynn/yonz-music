@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "upgrade": "19\u219220",
+  "schema": 5,
+  "productionScreenshots": 5,
+  "emulatorSystemUiDialogRecovered": true,
+  "targetAppFatalException": false,
+  "physicalBluetooth": false
+}

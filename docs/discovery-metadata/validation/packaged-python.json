@@ -1,0 +1,10 @@
+{
+  "pythonVersion": "3.12",
+  "bytecodeAndConstantsMatchSource": {
+    "yono_metadata": true,
+    "yono_charts": true,
+    "yono_stream": true,
+    "yono_search": true,
+    "yono_catalog": true
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "liveNetwork": false,
+  "preparedUpcoming": 4,
+  "maximumConcurrentResolvers": 1,
+  "nativeNextBytesBeforeTransition": 73644,
+  "nextAdvancingWithinMs": 3150,
+  "currentKeptPlaying": true
+}

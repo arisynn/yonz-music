@@ -1,0 +1,11 @@
+{
+  "prerelease": true,
+  "assetDigests": {
+    "APK_IDENTITY.json": true,
+    "PERFORMANCE_REPORT.md": true,
+    "SHA256SUMS": true,
+    "Yono_Music_v2.0.0_preview.3.apk": true,
+    "Yono_Music_v2.0.0_preview.3_source.zip": true
+  },
+  "latestStable": "v1.5.2"
+}

@@ -1,0 +1,6 @@
+
+com.yonzmusic.app.MetadataSyncTest:.
+
+Time: 0,592
+
+OK (1 test)
