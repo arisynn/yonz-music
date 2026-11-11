@@ -6,7 +6,13 @@ import java.net.URI
 enum class SearchProvider(val label: String) { ENGINE("Mesin yt-dlp") }
 data class OnlineSong(val id: String,val provider: SearchProvider,val title: String,val credit: String,
     val album: String="",val durationMs: Long=0,val artwork: String="",val page: String,
-    val videoId: String="",val artistVerified: Boolean=false,val catalogJson:String="")
+    val videoId: String="",val artistVerified: Boolean=false,val catalogJson:String="",
+    val artists:List<String> = emptyList(),val albumArtist:String="",val uploader:String="",val channelId:String="",
+    val releaseYear:Int=0,val genre:String="",val officialStatus:com.yonzmusic.app.metadata.OfficialStatus=com.yonzmusic.app.metadata.OfficialStatus.UNVERIFIED,
+    val contentKind:com.yonzmusic.app.metadata.ContentKind=com.yonzmusic.app.metadata.ContentKind.UNKNOWN,
+    val metadataSource:com.yonzmusic.app.metadata.MetadataSource=com.yonzmusic.app.metadata.MetadataSource.SEARCH,
+    val artworkSource:com.yonzmusic.app.metadata.ArtworkSource=com.yonzmusic.app.metadata.ArtworkSource.THUMBNAIL,
+    val metadataUpdatedAt:Long=0,val artworkUri:String="")
 data class SearchPage(val songs: List<OnlineSong>,val next: String="")
 data class OnlineSearchState(val query: String="",val provider: SearchProvider=SearchProvider.ENGINE,
     val loading: Boolean=false,val songs: List<OnlineSong> = emptyList(),val next: String="",
@@ -37,7 +43,11 @@ object SearchContract {
             if(!id.matches(Regex("[A-Za-z0-9_-]{11}")) || title.isBlank() || page!="https://www.youtube.com/watch?v=$id")return@mapNotNull null
             val artists=r.optJSONArray("artists")?.let {a->(0 until minOf(a.length(),20)).map {text(a.optString(it))}.filter {it.isNotBlank()}} ?: emptyList()
             OnlineSong("engine:$id",SearchProvider.ENGINE,title,artists.joinToString(", ").ifBlank {text(r.optString("channel"))},text(r.optString("album")),
-                r.optLong("duration_ms").coerceIn(0,7*86400000L),r.optString("artwork").takeIf {artwork(it)}.orEmpty(),page,id,artists.isNotEmpty())
+                r.optLong("duration_ms").coerceIn(0,7*86400000L),r.optString("artwork").takeIf {artwork(it)}.orEmpty(),page,id,artists.isNotEmpty(),
+                artists=artists,albumArtist=text(r.optString("album_artist")),uploader=text(r.optString("uploader",r.optString("channel"))),channelId=text(r.optString("channel_id"),100),
+                releaseYear=r.optInt("release_year").takeIf {it in 1900..2200} ?: 0,genre=text(r.optString("genre")),
+                officialStatus=com.yonzmusic.app.metadata.MetadataPolicy.official(r.optString("official_status")),contentKind=com.yonzmusic.app.metadata.MetadataPolicy.kind(r.optString("content_kind")),
+                metadataSource=runCatching {com.yonzmusic.app.metadata.MetadataSource.valueOf(r.optString("metadata_source","SEARCH"))}.getOrDefault(com.yonzmusic.app.metadata.MetadataSource.SEARCH))
         }.distinctBy {it.id}
         return SearchPage(songs,root.optString("next").takeIf {it in listOf("1","2")}.orEmpty())
     }

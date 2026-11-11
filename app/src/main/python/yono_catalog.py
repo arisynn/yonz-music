@@ -4,6 +4,7 @@ from urllib.parse import urlsplit
 from yono_core.control import Control, Stopped
 from yono_core.catalogue import Catalogue
 from yono_search import clean, normalize, run as fallback_search
+from yono_metadata import extra, artwork
 
 
 def music_song(row):
@@ -35,6 +36,8 @@ def music_song(row):
                     song['artwork']=url[:4096];break
             except (TypeError,ValueError):
                 continue
+        song.update(extra(row))
+        song['artwork']=artwork(row.get('thumbnails'))
     return song
 
 

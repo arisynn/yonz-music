@@ -75,9 +75,10 @@ import com.yonzmusic.app.playback.StreamTimings
 
 @Composable internal fun OnlineShelf(songs: List<OnlineSong>, play: (OnlineSong)->Unit, menu: (OnlineSong)->Unit) {
     LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-        items(songs,key={it.id}) {song->
+        items(songs,key={it.id}) {original->
+            val song=observedSong(original)
             Column(Modifier.width(144.dp).clip(Design.small).clickable {play(song)},verticalArrangement=Arrangement.spacedBy(Design.xs)) {
-                SourceThumbnail(song.artwork,Modifier.size(144.dp))
+                SourceThumbnail(song.artwork,Modifier.size(144.dp),song.id)
                 Row(verticalAlignment=Alignment.CenterVertically) {
                     Text(song.title,Modifier.weight(1f),maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleSmall)
                     ActionIcon(Icons.Rounded.MoreVert,"Opsi ${song.title}",{menu(song)})
@@ -88,11 +89,13 @@ import com.yonzmusic.app.playback.StreamTimings
     }
 }
 
-@Composable fun OnlineSongRow(song: OnlineSong, active: String?, play: ()->Unit, menu: ()->Unit) {
-    ListItem(headlineContent={Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,color=if(active==song.id)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)},supportingContent={Text(song.credit.ifBlank {"Kredit belum tersedia"},maxLines=1,overflow=TextOverflow.Ellipsis)},leadingContent={SourceThumbnail(song.artwork)},trailingContent={ActionIcon(Icons.Rounded.MoreVert,"Opsi ${song.title}",menu)},modifier=Modifier.clickable(onClickLabel="Putar ${song.title}",onClick=play).padding(horizontal=Design.sm))
+@Composable fun OnlineSongRow(original: OnlineSong, active: String?, play: ()->Unit, menu: ()->Unit) {
+    val song=observedSong(original)
+    ListItem(headlineContent={Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,color=if(active==song.id)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)},supportingContent={Text(song.credit.ifBlank {"Kredit belum tersedia"},maxLines=1,overflow=TextOverflow.Ellipsis)},leadingContent={SourceThumbnail(song.artwork,identity=song.id)},trailingContent={ActionIcon(Icons.Rounded.MoreVert,"Opsi ${song.title}",menu)},modifier=Modifier.clickable(onClickLabel="Putar ${song.title}",onClick=play).padding(horizontal=Design.sm))
 }
 
-@Composable fun OnlineSongActions(vm: MusicViewModel, song: OnlineSong, download: (OnlineSong)->Unit, configure: (OnlineSong)->Unit, close: ()->Unit) {
+@Composable fun OnlineSongActions(vm: MusicViewModel, original: OnlineSong, download: (OnlineSong)->Unit, configure: (OnlineSong)->Unit, close: ()->Unit) {
+    val song=observedSong(original)
     var save by remember(song.id) {mutableStateOf(false)}
     if(save)OnlineSaveSongDialog(vm,song,close)
     else EngineResultSheet(song,vm,download,configure,{save=true},close)
@@ -136,6 +139,7 @@ import com.yonzmusic.app.playback.StreamTimings
             }
             Text("${bytes/(1024*1024)} MiB terpakai. Cache lama dibuang otomatis. Gunakan Unduh untuk menyimpan permanen.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
             TextButton(vm::clearStreamCache) {Text("Bersihkan cache audio")}
+            TextButton(vm::clearArtworkCache) {Text("Bersihkan cache artwork · maks. 100 MB")}
         }
         ToggleSetting("Putar lagu terkait otomatis","Lanjutkan antrean daring saat habis. Antrean musik lokal tetap berhenti.",preferences.autoplay,vm::autoplay)
         ToggleSetting("Riwayat dengar daring","Disimpan di perangkat untuk Beranda personal. Mematikan ini menghentikan pencatatan baru.",preferences.onlineHistory,vm::onlineHistory)
@@ -157,4 +161,11 @@ import com.yonzmusic.app.playback.StreamTimings
     Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
         listOf("economy" to "Hemat","balanced" to "Seimbang","best" to "Terbaik").forEach {(key,label)->FilterChip(selected==key,{choose(key)},label={Text(label)})}
     }
+}
+
+/** Cards/search and the session consume the same immutable metadata map. */
+@Composable internal fun observedSong(song:OnlineSong):OnlineSong {
+    val repository=(androidx.compose.ui.platform.LocalContext.current.applicationContext as com.yonzmusic.app.YonzApp).metadata
+    val metadata by repository.state.collectAsStateWithLifecycle()
+    return metadata[song.id]?.let {com.yonzmusic.app.metadata.MetadataPolicy.merge(song,it)} ?: song
 }

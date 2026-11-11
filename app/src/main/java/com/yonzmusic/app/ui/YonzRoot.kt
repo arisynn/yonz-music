@@ -89,7 +89,8 @@ import org.json.JSONArray
         val current = remember(playerTracks, playback.id) { playerTracks.find { it.id == playback.id } }
         val onlineFavorites by vm.onlineFavorites.collectAsStateWithLifecycle()
         var playerSongOptions by remember {mutableStateOf<com.yonzmusic.app.search.OnlineSong?>(null)}
-        val currentRemote by produceState<com.yonzmusic.app.search.OnlineSong?>(null,current?.id) {value=current?.id?.let {(context.applicationContext as com.yonzmusic.app.YonzApp).streams.lookup(it)}}
+        val sharedMetadata by (context.applicationContext as com.yonzmusic.app.YonzApp).metadata.state.collectAsStateWithLifecycle()
+        val currentRemote=sharedMetadata[current?.id]
         fun songFor(track: Track): com.yonzmusic.app.search.OnlineSong {
             currentRemote?.takeIf {it.id==track.id}?.let {return it}
             val id=track.id.removePrefix("engine:")

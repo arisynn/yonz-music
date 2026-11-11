@@ -18,46 +18,30 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.CancellationException
 import com.yonzmusic.app.playback.StreamWork
 
-/** Small shared disk cache keeps visited catalogue covers available offline. */
+/** Compatibility bridge for existing artwork consumers; storage belongs to the shared resolver. */
 internal object CatalogArtBytes {
-    private val lock=Any()
-    fun load(context:android.content.Context,url:String,limit:Int=2*1024*1024):ByteArray? {
-        require(com.yonzmusic.app.search.SearchContract.artwork(url))
-        val directory=java.io.File(context.cacheDir,"catalog-art").apply {mkdirs()}
-        val key=java.security.MessageDigest.getInstance("SHA-256").digest(url.toByteArray()).joinToString(""){"%02x".format(it)}
-        val file=java.io.File(directory,key)
-        val cached=synchronized(lock){if(file.isFile && file.length() in 1..limit.toLong())file.readBytes() else null}
-        if(cached!=null)return cached
-        val hosts=com.yonzmusic.app.search.SearchContract.artHosts+setOf("coverartarchive.org","archive.org")
-        val response=SafeHttp.get(url,hosts,limit=limit)
-        if(response.status!=200)return null
-        synchronized(lock) {
-            val atomic=android.util.AtomicFile(file);val out=atomic.startWrite()
-            try {out.write(response.bytes);atomic.finishWrite(out)}catch(e:Exception){atomic.failWrite(out);throw e}
-            var total=directory.listFiles().orEmpty().sumOf {it.length()}
-            directory.listFiles().orEmpty().sortedBy {it.lastModified()}.forEach {old->if(total>24*1024*1024 && old!=file){val size=old.length();if(old.delete())total-=size}}
-        }
-        return response.bytes
+    fun load(context:android.content.Context,url:String,limit:Int=2*1024*1024):ByteArray? = kotlinx.coroutines.runBlocking {
+        (context.applicationContext as com.yonzmusic.app.YonzApp).artwork.resolve("image:$url",url)?.bytes?.takeIf {it.size<=limit}
     }
 }
 private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fun sizeOf(key:String,value:Bitmap)=value.allocationByteCount}
 private val thumbnailWorkers=Dispatchers.IO.limitedParallelism(2)
 /** Only shown after explicit source review. No tracking pixels, arbitrary hosts, or persistent failure cache. */
-@Composable fun SourceThumbnail(url:String, modifier: Modifier = Modifier.size(44.dp)) {
+@Composable fun SourceThumbnail(url:String, modifier: Modifier = Modifier.size(44.dp),identity:String=url) {
     val context=LocalContext.current.applicationContext
-    val image by produceState<Bitmap?>(sourceImages.get(url),url) {
-        if(value==null && url.isNotBlank())value=withContext(thumbnailWorkers) {
+    val requestKey="$identity:$url"
+    val image by produceState<Pair<String,Bitmap>?>(null,requestKey) {
+        value=null
+        if(url.isNotBlank())value=withContext(thumbnailWorkers) {
             StreamWork.awaitAudio()
             try {
-            val data=CatalogArtBytes.load(context,url) ?: return@withContext null
-            val bounds=BitmapFactory.Options().apply {inJustDecodeBounds=true}
-            BitmapFactory.decodeByteArray(data,0,data.size,bounds)
-            require(bounds.outWidth>0 && bounds.outHeight>0 && bounds.outWidth.toLong()*bounds.outHeight<=40_000_000)
-            var sample=1;while(maxOf(bounds.outWidth,bounds.outHeight)/sample>256)sample*=2
-            BitmapFactory.decodeByteArray(data,0,data.size,BitmapFactory.Options().apply {inSampleSize=sample})?.also {sourceImages.put(url,it)}
-            } catch(e:CancellationException) {throw e} catch(_:Exception) {null}
+                val cached=sourceImages.get(requestKey)
+                val bitmap=cached ?: (context as com.yonzmusic.app.YonzApp).artwork.resolve(identity,url)?.bytes?.let {BitmapFactory.decodeByteArray(it,0,it.size)}?.also {sourceImages.put(requestKey,it)}
+                bitmap?.let {requestKey to it}
+            }catch(e:CancellationException){throw e}catch(_:Exception){null}
         }
     }
-    if(image!=null)Image(image!!.asImageBitmap(),null,modifier.clip(Design.small),contentScale=ContentScale.Crop)
+    val bitmap=image?.takeIf {it.first==requestKey}?.second
+    if(bitmap!=null)Image(bitmap.asImageBitmap(),null,modifier.clip(Design.small),contentScale=ContentScale.Crop)
     else DefaultArt(modifier.clip(Design.small))
 }

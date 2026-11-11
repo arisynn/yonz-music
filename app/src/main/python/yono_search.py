@@ -6,6 +6,7 @@ import re
 from urllib.parse import urlsplit, parse_qs
 from yono_core.control import Control, Stopped
 from yono_core.network import youtube_dl
+from yono_metadata import extra, artwork as metadata_artwork
 
 PAGE = 12
 MAX_PAGE = 2
@@ -52,7 +53,8 @@ def normalize(row):
             pass
     return {"id": "engine:" + ident, "title": title, "artists": artists, "channel": channel,
             "album": clean(row.get("album")), "duration_ms": duration_ms, "artwork": art,
-            "page": "https://www.youtube.com/watch?v=" + ident, "video_id": ident}
+            "page": "https://www.youtube.com/watch?v=" + ident, "video_id": ident,
+            **extra(row), "artwork": metadata_artwork(thumbs, row.get('thumbnail', ''))}
 
 
 def run(payload, control, factory=youtube_dl):

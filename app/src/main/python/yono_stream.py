@@ -10,6 +10,7 @@ from urllib.parse import urlsplit, parse_qs
 from yono_core.control import Control, Stopped
 from yono_core.network import youtube_dl
 from yono_core.model import EngineError, Song, thumbnail
+from yono_metadata import extra, artwork
 
 
 def quality_selector(quality):
@@ -55,7 +56,8 @@ def inspect_video(ident, control, runtime=None, factory=youtube_dl, format_id=No
     revision=hashlib.sha256(f'{ident}:{data.get("format_id", "")}:{length}:{modified}'.encode()).hexdigest() if length.isdigit() and modified.isdigit() else ''
     bitrate=data.get('abr')
     bitrate=int(bitrate) if isinstance(bitrate,(int,float)) and math.isfinite(bitrate) and 0 < bitrate < 10000 else 0
-    return {'url':url,'headers':headers,'song':song.to_dict(),'ext':data.get('ext',''),'format_id':str(data.get('format_id',''))[:100],'acodec':str(data.get('acodec',''))[:100], 'bitrate':bitrate, 'revision':revision}
+    metadata={**song.to_dict(),**extra(data),'artwork_url':artwork(data.get('thumbnails'),data.get('thumbnail',''))}
+    return {'url':url,'headers':headers,'song':metadata,'ext':data.get('ext',''),'format_id':str(data.get('format_id',''))[:100],'acodec':str(data.get('acodec',''))[:100], 'bitrate':bitrate, 'revision':revision}
 
 
 def failure_code(error):

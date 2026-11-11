@@ -28,40 +28,16 @@ import kotlinx.coroutines.*
     if(error.isNotBlank())Column(Modifier.padding(Design.page)) {Text(error,style=MaterialTheme.typography.bodyMedium);TextButton(retry,enabled=!loading){Text("Coba lagi")}}
 }
 
-@Composable fun DiscoveryHome(vm:MusicViewModel,open:(CatalogItem)->Unit,onHistory:()->Unit,onDownload:(OnlineSong)->Unit,onConfigure:(OnlineSong)->Unit,scroll:LazyListState) {
-    var country by remember {mutableStateOf(vm.discovery.country)}
-    var page by remember {mutableStateOf(DiscoveryPage())};var loading by remember {mutableStateOf(false)};var error by remember {mutableStateOf("")};var refresh by remember {mutableIntStateOf(0)}
-    var selected by remember {mutableStateOf<OnlineSong?>(null)}
-    val history by vm.onlineHistory.collectAsStateWithLifecycle();val playback by vm.playback.state.collectAsStateWithLifecycle()
-    LaunchedEffect(country,refresh) {loading=true;error="";try {page=vm.discovery.charts(country,refresh>0);if(page.songs.isEmpty())error="Chart musik belum tersedia untuk wilayah ini."
-            launch {for(song in page.songs.take(10)) {try {val enriched=vm.discovery.enrich(song);page=page.copy(songs=page.songs.map {if(it.id==song.id)enriched else it})}catch(e:CancellationException){throw e}catch(_:Exception){break}}}}catch(e:CancellationException){throw e}catch(_:Exception){error="Chart belum tersedia. Periksa koneksi lalu coba lagi."}finally {loading=false}}
-    LazyColumn(state=scroll,contentPadding=PaddingValues(bottom=Design.page),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-        item {Row(Modifier.fillMaxWidth().padding(horizontal=Design.page),verticalAlignment=Alignment.CenterVertically) {
-            Spacer(Modifier.weight(1f))
-            TextButton({country=if(country=="ID")"ZZ" else "ID";vm.discovery.country=country;page=DiscoveryPage()}) {Text(if(country=="ID")"Indonesia ▾" else "Global ▾")}
-        }}
-        item {SectionTitle("Musik trending","Chart YouTube Music",action={IconButton({refresh++},enabled=!loading){Icon(Icons.Rounded.Refresh,"Segarkan chart")}})}
-        item {DiscoveryNotice(error,loading){refresh++}}
-        if(page.cached)item {Text("Chart tersimpan · diperbarui saat tersedia",Modifier.padding(horizontal=Design.page),style=MaterialTheme.typography.labelSmall)}
-        if(page.songs.isNotEmpty())item {OnlineShelf(page.songs,{vm.playOnline(it)},{selected=it})}
-        if(page.items.isNotEmpty()) {
-            item {SectionTitle("Artis populer","Dari chart wilayah ini")}
-            item {LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-                items(page.items,key={it.id}){item->Column(Modifier.width(128.dp).clickable{open(item)},verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-                    SourceThumbnail(item.artwork,Modifier.size(128.dp));Text(item.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleSmall)
-                }}
-            }}
-        }
-        if(history.isNotEmpty()) {item{SectionTitle("Terakhir diputar",action={TextButton(onHistory){Text("Semua")}})};items(history.take(4),key={"recent:${it.id}"}){s->OnlineSongRow(s,playback.id,{vm.playOnline(s)},{selected=s})}}
-    }
-    selected?.let {OnlineSongActions(vm,it,onDownload,onConfigure){selected=null}}
-}
+@Composable fun DiscoveryHome(vm:MusicViewModel,open:(CatalogItem)->Unit,onHistory:()->Unit,onDownload:(OnlineSong)->Unit,onConfigure:(OnlineSong)->Unit,scroll:LazyListState) = ChartDiscovery(vm,open,onHistory,onDownload,onConfigure,scroll)
 
 @Composable fun DiscoverySearch(vm:MusicViewModel,open:(CatalogItem)->Unit,download:(OnlineSong)->Unit,configure:(OnlineSong)->Unit) {
     var query by rememberSaveable {mutableStateOf("")};var kind by rememberSaveable {mutableStateOf("song")}
     var page by remember {mutableStateOf(DiscoveryPage())};var error by remember {mutableStateOf("")};var loading by remember {mutableStateOf(false)};var retry by remember {mutableIntStateOf(0)}
     var selected by remember {mutableStateOf<OnlineSong?>(null)}
     val playback by vm.playback.state.collectAsStateWithLifecycle();val recent by vm.recentSearch.collectAsStateWithLifecycle()
+    var official by rememberSaveable {mutableStateOf(com.yonzmusic.app.metadata.OfficialFilter.ALL)}
+    val metadata by (androidx.compose.ui.platform.LocalContext.current.applicationContext as com.yonzmusic.app.YonzApp).metadata.state.collectAsStateWithLifecycle()
+    val songs=page.songs.map {song->metadata[song.id]?.let {com.yonzmusic.app.metadata.MetadataPolicy.merge(song,it)} ?: song}.filter {official.accepts(it)}
     LaunchedEffect(query,kind,retry) {
         page=DiscoveryPage();error="";loading=false
         if(query.trim().length<2)return@LaunchedEffect
@@ -80,6 +56,9 @@ import kotlinx.coroutines.*
         Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
             listOf("song" to "Lagu","album" to "Album","artist" to "Artis","playlist" to "Playlist").forEach {(key,label)->FilterChip(kind==key,{kind=key},label={Text(label)})}
         }
+        Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
+            com.yonzmusic.app.metadata.OfficialFilter.entries.forEach {value->FilterChip(official==value,{official=value},label={Text(value.label)})}
+        }
         LazyColumn(Modifier.weight(1f),contentPadding=PaddingValues(bottom=Design.page)) {
             item {DiscoveryNotice(error,loading){retry++}}
             if(query.trim().length<2) {
@@ -87,8 +66,9 @@ import kotlinx.coroutines.*
                 items(recent){value->ListItem(headlineContent={Text(value)},leadingContent={Icon(Icons.Rounded.History,null)},modifier=Modifier.clickable {query=value})}
                 item {Text("Temukan album dan katalog artis favoritmu. Metadata dari MusicBrainz; audio dicocokkan saat diputar.",Modifier.padding(Design.page),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
             } else {
-                items(page.songs,key={it.id}){s->OnlineSongRow(s,playback.id,{vm.playOnline(s)},{selected=s})}
-                items(page.items.filter {it.kind!="song"},key={it.id}){item->CatalogRow(item){open(item)}}
+                items(songs,key={it.id}){s->OnlineSongRow(s,playback.id,{vm.playOnline(s)},{selected=s})}
+                items(page.items.filter {it.kind!="song" && (official==com.yonzmusic.app.metadata.OfficialFilter.ALL || it.kind=="artist")},key={it.id}){item->CatalogRow(item){open(item)}}
+                if(!loading && official!=com.yonzmusic.app.metadata.OfficialFilter.ALL && songs.isEmpty())item {Text("Belum ada rilisan dengan bukti resmi yang cocok. Hasil yang belum terverifikasi disembunyikan.",Modifier.padding(Design.page),style=MaterialTheme.typography.bodySmall)}
                 if(!loading && error.isBlank() && page.items.isEmpty() && page.songs.isEmpty())item {EmptyState("Belum ada hasil","Coba judul atau nama artis yang lebih lengkap.")}
             }
         }

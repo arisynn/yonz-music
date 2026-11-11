@@ -35,6 +35,7 @@ class PlaybackService : MediaSessionService() {
     private lateinit var player: ExoPlayer
     private var session: MediaSession? = null
     private var performance:StreamPlayerMetrics?=null
+    private var metadataCoordinator:PlaybackMetadataCoordinator?=null
     private var snapshotJob: Job? = null
     private var sleepJob: Job? = null
     private var warmJob: Job? = null
@@ -149,6 +150,7 @@ class PlaybackService : MediaSessionService() {
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
             .setHandleAudioBecomingNoisy(true).setWakeMode(C.WAKE_MODE_LOCAL).build()
         performance=StreamPlayerMetrics(player)
+        metadataCoordinator=PlaybackMetadataCoordinator(app,player,scope)
         // Media3 targets five seconds of the next item after the current buffer is full.
         // Same player, source validation and retry policy; memory only, no offline file claims.
         player.setPreloadConfiguration(ExoPlayer.PreloadConfiguration.DEFAULT)
@@ -343,7 +345,7 @@ class PlaybackService : MediaSessionService() {
     override fun onDestroy() {
         listenTick()
         snapshotJob?.cancel(); sleepJob?.cancel(); warmJob?.cancel(); radioJob?.cancel(); StreamWork.buffering=false;StreamWork.foregroundLoading=false;StreamWork.currentMediaId=null; app.sleepEnd.value = 0
-        performance?.close();session?.release(); player.release(); scope.cancel()
+        metadataCoordinator?.close();performance?.close();session?.release(); player.release(); scope.cancel()
         super.onDestroy()
     }
 }

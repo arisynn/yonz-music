@@ -10,7 +10,7 @@ import kotlin.coroutines.coroutineContext
 /** No cookies, credentials, cleartext, remote code or unbounded response bodies. */
 object SafeHttp {
     const val USER_AGENT = "YonoMusic/1.1 (+https://github.com/arisynn/yonz-music)"
-    data class Response(val status: Int, val bytes: ByteArray, val etag: String?, val retryAfter: String?)
+    data class Response(val status: Int, val bytes: ByteArray, val etag: String?, val retryAfter: String?,val contentType:String="")
     fun safeUrl(value: String, allowed: Set<String>): URL {
         require(value.length <= 4096) { "Link is too long." }
         val uri = URI(value)
@@ -36,16 +36,17 @@ object SafeHttp {
         }
         error("Too many source redirects.")
     }
-    fun get(url: String, allowed: Set<String>, limit: Int = 2 * 1024 * 1024, etag: String? = null): Response {
+    fun get(url: String, allowed: Set<String>, limit: Int = 2 * 1024 * 1024, etag: String? = null,imageOnly:Boolean=false): Response {
         val connection = connect(url, allowed, etag)
         try {
             val status = connection.responseCode
+            if(imageOnly && status==200)require(connection.contentType.orEmpty().substringBefore(';').lowercase() in setOf("image/jpeg","image/png","image/webp")) {"Unsupported artwork content type."}
             val bytes = if (status == 200) connection.inputStream.use { input ->
                 val out = java.io.ByteArrayOutputStream(); val buffer = ByteArray(8192)
                 while (true) { val n = input.read(buffer); if (n < 0) break; require(out.size() + n <= limit) { "Source response is too large." }; out.write(buffer, 0, n) }
                 out.toByteArray()
             } else ByteArray(0)
-            return Response(status, bytes, connection.getHeaderField("ETag"), connection.getHeaderField("Retry-After") ?: connection.getHeaderField("X-RateLimit-Reset"))
+            return Response(status, bytes, connection.getHeaderField("ETag"), connection.getHeaderField("Retry-After") ?: connection.getHeaderField("X-RateLimit-Reset"),connection.contentType.orEmpty())
         } finally { connection.disconnect() }
     }
     suspend fun download(url: String, allowed: Set<String>, target: File, limit: Long, expected: Long = 0,

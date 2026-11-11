@@ -84,10 +84,13 @@ internal object ArtCache {
     val density=androidx.compose.ui.platform.LocalDensity.current
     BoxWithConstraints(modifier.clip(Design.small).semantics { if(description!=null)contentDescription=description }) {
         val pixels=with(density) { maxWidth.takeIf { it.value.isFinite() }?.roundToPx() ?: 512 }.coerceIn(64,1536)
-        val bitmap by produceState<Bitmap?>(null,track?.uri,track?.artUri,track?.sha256,track?.artRevision,pixels) {
-            value=if(track!=null) withContext(Dispatchers.IO) { if(track.source=="stream")com.yonzmusic.app.playback.StreamWork.awaitAudio();runCatching { ArtCache.load(context,track,pixels) }.getOrNull() } else null
+        val requestKey="${track?.id}:${track?.uri}:${track?.artUri}:${track?.sha256}:${track?.artRevision}:$pixels"
+        val loaded by produceState<Pair<String,Bitmap>?>(null,requestKey) {
+            value=null
+            value=if(track!=null) withContext(Dispatchers.IO) { if(track.source=="stream")com.yonzmusic.app.playback.StreamWork.awaitAudio();runCatching { ArtCache.load(context,track,pixels)?.let {requestKey to it} }.getOrNull() } else null
         }
-        if(bitmap!=null)Image(bitmap!!.asImageBitmap(),contentDescription=null,modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
+        val bitmap=loaded?.takeIf {it.first==requestKey}?.second
+        if(bitmap!=null)Image(bitmap.asImageBitmap(),contentDescription=null,modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
         else DefaultArt(Modifier.fillMaxSize(),track?.album ?: "")
     }
 }

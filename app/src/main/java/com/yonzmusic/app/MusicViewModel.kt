@@ -159,6 +159,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     fun clearSearchHistory(enabled: Boolean=searchSettings.remembersHistory()) {searchSettings.clearHistory(enabled);recentSearch.value=emptyList()}
+    fun clearArtworkCache(){action {app.artwork.clear();notify("Cache artwork dibersihkan.")}}
     val searchQuery=MutableStateFlow("")
     val searchOnline=MutableStateFlow(true)
     val searchProvider=MutableStateFlow(com.yonzmusic.app.search.SearchProvider.ENGINE)
