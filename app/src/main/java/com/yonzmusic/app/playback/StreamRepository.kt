@@ -27,8 +27,8 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         val id=mediaId.removePrefix("engine:");if(!mediaId.isRemoteId() || (!mediaId.startsWith("mb:") && !valid(id)))return@withContext null
         app.repository.dao.state("stream:$id")?.value?.let {runCatching {decode(JSONObject(it))}.getOrNull()}
     }
-    @Keep class Cancellation(private val flag:AtomicBoolean,private val thread:Thread) {
-        @Keep fun isCancelled()=flag.get() || thread.isInterrupted
+    @Keep class Cancellation(private val flag:AtomicBoolean,private val thread:Thread,private val backgroundSource:String?=null) {
+        @Keep fun isCancelled()=flag.get() || thread.isInterrupted || (backgroundSource!=null && backgroundSource!=StreamWork.currentMediaId && (StreamWork.urgent || StreamWork.foregroundLoading))
         @Keep fun onEvent(value:String) {}
     }
     data class Resolved(val url:String,val headers:Map<String,String>,val duration:Long,val formatId:String="",val extension:String="",val codec:String="",val bitrate:Long=0,val revision:String="")
@@ -41,30 +41,34 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         require(valid(id))
         StreamPerformance.sinceTap("engine:$id",StreamPerformance.Stage.RESOLVER_START)
         val started=android.os.SystemClock.elapsedRealtime()
+        val backgroundSource=StreamWork.sourceId.takeIf {StreamWork.isSpeculative}
         val selectedQuality=quality
         val deadline=android.os.SystemClock.elapsedRealtime()+timeoutMillis.coerceIn(1,22000)
         fun active() {
-            if(cancelled.get() || Thread.currentThread().isInterrupted)throw StreamFailure(StreamIssue.CANCELLED)
+            if(cancelled.get() || Thread.currentThread().isInterrupted || (backgroundSource!=null && backgroundSource!=StreamWork.currentMediaId && (StreamWork.urgent || StreamWork.foregroundLoading)))throw StreamFailure(StreamIssue.CANCELLED)
             if(android.os.SystemClock.elapsedRealtime()>=deadline)throw StreamFailure(StreamIssue.TIMEOUT)
         }
+        var loaded=false
         return cache.resolve("$id:$selectedQuality",{formatId==null || it.formatId==formatId},::active,
             {StreamRange.cacheMillis(it.url,System.currentTimeMillis())}) {
+        loaded=true
         StreamPerformance.mark("engine:$id",StreamPerformance.Stage.RESOLVER_LOAD,0)
         val remaining=deadline-android.os.SystemClock.elapsedRealtime()
         if(remaining<5000)throw StreamFailure(StreamIssue.TIMEOUT)
-        val config=JSONObject().put("job_id",java.util.UUID.randomUUID().toString()).put("timeout_seconds",(remaining/1000).coerceIn(5,22))
+        val config=JSONObject().put("job_id",java.util.UUID.randomUUID().toString()).put("timeout_seconds",(remaining/1000).coerceIn(5,if(backgroundSource!=null)8 else 22)).put("background",backgroundSource!=null)
             .put("network",AndroidNetworkContext.options(app,"https://www.youtube.com"))
         val qjs=File(app.applicationInfo.nativeLibraryDir,"libqjs.so")
         if(qjs.isFile)config.put("runtime",JSONObject().put("quickjs",JSONObject().put("path",qjs.canonicalPath)))
-        val raw=PythonRuntime.module(app,"yono_stream").callAttr("execute",JSONObject().put("video_id",id).put("quality",selectedQuality).apply {if(formatId!=null)put("format_id",formatId)}.toString(),config.toString(),Cancellation(cancelled,Thread.currentThread())).toString()
+        val module=PythonRuntime.module(app,"yono_stream")
+        val extractAt=android.os.SystemClock.elapsedRealtime()
+        val raw=try {module.callAttr("execute",JSONObject().put("video_id",id).put("quality",selectedQuality).apply {if(formatId!=null)put("format_id",formatId)}.toString(),config.toString(),Cancellation(cancelled,Thread.currentThread(),backgroundSource)).toString()}finally{StreamPerformance.mark("engine:$id",StreamPerformance.Stage.YTDLP_EXTRACT,android.os.SystemClock.elapsedRealtime()-extractAt)}
         val j=JSONObject(raw);if(!j.optBoolean("ok"))throw StreamFailure(runCatching {StreamIssue.valueOf(j.optString("code","SOURCE"))}.getOrDefault(StreamIssue.SOURCE))
-        j.optJSONObject("metrics")?.let {StreamPerformance.mark("engine:$id",StreamPerformance.Stage.YTDLP_EXTRACT,it.optLong("extraction_ms").coerceIn(0,30000))}
         val url=j.getString("url");runCatching {StreamPolicy.url(url)}.getOrElse {throw StreamFailure(StreamIssue.UNSAFE)}
         val headers=mutableMapOf<String,String>();j.optJSONObject("headers")?.let {h->h.keys().forEach {k->val v=h.optString(k);if(k.lowercase() in setOf("user-agent","accept","accept-language") && v.length<1500 && !v.contains('\r') && !v.contains('\n'))headers[k]=v}}
         val result=Resolved(url,headers,((j.optJSONObject("song")?.optDouble("duration",0.0) ?: 0.0)*1000).toLong().coerceIn(0,7*86400000L),j.optString("format_id").take(100),j.optString("ext").take(20),j.optString("acodec").take(100),j.optLong("bitrate").coerceIn(0,10000),j.optString("revision").takeIf {it.matches(Regex("[a-f0-9]{64}"))} ?: "$sessionRevision:${java.util.UUID.randomUUID()}")
         StreamTimings.record("resolve",android.os.SystemClock.elapsedRealtime()-started)
         result
-        }
+        }.also {if(!loaded)StreamPerformance.mark("engine:$id",StreamPerformance.Stage.RESOLVER_HIT,android.os.SystemClock.elapsedRealtime()-started)}
     }
 
     companion object {

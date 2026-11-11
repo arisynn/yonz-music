@@ -132,7 +132,7 @@ import com.yonzmusic.app.playback.StreamTimings
             Text("Seimbang mengutamakan sekitar 128 kbps. Mengikuti kualitas yang tersedia; perubahan berlaku pada pemutaran berikutnya.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
             Text("Cache audio sementara",style=MaterialTheme.typography.titleMedium)
             Row(Modifier.horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
-                listOf(0,32,64).forEach {size->FilterChip(preferences.streamCacheMb==size,{vm.streamCacheMb(size)},label={Text(if(size==0)"Nonaktif" else "$size MiB")})}
+                listOf(0,32,64,100).forEach {size->FilterChip(preferences.streamCacheMb==size,{vm.streamCacheMb(size)},label={Text(if(size==0)"Nonaktif" else if(size==100)"100 MB · uji" else "$size MiB")})}
             }
             Text("${bytes/(1024*1024)} MiB terpakai. Cache lama dibuang otomatis. Gunakan Unduh untuk menyimpan permanen.",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
             TextButton(vm::clearStreamCache) {Text("Bersihkan cache audio")}

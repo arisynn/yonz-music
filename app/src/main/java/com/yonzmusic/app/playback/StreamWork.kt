@@ -7,9 +7,15 @@ import kotlinx.coroutines.delay
 object StreamWork {
     private val opens = AtomicInteger()
     @Volatile var buffering = false
+    @Volatile var foregroundLoading = false
+    @Volatile var currentMediaId:String? = null
+    private val source=ThreadLocal<String?>()
+    val sourceId get()=source.get()
+    val isSpeculative get()=source.get()?.let {currentMediaId!=null && it!=currentMediaId}==true
+    fun <T> forSource(id:String?,block:()->T):T {val old=source.get();source.set(id);return try {block()}finally {source.set(old)}}
     val urgent get() = buffering || opens.get() > 0
-    fun begin() { opens.incrementAndGet() }
-    fun end() { opens.decrementAndGet() }
+    fun begin(speculative:Boolean=false) { if(!speculative)opens.incrementAndGet() }
+    fun end(speculative:Boolean=false) { if(!speculative)opens.decrementAndGet() }
     suspend fun awaitAudio() { while (urgent) delay(100) }
 }
 

@@ -1,0 +1,45 @@
+{
+  "liveNetwork": false,
+  "runs": [
+    {
+      "initialMs": 1000,
+      "rebufferMs": 2500,
+      "rateBytesPerSecond": 48000,
+      "stallMs": 0,
+      "readyMs": 1864,
+      "audioAdvancingMs": 1985,
+      "rebufferCount": 0,
+      "rebufferDurationMs": 0
+    },
+    {
+      "initialMs": 750,
+      "rebufferMs": 2000,
+      "rateBytesPerSecond": 48000,
+      "stallMs": 0,
+      "readyMs": 923,
+      "audioAdvancingMs": 978,
+      "rebufferCount": 0,
+      "rebufferDurationMs": 0
+    },
+    {
+      "initialMs": 1000,
+      "rebufferMs": 2500,
+      "rateBytesPerSecond": 48000,
+      "stallMs": 3500,
+      "readyMs": 1071,
+      "audioAdvancingMs": 1181,
+      "rebufferCount": 1,
+      "rebufferDurationMs": 3514
+    },
+    {
+      "initialMs": 750,
+      "rebufferMs": 2000,
+      "rateBytesPerSecond": 48000,
+      "stallMs": 3500,
+      "readyMs": 852,
+      "audioAdvancingMs": 964,
+      "rebufferCount": 1,
+      "rebufferDurationMs": 3300
+    }
+  ]
+}

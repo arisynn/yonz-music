@@ -176,6 +176,7 @@ def execute(payload_json, config_json, callback):
         payload, config = json.loads(str(payload_json)), json.loads(str(config_json))
         control = Control(config['job_id'], callback, min(40, max(5, int(config.get('timeout_seconds', 30)))))
         control.network_options = config.get('network') or {}
+        control.network_timeout = 2 if config.get("background") else 12
         operation = payload['operation']
         if operation in ('search', 'detail', 'enrich') and not payload.get('id', '').startswith('yt:') and payload.get('kind') != 'playlist':
             metadata = MetadataProvider(control)

@@ -103,7 +103,7 @@ class CollectionBackup(private val app: YonzApp) {
             p.optString("sort").takeIf { it in setOf("Title", "Artist", "Album", "Recently added", "Duration") }?.let { app.preferences.sort(it) }
             app.preferences.motion(p.optBoolean("reduceMotion")); app.preferences.glass(p.optBoolean("glass", true));app.preferences.smartMix(p.optBoolean("smartMix",true))
             p.optString("streamQuality").takeIf {it in setOf("economy","balanced","best")}?.let {app.preferences.streamQuality(it)}
-            if(p.has("streamCacheMb"))p.optInt("streamCacheMb").takeIf {it in setOf(0,32,64)}?.let {app.preferences.streamCacheMb(it)}
+            if(p.has("streamCacheMb"))p.optInt("streamCacheMb").takeIf {it in setOf(0,32,64,100)}?.let {app.preferences.streamCacheMb(it)}
             if(p.has("autoplay"))app.preferences.autoplay(p.getBoolean("autoplay"))
             if(p.has("onlineHistory"))app.preferences.onlineHistory(p.getBoolean("onlineHistory"))
         }

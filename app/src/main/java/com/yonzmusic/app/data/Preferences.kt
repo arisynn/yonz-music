@@ -27,9 +27,9 @@ class Preferences(context: Context) {
     private val data = store.data.catch { if (it is IOException) emit(emptyPreferences()) else throw it }
     val flow: Flow<UserPreferences> = data.map { UserPreferences(it[theme] ?: "System", it[sort] ?: "Title", it[motion] ?: false, it[glass] ?: true, it[mixes] ?: true, it[hideDownloads] ?: true,
         it[quality]?.takeIf { v -> v in setOf("economy", "balanced", "best") } ?: "balanced",
-        it[cache]?.takeIf { v -> v in setOf(0,32,64) } ?: 64, it[autoplay] ?: true, it[onlineHistory] ?: true) }
+        it[cache]?.takeIf { v -> v in setOf(0,32,64,100) } ?: 64, it[autoplay] ?: true, it[onlineHistory] ?: true) }
     suspend fun streamQuality(value: String) { require(value in setOf("economy","balanced","best")); store.edit { it[quality] = value } }
-    suspend fun streamCacheMb(value: Int) { require(value in setOf(0,32,64)); store.edit { it[cache] = value } }
+    suspend fun streamCacheMb(value: Int) { require(value in setOf(0,32,64,100)); store.edit { it[cache] = value } }
     suspend fun autoplay(value: Boolean) { store.edit { it[autoplay] = value } }
     suspend fun onlineHistory(value: Boolean) { store.edit { it[onlineHistory] = value } }
     suspend fun theme(value: String) { store.edit { it[theme] = value } }

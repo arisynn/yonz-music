@@ -1,0 +1,7 @@
+
+com.yonzmusic.app.StreamPerformanceBenchmarkTest:.
+com.yonzmusic.app.StreamPerformanceContractsTest:.
+
+Time: 58,529
+
+OK (2 tests)

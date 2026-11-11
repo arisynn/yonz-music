@@ -1,0 +1,7 @@
+{
+  "auditedBase": "3618d6946acb096f16d78c96d8c17ed7c3e881e8",
+  "instrumentedBaseline": "7c621261cde3721b9ede95db210c41260a73020d",
+  "algorithms": "unchanged; metrics and internal fixture injection only",
+  "device": "API26 x86_64 software emulator; no KVM",
+  "network": "injected owned PCM; fast/mobile shaping are not physical networks"
+}

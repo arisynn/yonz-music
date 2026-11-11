@@ -1,0 +1,1019 @@
+{
+  "run": "optimized",
+  "liveNetwork": false,
+  "physicalWifi": false,
+  "physicalMobile": false,
+  "pythonAlreadyStarted": false,
+  "pythonFirstModuleMs": 4327,
+  "pythonWarmModuleMs": 2,
+  "profiles": [
+    {
+      "profile": "fast-shaped",
+      "fixtureBytesPerSecond": 256000,
+      "libraryRows": 5000,
+      "httpOpens": 5,
+      "extractions": 2,
+      "nextBytesBeforeTransition": 22444,
+      "subsequentPlaybackPollMs": 2620,
+      "backgroundAdvanced": true,
+      "events": [
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "local_lookup",
+          "ms": 72,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "resolver_start",
+          "ms": 982,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "resolver_load",
+          "ms": 214,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "dns",
+          "ms": 122,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "http_connect",
+          "ms": 37,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "http_headers",
+          "ms": 41,
+          "bytes": 0,
+          "count": 200
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "first_byte",
+          "ms": 565,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "open_first_byte",
+          "ms": 705,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "state_ready",
+          "ms": 5225,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "audio_advancing",
+          "ms": 5366,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "transfer",
+          "ms": 2463,
+          "bytes": 118444,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 1,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 0,
+          "count": 118444
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "local_lookup",
+          "ms": 130,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "resolver_start",
+          "ms": 630,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "dns",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "http_connect",
+          "ms": 64,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "http_headers",
+          "ms": 87,
+          "bytes": 0,
+          "count": 206
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "first_byte",
+          "ms": 298,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "open_first_byte",
+          "ms": 388,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "seek_ready",
+          "ms": 1721,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "audio_advancing",
+          "ms": 2051,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "transfer",
+          "ms": 1858,
+          "bytes": 155648,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 2,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 0,
+          "count": 155648
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "local_lookup",
+          "ms": 279,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "resolver_start",
+          "ms": 825,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "dns",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "http_connect",
+          "ms": 31,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "http_headers",
+          "ms": 80,
+          "bytes": 0,
+          "count": 206
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "first_byte",
+          "ms": 181,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "open_first_byte",
+          "ms": 213,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "seek_ready",
+          "ms": 1569,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "audio_advancing",
+          "ms": 1730,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "transfer",
+          "ms": 2525,
+          "bytes": 265600,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "resolver_start",
+          "ms": 4425,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "dns",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "http_connect",
+          "ms": 31,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "http_headers",
+          "ms": 33,
+          "bytes": 0,
+          "count": 206
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "first_byte",
+          "ms": 47,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "open_first_byte",
+          "ms": 59,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "transfer",
+          "ms": 477,
+          "bytes": 100352,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 3,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 242048,
+          "count": 608000
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "local_lookup",
+          "ms": 26,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "resolver_load",
+          "ms": 147,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "dns",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "http_connect",
+          "ms": 31,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "http_headers",
+          "ms": 39,
+          "bytes": 0,
+          "count": 200
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "first_byte",
+          "ms": 78,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "open_first_byte",
+          "ms": 86,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 4,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 4,
+          "event": "state_ready",
+          "ms": 955,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 4,
+          "event": "audio_advancing",
+          "ms": 1047,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 5,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "transfer",
+          "ms": 2575,
+          "bytes": 283692,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 0,
+          "count": 283692
+        },
+        {
+          "schema": 1,
+          "trace": 5,
+          "event": "local_lookup",
+          "ms": 172,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 5,
+          "event": "resolver_start",
+          "ms": 949,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 5,
+          "event": "state_ready",
+          "ms": 2066,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 5,
+          "event": "audio_advancing",
+          "ms": 2138,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 5,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 640044,
+          "count": 640044
+        }
+      ]
+    },
+    {
+      "profile": "mobile-shaped",
+      "fixtureBytesPerSecond": 48000,
+      "libraryRows": 5000,
+      "httpOpens": 5,
+      "extractions": 2,
+      "nextBytesBeforeTransition": 12844,
+      "subsequentPlaybackPollMs": 2317,
+      "backgroundAdvanced": true,
+      "events": [
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "local_lookup",
+          "ms": 109,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "resolver_start",
+          "ms": 631,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "resolver_load",
+          "ms": 185,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "dns",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "http_connect",
+          "ms": 101,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "http_headers",
+          "ms": 103,
+          "bytes": 0,
+          "count": 200
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "first_byte",
+          "ms": 282,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "open_first_byte",
+          "ms": 287,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "state_ready",
+          "ms": 3300,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "audio_advancing",
+          "ms": 3785,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "transfer",
+          "ms": 2050,
+          "bytes": 70444,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 7,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 0,
+          "count": 70444
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "local_lookup",
+          "ms": 97,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "resolver_start",
+          "ms": 702,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "dns",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "http_connect",
+          "ms": 102,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "http_headers",
+          "ms": 105,
+          "bytes": 0,
+          "count": 206
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "first_byte",
+          "ms": 311,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "open_first_byte",
+          "ms": 315,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "seek_ready",
+          "ms": 1909,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "audio_advancing",
+          "ms": 2255,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "transfer",
+          "ms": 1258,
+          "bytes": 46848,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 8,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 0,
+          "count": 46848
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "local_lookup",
+          "ms": 48,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "resolver_start",
+          "ms": 541,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "dns",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "http_connect",
+          "ms": 102,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "http_headers",
+          "ms": 104,
+          "bytes": 0,
+          "count": 206
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "seek_ready",
+          "ms": 816,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "first_byte",
+          "ms": 206,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "open_first_byte",
+          "ms": 213,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "audio_advancing",
+          "ms": 1165,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "transfer",
+          "ms": 7101,
+          "bytes": 313600,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "resolver_start",
+          "ms": 8077,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "dns",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "http_connect",
+          "ms": 101,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "http_headers",
+          "ms": 102,
+          "bytes": 0,
+          "count": 206
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "first_byte",
+          "ms": 136,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "open_first_byte",
+          "ms": 145,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "transfer",
+          "ms": 4602,
+          "bytes": 209152,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 9,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 85248,
+          "count": 608000
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "local_lookup",
+          "ms": 35,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "resolver_load",
+          "ms": 126,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "dns",
+          "ms": 1,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "http_connect",
+          "ms": 101,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "http_headers",
+          "ms": 103,
+          "bytes": 0,
+          "count": 200
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "first_byte",
+          "ms": 142,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "open_first_byte",
+          "ms": 148,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 10,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 10,
+          "event": "state_ready",
+          "ms": 879,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 10,
+          "event": "audio_advancing",
+          "ms": 994,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 11,
+          "event": "tap",
+          "ms": 0,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "transfer",
+          "ms": 2315,
+          "bytes": 85292,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 0,
+          "event": "cache",
+          "ms": 0,
+          "bytes": 0,
+          "count": 85292
+        },
+        {
+          "schema": 1,
+          "trace": 11,
+          "event": "local_lookup",
+          "ms": 240,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 11,
+          "event": "resolver_start",
+          "ms": 692,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 11,
+          "event": "state_ready",
+          "ms": 1838,
+          "bytes": 0,
+          "count": 0
+        },
+        {
+          "schema": 1,
+          "trace": 11,
+          "event": "audio_advancing",
+          "ms": 2156,
+          "bytes": 0,
+          "count": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+
+com.yonzmusic.app.StreamLocalRegressionTest:.
+
+Time: 9,893
+
+OK (1 test)

@@ -37,10 +37,11 @@ class StreamAudioCache(private val app: YonzApp,
     @Synchronized private fun cache(): SimpleCache = instance ?: SimpleCache(directory, eviction, StandaloneDatabaseProvider(app)).also { instance=it }
     // Called on IO from the preferences collector; cache operations are synchronized by SimpleCache.
     fun configure(megabytes: Int) {
-        limit = megabytes.takeIf { it in setOf(0,32,64) }?.times(1024L*1024) ?: 64L*1024*1024
+        limit = if(megabytes==100)100_000_000L else megabytes.takeIf { it in setOf(0,32,64) }?.times(1024L*1024) ?: 64L*1024*1024
         val current = synchronized(this) { instance }
         if(current != null) synchronized(current) { eviction.trim(current, 0) }
     }
+    internal fun capacityBytes()=limit
     fun clear() { val current=cache(); synchronized(current) { current.keys.toList().forEach(current::removeResource) }; bytes.value=current.cacheSpace }
     fun refreshSize() { bytes.value=cache().cacheSpace }
     @Synchronized fun release() { instance?.release(); instance=null }
@@ -58,7 +59,8 @@ class StreamAudioCache(private val app: YonzApp,
         override fun addTransferListener(listener: TransferListener) { listeners += listener; delegate?.addTransferListener(listener) }
         override fun open(spec: DataSpec): Long {
             stopped.set(false);cacheRead=0;totalRead=0
-            StreamWork.begin()
+            val speculative=StreamWork.isSpeculative
+            StreamWork.begin(speculative)
             try {
                 val id=StreamPolicy.source(spec.uri);trace=StreamPerformance.number("engine:$id")
                 if(source!=id) { source=id;anchor=null }
@@ -67,10 +69,12 @@ class StreamAudioCache(private val app: YonzApp,
                 val old=anchor
                 if(old!=null && (old.formatId!=info.formatId || old.extension!=info.extension || old.codec!=info.codec || old.revision!=info.revision)) throw StreamFailure(StreamIssue.FORMAT_CHANGED)
                 anchor=info
+                val initial=java.util.concurrent.atomic.AtomicReference<StreamRepository.Resolved?>(info)
                 val pinned=object: StreamResolver {
-                    override fun invalidate(id: String) = resolver.invalidate(id)
+                    override fun invalidate(id: String) {initial.set(null);resolver.invalidate(id)}
                     override fun resolve(id: String, cancelled: AtomicBoolean, formatId: String?, timeoutMillis: Long): StreamRepository.Resolved {
-                        val result=resolver.resolve(id,cancelled,info.formatId,timeoutMillis)
+                        if(cancelled.get() || Thread.currentThread().isInterrupted)throw StreamFailure(StreamIssue.CANCELLED)
+                        val result=initial.getAndSet(null) ?: resolver.resolve(id,cancelled,info.formatId,timeoutMillis)
                         if(result.revision!=info.revision) throw StreamFailure(StreamIssue.FORMAT_CHANGED)
                         return result
                     }
@@ -87,7 +91,7 @@ class StreamAudioCache(private val app: YonzApp,
                 if(stopped.get())throw StreamFailure(StreamIssue.CANCELLED)
                 return selected.open(spec.buildUpon().setKey(key).setFlags(spec.flags or DataSpec.FLAG_ALLOW_CACHE_FRAGMENTATION).build())
             } catch(e: Exception) { close(); throw e }
-            finally { StreamWork.end() }
+            finally { StreamWork.end(speculative) }
         }
         override fun read(buffer: ByteArray, offset: Int, length: Int):Int {val n=delegate?.read(buffer,offset,length) ?: C.RESULT_END_OF_INPUT;if(n>0)totalRead+=n;return n}
         override fun getUri(): Uri? = delegate?.uri

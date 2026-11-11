@@ -1,0 +1,26 @@
+[
+  {
+    "schema": 1,
+    "trace": 0,
+    "event": "python_init",
+    "ms": 3547,
+    "bytes": 0,
+    "count": 0
+  },
+  {
+    "schema": 1,
+    "trace": 0,
+    "event": "python_import",
+    "ms": 883,
+    "bytes": 0,
+    "count": 0
+  },
+  {
+    "schema": 1,
+    "trace": 0,
+    "event": "python_import",
+    "ms": 0,
+    "bytes": 0,
+    "count": 0
+  }
+]

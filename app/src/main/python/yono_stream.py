@@ -87,6 +87,7 @@ def execute(payload_json,config_json,callback):
         payload,config=json.loads(str(payload_json)),json.loads(str(config_json))
         token=Control(config['job_id'],callback,min(25,max(5,int(config.get('timeout_seconds',22)))))
         token.network_options=config.get('network') or {}
+        token.network_timeout = 2 if config.get("background") else 12
         options={'format_id':payload['format_id']} if payload.get('format_id') is not None else {}
         options['quality']=payload.get('quality','balanced')
         started=time.monotonic()

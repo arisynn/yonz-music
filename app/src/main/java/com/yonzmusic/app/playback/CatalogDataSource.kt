@@ -16,15 +16,21 @@ class CatalogDataSource(private val app:YonzApp,private val upstream:DataSource)
     private val listeners=mutableListOf<TransferListener>()
     override fun addTransferListener(listener:TransferListener){listeners.add(listener);upstream.addTransferListener(listener)}
     override fun open(dataSpec:DataSpec):Long {
+        val mediaId=if(dataSpec.uri.scheme=="yono-catalog")Uri.decode(dataSpec.uri.encodedPath.orEmpty().removePrefix("/")) else dataSpec.uri.takeIf {it.scheme=="yono-stream"}?.let {"engine:${StreamPolicy.source(it)}"}
+        return StreamWork.forSource(mediaId){openSource(dataSpec)}
+    }
+    private fun openSource(dataSpec:DataSpec):Long {
         if(dataSpec.uri.scheme !in setOf("yono-catalog","yono-stream"))return upstream.open(dataSpec)
+        val matchStarted=android.os.SystemClock.elapsedRealtime()
         val video=if(dataSpec.uri.scheme=="yono-catalog") {
             val id=Uri.decode(dataSpec.uri.encodedPath.orEmpty().removePrefix("/"))
             runBlocking {app.streams.lookup(id)?.let {app.discovery.audio(it)}}?.videoId ?: throw IOException("Rekaman katalog belum ditemukan.")
         } else StreamPolicy.source(dataSpec.uri)
         if(dataSpec.uri.scheme=="yono-catalog")StreamPerformance.alias(Uri.decode(dataSpec.uri.encodedPath.orEmpty().removePrefix("/")),"engine:$video")
+        if(dataSpec.uri.scheme=="yono-catalog")StreamPerformance.mark("engine:$video",StreamPerformance.Stage.CATALOG_MATCH,android.os.SystemClock.elapsedRealtime()-matchStarted)
         val lookupStarted=android.os.SystemClock.elapsedRealtime()
         val local=runBlocking {
-            app.repository.dao.allTracks().firstOrNull {it.available && it.active && it.sourceIdentity=="youtube:$video" && it.sha256.matches(Regex("[a-f0-9]{64}"))}
+            app.repository.dao.streamingCopy("youtube:$video")?.takeIf {it.sha256.matches(Regex("[a-f0-9]{64}"))}
         }?.takeIf {track->runCatching {
             val hash=java.security.MessageDigest.getInstance("SHA-256")
             app.contentResolver.openInputStream(Uri.parse(track.uri))!!.use {input->

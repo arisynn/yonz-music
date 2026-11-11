@@ -1,0 +1,6 @@
+
+com.yonzmusic.app.StreamCacheCapacityTest:.
+
+Time: 13,515
+
+OK (1 test)

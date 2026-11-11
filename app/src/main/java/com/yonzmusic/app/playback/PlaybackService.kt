@@ -60,41 +60,34 @@ class PlaybackService : MediaSessionService() {
     private var consecutiveErrors = 0
     private var wasShuffling = false
     private var previousQueueKeys = emptySet<String>()
-    /** Follow the player's actual shuffle/repeat order; never crawl search/history on startup. */
+    /** One actual shuffle/repeat successor, only after foreground loading has settled. */
     private fun warmUpcoming() {
-        val ids = mutableListOf<String>()
-        if (player.isPlaying && player.totalBufferedDuration >= 5000 && (app.streamTestDataSource == null || app.streamTestResolver != null)) {
-            val timeline = player.currentTimeline
-            var index = player.currentMediaItemIndex
-            val visited = mutableSetOf(index)
-            repeat(1) {
-                index = if (index in 0 until timeline.windowCount)
-                    timeline.getNextWindowIndex(index, player.repeatMode, player.shuffleModeEnabled) else C.INDEX_UNSET
-                if (index in 0 until player.mediaItemCount && visited.add(index)) {
-                    player.getMediaItemAt(index).mediaId.takeIf { it.isRemoteId() }
-                        ?.takeIf {it.startsWith("engine:")}?.removePrefix("engine:")?.let(ids::add)
-                }
-            }
-        }
-        val enablePreload=player.isPlaying && player.totalBufferedDuration>=5000
+        val tailReady=!player.isLoading && player.duration>0 && player.bufferedPosition>=player.duration-100 && player.totalBufferedDuration>=750
+        val sufficient=player.totalBufferedDuration>=5000 || tailReady
+        val enablePreload=player.isPlaying && sufficient
         if(enablePreload!=preloadEnabled) {
             preloadEnabled=enablePreload
-            player.setPreloadConfiguration(if(enablePreload)ExoPlayer.PreloadConfiguration(5_000_000L) else ExoPlayer.PreloadConfiguration.DEFAULT)
+            // DefaultLoadControl additionally refuses byte preloading while current loading is active.
+            player.setPreloadConfiguration(if(enablePreload)ExoPlayer.PreloadConfiguration(2_000_000L) else ExoPlayer.PreloadConfiguration.DEFAULT)
         }
-        if (ids == warmIds) return
-        warmJob?.cancel(); warmIds = ids
-        warmJob = scope.launch {
-            // Current audio has priority over speculative extraction.
+        val next=if((app.streamTestDataSource==null || app.streamTestResolver!=null) && enablePreload && !player.isLoading && !StreamWork.urgent && player.hasNextMediaItem())player.getMediaItemAt(player.nextMediaItemIndex).takeIf {it.mediaId.isRemoteId()} else null
+        val keys=next?.let {listOf(it.mediaId,it.mediaMetadata.extras?.getString("yono.queue.key").orEmpty())} ?: emptyList()
+        if(keys==warmIds)return
+        if(warmIds.firstOrNull()!=player.currentMediaItem?.mediaId || warmJob?.isActive!=true)warmJob?.cancel()
+        warmIds=keys
+        if(next==null)return
+        warmJob=scope.launch {
             delay(400)
-            for (id in ids) {
-                ensureActive()
-                try {
-                    runInterruptible(Dispatchers.IO) {
-                        (app.streamTestResolver ?: app.streams).resolve(id, java.util.concurrent.atomic.AtomicBoolean(false), timeoutMillis = 18000)
-                    }
-                } catch (e: CancellationException) { throw e }
-                catch (_: Exception) { /* A warm-up failure must never stop current playback. */ }
-            }
+            if(!player.isPlaying || player.isLoading || StreamWork.urgent)return@launch
+            try {
+                // An existing canonical mapping is cheap; unresolved catalogue items are matched lazily
+                // by Media3's one-item preload under the same foreground-loading gate.
+                val song=app.streams.lookup(next.mediaId) ?: return@launch
+                val mapped=app.discovery.cachedAudio(song) ?: return@launch
+                runInterruptible(Dispatchers.IO) {StreamWork.forSource(next.mediaId) {
+                    (app.streamTestResolver ?: app.streams).resolve(mapped.videoId,java.util.concurrent.atomic.AtomicBoolean(false),timeoutMillis=8000)
+                }}
+            }catch(e:CancellationException){throw e}catch(_:Exception){ /* Foreground playback remains authoritative. */ }
         }
     }
     private fun updateShuffleCycle() {
@@ -152,7 +145,7 @@ class PlaybackService : MediaSessionService() {
         } }
         player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this).setLoadErrorHandlingPolicy(StreamLoadPolicy()).setDataSourceFactory(androidx.media3.datasource.DefaultDataSource.Factory(this, app.streamTestDataSource ?: androidx.media3.datasource.DataSource.Factory { CatalogDataSource(app, app.streamCache.factory().createDataSource()) })))
-            .setLoadControl(androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(5000,30000,1000,2500).build())
+            .setLoadControl(StreamingLoadControls.create())
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
             .setHandleAudioBecomingNoisy(true).setWakeMode(C.WAKE_MODE_LOCAL).build()
         performance=StreamPlayerMetrics(player)
@@ -205,6 +198,7 @@ class PlaybackService : MediaSessionService() {
                 if(!playWhenReady)startupAt=0L
             }
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                StreamWork.currentMediaId=mediaItem?.mediaId
                 listenTick(reason==Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT)
                 startupAt=android.os.SystemClock.elapsedRealtime()
                 if(reason==Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {radioJob?.cancel();radioJob=null;attemptedTail=null;failedRadio.clear()}
@@ -213,8 +207,11 @@ class PlaybackService : MediaSessionService() {
             override fun onAudioSessionIdChanged(audioSessionId: Int) { publishExtras() }
             override fun onEvents(player: Player, events: Player.Events) {
                 if(streamIssue!=null && (player.currentMediaItem?.mediaId!=issueMediaId || (player.playerError==null && player.playbackState!=Player.STATE_IDLE))) {streamIssue=null;issueMediaId=null;publishExtras()}
+                StreamWork.currentMediaId=player.currentMediaItem?.mediaId
+                StreamWork.foregroundLoading=player.currentMediaItem?.mediaId?.isRemoteId()==true && player.isLoading
+                StreamWork.buffering=player.currentMediaItem?.mediaId?.isRemoteId()==true && player.playbackState==Player.STATE_BUFFERING && player.playWhenReady
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)) updateShuffleCycle()
-                if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED, Player.EVENT_IS_PLAYING_CHANGED)) warmUpcoming()
+                if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED, Player.EVENT_IS_PLAYING_CHANGED,Player.EVENT_IS_LOADING_CHANGED,Player.EVENT_PLAY_WHEN_READY_CHANGED,Player.EVENT_PLAYBACK_STATE_CHANGED,Player.EVENT_POSITION_DISCONTINUITY)) warmUpcoming()
                 StreamWork.buffering=player.currentMediaItem?.mediaId?.isRemoteId()==true && player.playbackState==Player.STATE_BUFFERING && player.playWhenReady
                 if(player.playbackState==Player.STATE_BUFFERING && bufferingAt==0L)bufferingAt=android.os.SystemClock.elapsedRealtime()
                 if(player.playbackState!=Player.STATE_BUFFERING && bufferingAt>0) {StreamTimings.record("buffering",android.os.SystemClock.elapsedRealtime()-bufferingAt);bufferingAt=0}
@@ -227,7 +224,7 @@ class PlaybackService : MediaSessionService() {
                 listenTick()
                 snapshotJob?.cancel()
                 if (isPlaying) {
-                    if(startupAt>0) {StreamTimings.record("first_audio",android.os.SystemClock.elapsedRealtime()-startupAt);startupAt=0}
+                    startupAt=0
                     consecutiveErrors = 0
                     persist()
                     snapshotJob = scope.launch {
@@ -345,7 +342,7 @@ class PlaybackService : MediaSessionService() {
     override fun onTaskRemoved(rootIntent: Intent?) { if (!player.playWhenReady || player.mediaItemCount == 0 || player.playbackState == Player.STATE_ENDED) stopSelf() }
     override fun onDestroy() {
         listenTick()
-        snapshotJob?.cancel(); sleepJob?.cancel(); warmJob?.cancel(); radioJob?.cancel(); StreamWork.buffering=false; app.sleepEnd.value = 0
+        snapshotJob?.cancel(); sleepJob?.cancel(); warmJob?.cancel(); radioJob?.cancel(); StreamWork.buffering=false;StreamWork.foregroundLoading=false;StreamWork.currentMediaId=null; app.sleepEnd.value = 0
         performance?.close();session?.release(); player.release(); scope.cancel()
         super.onDestroy()
     }

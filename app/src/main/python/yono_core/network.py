@@ -53,7 +53,7 @@ def session(control, allowed_hosts):
             if client.request_count > 512:
                 raise EngineError("PAGINATION_LIMIT", "Terlalu banyak permintaan; proses dihentikan.")
             control.emit("reading_source", request_number=client.request_count, message="Membaca metadata sumber…")
-            kwargs["timeout"] = (min(8, control.remaining()), min(12, control.remaining()))
+            kwargs["timeout"] = (min(8, getattr(control,"network_timeout",12), control.remaining()), min(12, getattr(control,"network_timeout",12), control.remaining()))
             kwargs["stream"] = True
             # Bound the body before Session.resolve_redirects can consume it.
             response = super().send(request, **kwargs)
@@ -180,7 +180,7 @@ def youtube_dl(control, runtime=None, *, flat=False, output=None):
 
     options = {
         "quiet": True, "no_warnings": True, "logger": Log(),
-        "socket_timeout": min(12, control.remaining()), "retries": 1,
+        "socket_timeout": min(12, getattr(control,"network_timeout",12), control.remaining()), "retries": 1,
         "fragment_retries": 1, "extractor_retries": 1, "ignoreerrors": False,
         "noplaylist": not flat, "extract_flat": "in_playlist" if flat else False,
         "lazy_playlist": flat, "skip_download": flat,

@@ -58,11 +58,15 @@ class DiscoveryRepository(private val app:YonzApp):MetadataProvider,ChartsProvid
     override suspend fun charts(country:String,force:Boolean)=request(JSONObject().put("operation","charts").put("country",country),3600000,force)
     suspend fun save(item:CatalogItem) {require(item.kind in setOf("album","artist","playlist","radio"));dao.saveCatalog(SavedCatalog(item.id,item.kind,encodeItem(item).toString(),System.currentTimeMillis()))}
     suspend fun remove(item:CatalogItem)=dao.removeCatalog(item.id)
-    override suspend fun audio(song:OnlineSong):OnlineSong {
+    suspend fun cachedAudio(song:OnlineSong):OnlineSong? {
         if(song.videoId.isNotBlank())return song
+        return dao.catalogCache("audio:${song.id}")?.let {cached->runCatching {StreamRepository.decode(JSONObject(cached.metadata))}.getOrNull()?.let {song.copy(videoId=it.videoId,page=it.page)}}
+    }
+    override suspend fun audio(song:OnlineSong):OnlineSong {
+        cachedAudio(song)?.let {return it}
         val key="audio:${song.id}"
-        dao.catalogCache(key)?.let {cached->runCatching {StreamRepository.decode(JSONObject(cached.metadata))}.getOrNull()?.let {return song.copy(videoId=it.videoId,page=it.page)}}
-        val response=request(JSONObject().put("operation","resolve").put("item",JSONObject(song.catalogJson)),0)
+        val speculativeSource=StreamWork.sourceId.takeIf {StreamWork.isSpeculative}
+        val response=request(JSONObject().put("operation","resolve").put("item",JSONObject(song.catalogJson)),0,backgroundSource=speculativeSource)
         val found=response.songs.firstOrNull() ?: throw SearchFailure("Rekaman audio yang cocok belum ditemukan.")
         // Keep the canonical identity separate from the selected recording's source ID.
         val result=song.copy(videoId=found.videoId,page=found.page)
@@ -75,7 +79,7 @@ class DiscoveryRepository(private val app:YonzApp):MetadataProvider,ChartsProvid
         val source=JSONObject().put("video_id",song.videoId).put("title",song.title).put("artists",JSONArray(song.credit.split(", "))).put("duration_ms",song.durationMs).put("album",song.album).put("artwork",song.artwork).put("page",song.page)
         return request(JSONObject().put("operation","enrich").put("song",source),7*86400000L).songs.firstOrNull() ?: song
     }
-    private suspend fun request(payload:JSONObject,ttl:Long,force:Boolean=false):DiscoveryPage=withContext(Dispatchers.IO) {
+    private suspend fun request(payload:JSONObject,ttl:Long,force:Boolean=false,backgroundSource:String?=null):DiscoveryPage=withContext(Dispatchers.IO) {
         val key=payload.toString()
         val cache=dao.catalogCache(key)
         if(!force && cache!=null && System.currentTimeMillis()-cache.updated<ttl)return@withContext parse(JSONObject(cache.metadata),true)
@@ -83,9 +87,9 @@ class DiscoveryRepository(private val app:YonzApp):MetadataProvider,ChartsProvid
             val raw=withTimeout(42000) {
                 if(payload.optString("operation")!="resolve")StreamWork.awaitAudio()
                 runInterruptible(if(payload.optString("operation")=="resolve")audioWorker else worker) {
-                    val config=JSONObject().put("job_id",UUID.randomUUID().toString()).put("timeout_seconds",38)
+                    val config=JSONObject().put("job_id",UUID.randomUUID().toString()).put("timeout_seconds",if(backgroundSource!=null)8 else 38).put("background",backgroundSource!=null)
                         .put("network",AndroidNetworkContext.options(app,if(payload.optString("operation") in setOf("charts","resolve") || payload.optString("id").startsWith("yt:") || payload.optString("kind")=="playlist")"https://music.youtube.com" else "https://musicbrainz.org"))
-                    PythonRuntime.module(app,"yono_discovery").callAttr("execute",payload.toString(),config.toString(),if(payload.optString("operation")=="resolve")StreamRepository.Cancellation(java.util.concurrent.atomic.AtomicBoolean(false),Thread.currentThread()) else MusicCatalog.Callback()).toString()
+                    PythonRuntime.module(app,"yono_discovery").callAttr("execute",payload.toString(),config.toString(),if(payload.optString("operation")=="resolve")StreamRepository.Cancellation(java.util.concurrent.atomic.AtomicBoolean(false),Thread.currentThread(),backgroundSource) else MusicCatalog.Callback()).toString()
                 }
             }
             require(raw.toByteArray().size<=2*1024*1024)

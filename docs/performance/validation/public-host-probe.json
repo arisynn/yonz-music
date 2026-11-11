@@ -1,0 +1,7 @@
+{
+  "kind": "host public extraction diagnostic, not Android playback",
+  "ok": false,
+  "code": "NETWORK",
+  "elapsedMs": 5445,
+  "decoded": false
+}

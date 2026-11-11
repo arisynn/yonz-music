@@ -71,6 +71,7 @@ interface MusicDao {
     @Query("SELECT trackId, COUNT(*) AS playCount, MAX(startedAt) AS lastPlayed FROM listens GROUP BY trackId") fun listenStats(): Flow<List<ListenStats>>
     @Insert suspend fun listen(event: ListenEvent)
     @Query("UPDATE listens SET trackId = :target WHERE trackId = :old") suspend fun rebindListens(old: String, target: String)
+    @Query("SELECT * FROM tracks WHERE active = 1 AND available = 1 AND sourceIdentity = :identity AND sha256 != '' LIMIT 1") suspend fun streamingCopy(identity:String):Track?
     @Query("SELECT * FROM tracks WHERE id = :id") suspend fun track(id: String): Track?
     @Upsert suspend fun upsert(tracks: List<Track>)
     @Query("UPDATE tracks SET available = 0 WHERE source = :source") suspend fun unavailableSource(source: String)

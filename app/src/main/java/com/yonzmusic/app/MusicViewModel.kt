@@ -53,18 +53,22 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         if(next==null)com.yonzmusic.app.playback.StreamPerformance.begin(song.id)
         streamPlayJob?.cancel()
         streamPlayJob=action {
-            val resolved=if(song.id.startsWith("mb:"))withContext(Dispatchers.IO){app.discovery.audio(song)}else song
             val local=withContext(Dispatchers.IO) {
-                val candidate=dao.allTracks().firstOrNull {it.active && it.available && it.sourceIdentity=="youtube:${resolved.videoId}" && it.sha256.isNotBlank()}
-                candidate?.takeIf {t->runCatching {
-                    val digest=java.security.MessageDigest.getInstance("SHA-256")
-                    app.contentResolver.openInputStream(Uri.parse(t.uri))!!.use {input->val b=ByteArray(65536);while(true){currentCoroutineContext().ensureActive();val n=input.read(b);if(n<0)break;digest.update(b,0,n)}}
-                    digest.digest().joinToString(""){"%02x".format(it)}==t.sha256
+                // Retain the old local ID/favorite/history behavior for a verified existing download.
+                // A missing catalogue mapping is resolved by the loader, never before prepare.
+                val mapped=app.discovery.cachedAudio(song)
+                val candidate=mapped?.let {dao.streamingCopy("youtube:${it.videoId}")}
+                candidate?.takeIf {track->runCatching {
+                    val hash=java.security.MessageDigest.getInstance("SHA-256")
+                    app.contentResolver.openInputStream(Uri.parse(track.uri))!!.use {input->
+                        val b=ByteArray(65536);while(true){currentCoroutineContext().ensureActive();val n=input.read(b);if(n<0)break;hash.update(b,0,n)}
+                    }
+                    hash.digest().joinToString(""){"%02x".format(it)}==track.sha256
                 }.getOrDefault(false)}
             }
             withContext(Dispatchers.IO){app.streams.register(song)}
             withTimeout(6000){playback.state.first {it.ready}}
-            if(local!=null) {if(next==null)playback.play(listOf(local),local.id)else playback.enqueue(local,next)}else playback.playRemote(song,next)
+            if(local!=null){if(next==null)playback.play(listOf(local),local.id)else playback.enqueue(local,next)}else playback.playRemote(song,next)
         }
     }
     val onlineCollections=app.onlineCollections.flow.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptyList())

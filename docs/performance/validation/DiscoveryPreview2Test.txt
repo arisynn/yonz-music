@@ -1,0 +1,6 @@
+
+com.yonzmusic.app.DiscoveryPreview2Test:...
+
+Time: 15,539
+
+OK (3 tests)

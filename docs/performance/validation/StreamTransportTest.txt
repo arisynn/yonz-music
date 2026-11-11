@@ -1,0 +1,6 @@
+
+com.yonzmusic.app.StreamTransportTest:......
+
+Time: 0,666
+
+OK (6 tests)

@@ -1,0 +1,49 @@
+{
+  "note": "Closed opens only; read volumes differ. Not physical bandwidth or statistically comparable hit-rate gains.",
+  "runs": {
+    "baseline": [
+      {
+        "profile": "fast-shaped",
+        "closedCacheHitBytes": 872492,
+        "closedCacheDeliveredBytes": 1725828,
+        "closedCacheMissBytes": 853336,
+        "closedCacheHitRatio": 0.5055497998641811,
+        "closedTransferBytes": 853336,
+        "closedTransferObservedMs": 8759,
+        "closedTransferEffectiveBytesPerSecond": 97423.90683868021
+      },
+      {
+        "profile": "mobile-shaped",
+        "closedCacheHitBytes": 706092,
+        "closedCacheDeliveredBytes": 1409028,
+        "closedCacheMissBytes": 702936,
+        "closedCacheHitRatio": 0.5011199209667941,
+        "closedTransferBytes": 702936,
+        "closedTransferObservedMs": 16238,
+        "closedTransferEffectiveBytesPerSecond": 43289.56768074886
+      }
+    ],
+    "optimized": [
+      {
+        "profile": "fast-shaped",
+        "closedCacheHitBytes": 882092,
+        "closedCacheDeliveredBytes": 1805828,
+        "closedCacheMissBytes": 923736,
+        "closedCacheHitRatio": 0.48846955524003394,
+        "closedTransferBytes": 923736,
+        "closedTransferObservedMs": 9898,
+        "closedTransferEffectiveBytesPerSecond": 93325.52030713276
+      },
+      {
+        "profile": "mobile-shaped",
+        "closedCacheHitBytes": 85248,
+        "closedCacheDeliveredBytes": 810584,
+        "closedCacheMissBytes": 725336,
+        "closedCacheHitRatio": 0.10516861916840205,
+        "closedTransferBytes": 725336,
+        "closedTransferObservedMs": 17326,
+        "closedTransferEffectiveBytesPerSecond": 41864.01939282004
+      }
+    ]
+  }
+}

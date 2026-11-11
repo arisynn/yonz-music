@@ -36,6 +36,7 @@ class StreamPerformanceBenchmarkTest {
         val cold=SystemClock.elapsedRealtime();PythonRuntime.module(app,"yono_stream")
         report.put("pythonAlreadyStarted",startedPython).put("pythonFirstModuleMs",SystemClock.elapsedRealtime()-cold)
         val warm=SystemClock.elapsedRealtime();PythonRuntime.module(app,"yono_stream");report.put("pythonWarmModuleMs",SystemClock.elapsedRealtime()-warm)
+        report.put("pythonStartupEvents",JSONArray().apply {StreamPerformance.snapshot().filter {it.stage in setOf(StreamPerformance.Stage.PYTHON_INIT,StreamPerformance.Stage.PYTHON_IMPORT)}.forEach {put(it.json())}})
         val fixtureRows=(0 until 5000).map {Track("qa-perf-row-$it","content://qa.perf/$it","Owned index fixture $it","QA","Owned",available=false,source="qa-perf")}
         app.repository.dao.upsert(fixtureRows);app.preferences.autoplay(false);app.preferences.onlineHistory(false)
         val frames=16000*20;val wav=ByteBuffer.allocate(44+frames*2).order(ByteOrder.LITTLE_ENDIAN)

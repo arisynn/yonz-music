@@ -3,7 +3,8 @@ package com.yonzmusic.app.playback
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
-import android.view.Choreographer
+import android.os.Handler
+import android.os.Looper
 import com.google.common.util.concurrent.ListenableFuture
 import androidx.core.content.ContextCompat
 import androidx.media3.common.*
@@ -18,9 +19,8 @@ class PlaybackConnection(context: Context) {
     private var controller: MediaController? = null
     private var future: ListenableFuture<MediaController>? = null
     private var closed = false
-    private val firstFrame = Choreographer.FrameCallback {
-        android.os.Handler(android.os.Looper.getMainLooper()).post { if (!closed) connect(context) }
-    }
+    private val handler=Handler(Looper.getMainLooper())
+    private val connectTask=Runnable {if(!closed)connect(context)}
     private fun streamingError(p:MediaController?):String {
         val code=p?.sessionExtras?.takeIf {it.getString(PlaybackService.STREAM_ISSUE_ID)==p.currentMediaItem?.mediaId}?.getString(PlaybackService.STREAM_ISSUE)
         return runCatching {StreamIssue.valueOf(code.orEmpty()).text}.getOrDefault(StreamIssue.SOURCE.text)
@@ -29,7 +29,7 @@ class PlaybackConnection(context: Context) {
         override fun onEvents(player: Player, events: Player.Events) = refresh()
         override fun onPlayerError(error: PlaybackException) { state.value = state.value.copy(error = if(controller?.currentMediaItem?.mediaId?.isRemoteId()==true)streamingError(controller)else "Audio belum dapat diputar. Periksa lokasi file, izin folder, atau penyimpanan; rescan untuk menghubungkan ulang.") }
     }
-    init { Choreographer.getInstance().postFrameCallback(firstFrame) }
+    init { handler.post(connectTask) }
     private fun connect(context: Context) {
         val pending = MediaController.Builder(context, SessionToken(context, ComponentName(context, PlaybackService::class.java))).setListener(object:MediaController.Listener {
             override fun onExtrasChanged(controller:MediaController,extras:Bundle) {refresh()}
@@ -127,5 +127,5 @@ class PlaybackConnection(context: Context) {
     } }
     fun jump(index: Int) { controller?.let { if (index in 0 until it.mediaItemCount) { it.seekToDefaultPosition(index); it.prepare(); it.play() } } }
     fun timer(minutes: Int) { controller?.sendCustomCommand(SessionCommand(PlaybackService.TIMER, Bundle.EMPTY), Bundle().apply { putInt("minutes", minutes) }) }
-    fun close() { closed = true; Choreographer.getInstance().removeFrameCallback(firstFrame); controller?.removeListener(listener); future?.let { MediaController.releaseFuture(it) } }
+    fun close() { closed = true; handler.removeCallbacks(connectTask); controller?.removeListener(listener); future?.let { MediaController.releaseFuture(it) } }
 }

@@ -30,8 +30,9 @@ class StreamDataSource(private val streams:StreamResolver,
         if(firstAt==0L){firstAt=now;StreamPerformance.emit(trace,StreamPerformance.Stage.FIRST_BYTE,now-requestAt);StreamPerformance.emit(trace,StreamPerformance.Stage.OPEN_FIRST_BYTE,now-openAt)}
         lastAt=now;wireBytes+=n
     }
-    private var connection:HttpURLConnection?=null
-    private var input:InputStream?=null
+    private var bodyRemaining=-1L
+    @Volatile private var connection:HttpURLConnection?=null
+    @Volatile private var input:InputStream?=null
     private var original:Uri?=null
     private var opened=false
     private var remaining=-1L
@@ -60,7 +61,7 @@ class StreamDataSource(private val streams:StreamResolver,
     }
     override fun open(spec:DataSpec):Long {
         val started=android.os.SystemClock.elapsedRealtime();openAt=started;wireBytes=0;firstAt=0;lastAt=0
-        transferInitializing(spec);original=spec.uri;stopped.set(false);remaining=-1;delivered=0;headers=emptyMap()
+        transferInitializing(spec);original=spec.uri;stopped.set(false);remaining=-1;bodyRemaining=-1;delivered=0;headers=emptyMap()
         val deadline=android.os.SystemClock.elapsedRealtime()+45000
         try {
             val id=StreamPolicy.source(spec.uri);trace=StreamPerformance.number("engine:$id")
@@ -114,6 +115,7 @@ class StreamDataSource(private val streams:StreamResolver,
                         if(spec.position>StreamRange.MAX_DISCARD)throw StreamFailure(StreamIssue.SEEK)
                         if(length>=0){total(length);if(spec.position>length)throw StreamFailure(StreamIssue.SEEK);length-spec.position}else -1
                     }
+                    bodyRemaining=available
                     input=c.inputStream
                     if(status==200 && spec.position>0) {
                         var skip=spec.position;val b=ByteArray(8192)
@@ -134,8 +136,8 @@ class StreamDataSource(private val streams:StreamResolver,
         try {
             val n=input?.read(buffer,offset,if(remaining>=0)minOf(length.toLong(),remaining).toInt()else length) ?: return C.RESULT_END_OF_INPUT
             active()
-            if(n<0){if(remaining>0)throw StreamFailure(StreamIssue.NETWORK);return C.RESULT_END_OF_INPUT}
-            received(n);delivered+=n
+            if(n<0){if(remaining>0)throw StreamFailure(StreamIssue.NETWORK);bodyRemaining=0;return C.RESULT_END_OF_INPUT}
+            received(n);if(bodyRemaining>=0)bodyRemaining-=n;delivered+=n
             if(delivered>StreamRange.MAX_BYTES)throw StreamFailure(StreamIssue.FORMAT)
             if(remaining>=0)remaining-=n
             bytesTransferred(n);return n
@@ -143,5 +145,15 @@ class StreamDataSource(private val streams:StreamResolver,
     }
     override fun getUri():Uri?=original
     override fun getResponseHeaders()=headers
-    override fun close() {if(wireBytes>0){StreamPerformance.emit(trace,StreamPerformance.Stage.TRANSFER,(lastAt-firstAt).coerceAtLeast(1),bytes=wireBytes);wireBytes=0};stopped.set(true);runCatching {input?.close()};input=null;connection?.disconnect();connection=null;remaining=-1;if(opened){opened=false;transferEnded()}}
+    override fun close() {
+        if(wireBytes>0){StreamPerformance.emit(trace,StreamPerformance.Stage.TRANSFER,(lastAt-firstAt).coerceAtLeast(1),bytes=wireBytes);wireBytes=0}
+        stopped.set(true)
+        val oldConnection=connection;val oldInput=input;connection=null;input=null
+        // Completed bodies can return their socket to Android's shared keep-alive pool.
+        // Abort before close on cancellation/partial reads; never wait for an unbounded drain.
+        if(bodyRemaining!=0L)oldConnection?.disconnect()
+        runCatching {oldInput?.close()}
+        remaining=-1;bodyRemaining=-1
+        if(opened){opened=false;transferEnded()}
+    }
 }
