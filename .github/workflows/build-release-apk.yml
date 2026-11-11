@@ -1,0 +1,112 @@
+name: Build signed release APK (v2.0.0)
+
+on:
+  workflow_dispatch:
+    inputs:
+      online_search:
+        description: 'Enable online search in release build (true/false)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.actor == 'arisynn'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK components
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Restore owner signing identity
+        env:
+          KEYSTORE: ${{ secrets.YONO_RELEASE_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.YONO_RELEASE_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.YONO_RELEASE_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.YONO_RELEASE_KEY_ALIAS }}
+        shell: bash
+        run: |
+          set +x
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib, base64
+          private = pathlib.Path(os.environ['RUNNER_TEMP']) / 'yono-private'
+          private.mkdir(mode=0o700, exist_ok=True)
+          key = private / 'yono-release.p12'
+          key.write_bytes(base64.b64decode(os.environ['KEYSTORE'], validate=True))
+          key.chmod(0o600)
+          def escape(s):
+              return s.replace('\\', '\\\\').replace('\n', '\\n').replace('\r', '\\r')
+          props = pathlib.Path('signing.properties')
+          props.write_text(
+              f"storeFile={key}\n"
+              f"storePassword={escape(os.environ['STORE_PASSWORD'])}\n"
+              f"keyPassword={escape(os.environ['KEY_PASSWORD'])}\n"
+              f"keyAlias={escape(os.environ['KEY_ALIAS'])}\n"
+          )
+          props.chmod(0o600)
+          print('Signing properties written (paths/passwords not printed).')
+          PY
+
+      - name: Build release APK
+        env:
+          ONLINE_SEARCH: ${{ inputs.online_search }}
+        run: |
+          set -euo pipefail
+          PROP=""
+          if [ "${ONLINE_SEARCH}" = "true" ]; then
+            PROP="-PonlineSearchEnabled=true"
+          fi
+          bash ./gradlew --no-daemon --max-workers=2 $PROP :app:assembleRelease
+          echo "APK built:"
+          ls -lh app/build/outputs/apk/release/
+
+      - name: Verify APK signature
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Yono-Music-v2.0.0-release
+          path: app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Cleanup private files
+        if: always()
+        shell: bash
+        run: |
+          rm -f signing.properties
+          rm -rf "$RUNNER_TEMP/yono-private"
