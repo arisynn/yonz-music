@@ -40,6 +40,6 @@ object RadioQueuePolicy {
         return candidates.filter {song->
             val key=recording(song.title,song.credit)
             song.id !in seenIds && key !in seenRecordings && seenIds.add(song.id) && seenRecordings.add(key)
-        }.take(limit.coerceIn(0,4))
+        }.take(limit.coerceIn(0,com.yonzmusic.app.search.RecommendationEngine.TARGET))
     }
 }

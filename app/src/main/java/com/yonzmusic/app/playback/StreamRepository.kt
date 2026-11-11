@@ -9,6 +9,7 @@ import com.yonzmusic.app.data.Track
 import com.yonzmusic.app.search.*
 import com.yonzmusic.engine.PythonRuntime
 import com.yonzmusic.app.network.AndroidNetworkContext
+import com.yonzmusic.app.artwork.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -35,7 +36,8 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         require(valid(song.videoId) && song.page=="https://www.youtube.com/watch?v=${song.videoId}")
         metadataMutex.withLock {
             val old=metadata.value[song.id] ?: lookup(song.id)
-            val merged=if(old!=null && old.artwork.isNotBlank())song.copy(artwork=old.artwork)else song
+            val images=(song.artworkCandidates+old?.artworkCandidates.orEmpty()).distinctBy {it.url}.take(16)
+            val merged=song.copy(artwork=old?.artwork?.takeIf {it.isNotBlank()} ?: song.artwork,artworkCandidates=images,albumId=song.albumId.ifBlank {old?.albumId.orEmpty()})
             store(merged)
         }
     }
@@ -47,23 +49,27 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         metadata.update {old->(old-song.id+mapOf(song.id to song)).entries.toList().takeLast(100).associate {it.toPair()}}
     }
     /** At most one metadata-only image recovery. Independent of audio extraction and keyed by source ID. */
-    fun requestArtwork(song:OnlineSong,repair:Boolean=false) {
+    fun requestArtwork(song:OnlineSong,repair:Boolean=false,targetPixels:Int=512) {
         if(!valid(song.videoId))return
         synchronized(artJobs) {
-            val now=android.os.SystemClock.elapsedRealtime()
-            if(song.id in artJobs || artJobs.size>=5 || artAttempts[song.id]?.let {now-it<300000}==true)return
+            val now=android.os.SystemClock.elapsedRealtime();val tier="${song.id}:${ArtworkPolicy.bucket(targetPixels)}:$repair"
+            if(song.id in artJobs || artJobs.size>=5 || artAttempts[tier]?.let {now-it<300000}==true)return
             artJobs+=song.id
-            artAttempts[song.id]=now
+            artAttempts[tier]=now
             if(artAttempts.size>100)artAttempts.remove(artAttempts.keys.first())
         }
         app.persistenceScope.launch {
             try {artPermit.withPermit {
                 val known=lookup(song.id)
-                if(!repair && known?.artwork?.isNotBlank()==true) {publishMetadata(known);return@withPermit}
-                val root=withTimeout(22000) {app.musicCatalog.request(JSONObject().put("operation","artwork").put("video_id",song.videoId))}
+                if(!repair && known!=null && known.artworkCandidates.any {minOf(it.width,it.height)>=targetPixels}) {publishMetadata(known);return@withPermit}
+                val root=withTimeout(22000) {app.musicCatalog.request(JSONObject().put("operation","artwork").put("video_id",song.videoId).put("target_pixels",targetPixels.coerceIn(128,1536)).put("album_id",song.albumId))}
                 val url=root.optString("artwork")
                 if(root.optString("video_id")==song.videoId && SearchContract.https(url,SearchContract.artHosts))
-                    metadataMutex.withLock {store((lookup(song.id) ?: song).copy(artwork=url))}
+                    metadataMutex.withLock {
+                        val old=lookup(song.id) ?: song
+                        val images=(ArtworkPolicy.decode(root.optJSONArray("artwork_candidates"))+old.artworkCandidates).distinctBy {it.url}.take(16)
+                        store(old.copy(artwork=url,artworkCandidates=images))
+                    }
             }}catch(e:CancellationException){throw e}
             catch(_:Exception) { /* Missing images must never fail playback or expose raw source errors. */ }
             finally {synchronized(artJobs){artJobs-=song.id}}
@@ -77,7 +83,8 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         app.persistenceScope.launch {
             metadataMutex.withLock {
                 val old=lookup("engine:$id") ?: return@withLock
-                if(old.artwork!=url)store(old.copy(artwork=url))
+                val images=(old.artworkCandidates+ArtworkPolicy.decode(json.optJSONArray("artwork_candidates"))).distinctBy {it.url}.take(16)
+                if(old.artwork.isBlank() || images!=old.artworkCandidates)store(old.copy(artwork=ArtworkPolicy.ordered(images,512).firstOrNull()?.url ?: old.artwork.ifBlank {url},artworkCandidates=images))
             }
         }
     }
@@ -120,10 +127,10 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
 
     companion object {
         fun valid(id:String)=id.matches(Regex("[A-Za-z0-9_-]{11}"))
-        fun encode(s:OnlineSong)=JSONObject().put("id",s.videoId).put("title",s.title.take(250)).put("credit",s.credit.take(1000)).put("artist",s.artistVerified).put("album",s.album.take(250)).put("duration",s.durationMs).put("art",s.artwork)
+        fun encode(s:OnlineSong)=JSONObject().put("id",s.videoId).put("title",s.title.take(250)).put("credit",s.credit.take(1000)).put("artist",s.artistVerified).put("album",s.album.take(250)).put("duration",s.durationMs).put("art",s.artwork).put("images",ArtworkPolicy.encode(s.artworkCandidates)).put("album_id",s.albumId)
         fun decode(j:JSONObject):OnlineSong {
             val id=j.getString("id");require(valid(id))
-            return OnlineSong("engine:$id",SearchProvider.ENGINE,SearchContract.text(j.getString("title")),SearchContract.text(j.optString("credit"),1000),SearchContract.text(j.optString("album")),j.optLong("duration").coerceIn(0,7*86400000L),j.optString("art").takeIf {SearchContract.https(it,SearchContract.artHosts)}.orEmpty(),"https://www.youtube.com/watch?v=$id",id,j.optBoolean("artist"))
+            return OnlineSong("engine:$id",SearchProvider.ENGINE,SearchContract.text(j.getString("title")),SearchContract.text(j.optString("credit"),1000),SearchContract.text(j.optString("album")),j.optLong("duration").coerceIn(0,7*86400000L),j.optString("art").takeIf {SearchContract.https(it,SearchContract.artHosts)}.orEmpty(),"https://www.youtube.com/watch?v=$id",id,j.optBoolean("artist"),ArtworkPolicy.decode(j.optJSONArray("images")),SearchContract.text(j.optString("album_id"),100))
         }
         /** View-only adapter for existing artwork/player composables; never inserted into Room. */
         fun display(s:OnlineSong)=Track(s.id,"",s.title,if(s.artistVerified)s.credit else s.credit.takeIf {it.isNotBlank()}?.let {"Kanal: $it"}.orEmpty(),s.album.ifBlank {"Pemutaran daring"},duration=s.durationMs,artUri=s.artwork,source="stream")

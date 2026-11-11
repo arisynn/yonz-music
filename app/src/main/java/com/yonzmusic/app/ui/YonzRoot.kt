@@ -87,6 +87,15 @@ import org.json.JSONArray
         val playerTracks=remember(collectionTracks,playback.remoteTracks){collectionTracks+playback.remoteTracks}
         val current = remember(playerTracks, playback.id) { playerTracks.find { it.id == playback.id } }
         var streamDownload by remember {mutableStateOf<com.yonzmusic.app.search.OnlineSong?>(null)}
+        var streamOptions by remember {mutableStateOf<com.yonzmusic.app.search.OnlineSong?>(null)}
+        var saveStream by remember {mutableStateOf<com.yonzmusic.app.search.OnlineSong?>(null)}
+        fun remoteForUi(track:Track):com.yonzmusic.app.search.OnlineSong? {
+            val app=context.applicationContext as com.yonzmusic.app.YonzApp
+            app.streams.metadata.value[track.id]?.let {return it}
+            val t=playback.remoteTracks.firstOrNull {it.id==track.id} ?: return null
+            val id=t.id.removePrefix("engine:")
+            return com.yonzmusic.app.search.OnlineSong(t.id,com.yonzmusic.app.search.SearchProvider.ENGINE,t.title,t.artist.removePrefix("Kanal: "),t.album,t.duration,t.artUri,"https://www.youtube.com/watch?v=$id",id,!t.artist.startsWith("Kanal: "))
+        }
         fun downloadRemote(track:com.yonzmusic.app.data.Track) {
             playback.remoteTracks.firstOrNull {it.id==track.id}?.let {t->
                 val id=t.id.removePrefix("engine:")
@@ -170,7 +179,7 @@ import org.json.JSONArray
                 TopAppBar(
                     title = {
                         if (destination == "home") Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.sm)) {
-                            BrandMark(Modifier.size(40.dp))
+                            BrandMark(Modifier.size(28.dp))
                             Text("Yono Music", style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         } else Text(when (destination) { "library" -> "Pustaka musik"; "search" -> "Cari"; "collection" -> "Koleksi"; "settings" -> "Pengaturan"; "import" -> "Impor musik"; else -> if (destination=="onlineArtist") detailTitle else if (detailKind == "playlist") playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle else if(detailKind=="online")onlineCollections.find{it.id==detailKey}?.name ?: detailTitle else detailTitle }, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     },
@@ -188,7 +197,7 @@ import org.json.JSONArray
             bottomBar = {
                 if(!(destination=="search" && WindowInsets.ime.getBottom(LocalDensity.current)>0)) Column(Modifier.background(colors.background).navigationBarsPadding()) {
                     if (current != null && playback.queue.isNotEmpty()) MiniPlayer(current, playback.playing || playback.requested, preferences.glass, vm.playback, { playerOpen = true })
-                    if (destination in primaryDestinations || destination in listOf("detail","library","onlineArtist")) NavigationBar(containerColor = colors.background, tonalElevation = 0.dp, windowInsets = WindowInsets(0)) {
+                    if (destination in primaryDestinations || destination in listOf("detail","library","onlineArtist")) NavigationBar(modifier=Modifier.height(if(LocalDensity.current.fontScale<=1.3f)64.dp else 80.dp),containerColor = colors.background, tonalElevation = 0.dp, windowInsets = WindowInsets(0)) {
                         val labels = listOf("Beranda", "Cari", "Koleksi")
                         val icons = listOf(Icons.Rounded.Home, Icons.Rounded.Search, Icons.Rounded.LibraryMusic)
                         primaryDestinations.forEachIndexed { i, route ->
@@ -218,7 +227,7 @@ import org.json.JSONArray
                         }
                     }, { vm.resetImport(); navigate("import") }, {
                         context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
-                    },smartMix=vm::smartMix,hideDownloads=vm::hideDownloadsFromGallery,galleryNotice=galleryNotice)
+                    },smartMix=vm::smartMix,hideDownloads=vm::hideDownloadsFromGallery,galleryNotice=galleryNotice,clearArtwork=vm::clearArtworkCache,resetTaste=vm::resetRecommendations)
                     "import" -> ImportScreen(vm, imports, { files.launch(Intent(Intent.ACTION_OPEN_DOCUMENT).setType("audio/*").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)) }, { folder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)) }, { list.launch(arrayOf("text/*", "application/json", "audio/x-mpegurl", "application/vnd.apple.mpegurl", "application/octet-stream")) }, { destination = "collection"; parent = "collection" }, { historyReport = it })
                 } }
                 if (scanning && destination != "library" && destination != "settings") LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))
@@ -226,8 +235,10 @@ import org.json.JSONArray
         }
         if (migrationNotice) AlertDialog(onDismissRequest = { vm.dismissMigration() }, title = { Text("Pilih sumber musikmu") }, text = { Text("Yono Music hanya menampilkan berkas dan folder yang kamu pilih. Daftar putar, favorit, riwayat, dan audio asli tetap disimpan. Pilih sumber melalui Impor untuk menghubungkan kembali koleksimu. Rekaman yang belum pasti tetap tidak tersedia.") }, confirmButton = { TextButton({ vm.dismissMigration(); vm.resetImport(); navigate("import") }) { Text("Pilih sumber") } }, dismissButton = { TextButton({ vm.dismissMigration() }) { Text("Nanti") } })
         if (playerOpen && current != null) Dialog(onDismissRequest = { playerOpen = false }, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
-            PlayerReveal { PlayerScreen(current, playback, vm.playback, current.id in favorites, preferences, sleepEnd, { playerOpen = false }, { if(current.source=="stream")downloadRemote(current)else vm.favorite(current.id) }, { queueOpen = true }, { if(current.source=="stream")downloadRemote(current)else menuId = current.id }) }
+            PlayerReveal { PlayerScreen(current, playback, vm.playback, current.id in favorites, preferences, sleepEnd, { playerOpen = false }, { if(current.source=="stream")downloadRemote(current)else vm.favorite(current.id) }, { queueOpen = true }, { if(current.source=="stream") {streamOptions=remoteForUi(current)}else menuId = current.id }) }
         }
+        streamOptions?.let {song->EngineResultSheet(song,vm,{s->vm.downloadOnline(s){streamDownload=s}},{s->streamDownload=s},{s->saveStream=s;streamOptions=null}){streamOptions=null}}
+        saveStream?.let {song->OnlineSaveSongDialog(vm,song){saveStream=null}}
         if (queueOpen) QueueSheet(playerTracks, playback, vm.playback, { queueOpen = false })
         val menuTrack = collectionTracks.find { it.id == menuId }
         if (menuTrack != null) ModalBottomSheet(onDismissRequest = { menuId = null }) {

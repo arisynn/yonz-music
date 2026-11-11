@@ -40,7 +40,7 @@ import kotlinx.coroutines.delay
 @Composable fun MiniPlayer(track: Track, playing: Boolean, glass: Boolean, connection: PlaybackConnection, open: () -> Unit) {
     GlassPanel(track, glass, Modifier.fillMaxWidth().padding(horizontal = Design.md, vertical = Design.xs)) {
         Column {
-            Row(Modifier.fillMaxWidth().clickable(onClickLabel = "Buka pemutaran saat ini", onClick = open).padding(start = Design.md, top = Design.sm, bottom = Design.sm, end = Design.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.md)) {
+            Row(Modifier.fillMaxWidth().clickable(onClickLabel = "Buka pemutaran saat ini", onClick = open).padding(start = Design.md, top = Design.xs, bottom = Design.xs, end = Design.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.md)) {
                 Artwork(track, Modifier.size(44.dp))
                 Column(Modifier.weight(1f)) {
                     Text(track.title, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -79,7 +79,6 @@ import kotlinx.coroutines.delay
                     ActionIcon(Icons.Rounded.KeyboardArrowDown, "Tutup pemutaran saat ini", close)
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("SEDANG DIPUTAR", style = MaterialTheme.typography.labelSmall, color = c.primary)
-                        Text(track.title, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis, color = c.onSurfaceVariant)
                     }
                     ActionIcon(Icons.Rounded.MoreHoriz, "Opsi lagu", options)
                 }
@@ -102,10 +101,10 @@ import kotlinx.coroutines.delay
                     if(state.buffering) {Text("Menyiapkan audio…",style=MaterialTheme.typography.labelSmall,color=c.primary);LinearProgressIndicator(Modifier.fillMaxWidth())}
                     SeekControls(track, connection)
                     Spacer(Modifier.height(if (compact) Design.sm else Design.md))
-                    GlassPanel(track, preferences.glass, Modifier.fillMaxWidth()) {
+                    Box(Modifier.fillMaxWidth()) {
                         Row(Modifier.fillMaxWidth().padding(vertical = Design.sm, horizontal = Design.sm), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                             ActionIcon(Icons.Rounded.SkipPrevious, "Lagu sebelumnya", connection::previous)
-                            FilledIconButton(connection::toggle, modifier = Modifier.size(if (compact) 64.dp else 72.dp), shape = CircleShape, colors = IconButtonDefaults.filledIconButtonColors(containerColor = c.primary, contentColor = c.onPrimary)) { Icon(if (state.playing || state.requested) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (state.playing || state.requested) "Jeda" else "Putar", Modifier.size(36.dp)) }
+                            FilledIconButton(connection::toggle, modifier = Modifier.size(if (compact) 60.dp else 64.dp), shape = CircleShape, colors = IconButtonDefaults.filledIconButtonColors(containerColor = c.primary, contentColor = c.onPrimary)) { Icon(if (state.playing || state.requested) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, if (state.playing || state.requested) "Jeda" else "Putar", Modifier.size(36.dp)) }
                             ActionIcon(Icons.Rounded.SkipNext, "Lagu berikutnya", connection::next)
                         }
                     }
@@ -117,7 +116,6 @@ import kotlinx.coroutines.delay
                     }
                     if (state.error != null) Text(Bahasa.pesan(state.error), style = MaterialTheme.typography.bodySmall, color = c.error, modifier = Modifier.padding(vertical = Design.sm))
                     if (sleepEnd > 0) SleepRemaining(sleepEnd, Modifier.align(Alignment.CenterHorizontally))
-                    if (!compact) Text(if(track.source=="stream")"PUTAR DARING · YONO MUSIC"else "MUSIK LOKAL · RUANGMU", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = Design.gap))
                 }
             }
         }

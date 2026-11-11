@@ -7,6 +7,7 @@ import urllib.error
 from urllib.parse import urlsplit
 from yono_core.control import Control, Stopped
 from yono_core.network import youtube_dl
+from yono_core.artwork import candidates as image_candidates
 from yono_core.model import EngineError, Song, thumbnail
 
 
@@ -35,7 +36,7 @@ def inspect_video(ident, control, runtime=None, factory=youtube_dl, format_id=No
     song=Song(data.get('track') or data.get('title') or '',artists,duration,album=data.get('album') or '',youtube_id=ident,
               artwork_url=thumbnail(data.get('thumbnails')),source_url='https://www.youtube.com/watch?v='+ident)
     headers={k:v for k,v in (data.get('http_headers') or {}).items() if k.lower() in {'user-agent','accept','accept-language'} and isinstance(v,str) and len(v)<1500 and '\r' not in v and '\n' not in v}
-    return {'url':url,'headers':headers,'song':song.to_dict(),'ext':data.get('ext',''),'format_id':str(data.get('format_id',''))[:100],'acodec':str(data.get('acodec',''))[:100]}
+    return {'url':url,'headers':headers,'song':song.to_dict(),'artwork_candidates':image_candidates(data.get('thumbnails')),'ext':data.get('ext',''),'format_id':str(data.get('format_id',''))[:100],'acodec':str(data.get('acodec',''))[:100]}
 
 
 def failure_code(error):

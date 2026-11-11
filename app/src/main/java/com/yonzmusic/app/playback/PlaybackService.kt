@@ -115,6 +115,12 @@ class PlaybackService : MediaSessionService() {
         }
     }
     private val listens=ListenAccumulator()
+    private val onlineSignals=com.yonzmusic.app.search.OnlineListeningTracker {app.forYou.record(it)}
+    private fun onlineSongNow():com.yonzmusic.app.search.OnlineSong? {
+        val item=player.currentMediaItem ?: return null
+        return remoteSong(item) ?: item.mediaMetadata.extras?.getString(RADIO_SEED)?.let {app.streams.metadata.value["engine:$it"]}
+    }
+    private fun onlineTick() {onlineSignals.tick(player.currentMediaItem?.mediaMetadata?.extras?.getString("yono.queue.key"),player.isPlaying,player.duration.coerceAtLeast(0),android.os.SystemClock.elapsedRealtime(),System.currentTimeMillis())}
     private fun listenTick(restart: Boolean = false) {
         val result=listens.tick(player.currentMediaItem?.mediaId,player.duration.coerceAtLeast(0),player.isPlaying,android.os.SystemClock.elapsedRealtime(),restart)
         result?.let { q -> app.persistenceScope.launch {
@@ -178,7 +184,11 @@ class PlaybackService : MediaSessionService() {
             }
             override fun onCustomCommand(session: MediaSession, controller: MediaSession.ControllerInfo, customCommand: SessionCommand, args: Bundle): ListenableFuture<SessionResult> {
                 if(customCommand.customAction==RADIO) {
-                    if(args.getBoolean("refresh"))radio?.refreshRecommendations()else radio?.setEnabled(args.getBoolean("enabled"))
+                    when {
+                        args.containsKey("exclude")->args.getString("exclude")?.takeIf {it.startsWith("engine:") && StreamRepository.valid(it.removePrefix("engine:"))}?.let {radio?.exclude(it)}
+                        args.getBoolean("refresh")->radio?.refreshRecommendations()
+                        else->radio?.setEnabled(args.getBoolean("enabled"))
+                    }
                     return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
                 }
                 if (customCommand.customAction != TIMER) return Futures.immediateFuture(SessionResult(SessionError.ERROR_NOT_SUPPORTED))
@@ -193,26 +203,34 @@ class PlaybackService : MediaSessionService() {
         scope.launch {app.preferences.flow.collectLatest {radio?.defaults(it.onlineRadio)}}
         publishExtras()
         player.addListener(object : Player.Listener {
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) { listenTick(reason==Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) }
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                onlineSignals.transition(onlineSongNow(),mediaItem?.mediaMetadata?.extras?.getString("yono.queue.key"),
+                    reason in setOf(Player.MEDIA_ITEM_TRANSITION_REASON_SEEK,Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED),
+                    mediaItem?.generatedRadio()==true,android.os.SystemClock.elapsedRealtime(),System.currentTimeMillis(),reason==Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT,chosenByUser=reason in setOf(Player.MEDIA_ITEM_TRANSITION_REASON_SEEK,Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED))
+                listenTick(reason==Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT)
+            }
             override fun onAudioSessionIdChanged(audioSessionId: Int) { publishExtras() }
             override fun onEvents(player: Player, events: Player.Events) {
                 if(streamIssue!=null && (player.currentMediaItem?.mediaId!=issueMediaId || (player.playerError==null && player.playbackState!=Player.STATE_IDLE))) {streamIssue=null;issueMediaId=null;publishExtras()}
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)) updateShuffleCycle()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED, Player.EVENT_IS_PLAYING_CHANGED)) warmUpcoming()
                 radio?.update()
+                onlineTick()
                 listenTick()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_PLAY_WHEN_READY_CHANGED, Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_POSITION_DISCONTINUITY, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED)) persist()
             }
             override fun onIsPlayingChanged(isPlaying: Boolean) {
+                onlineTick()
                 listenTick()
                 snapshotJob?.cancel()
                 if (isPlaying) {
                     consecutiveErrors = 0
                     persist()
-                    snapshotJob = scope.launch { while (isActive) { delay(5000);listenTick();radio?.update();persist() } }
+                    snapshotJob = scope.launch { while (isActive) { delay(5000);listenTick();onlineTick();radio?.update();persist() } }
                 }
             }
             override fun onPlayerError(error: PlaybackException) {
+                onlineSignals.failure(android.os.SystemClock.elapsedRealtime(),System.currentTimeMillis())
                 val failed = player.currentMediaItem?.mediaId
                 if(failed?.startsWith("engine:")==true) {streamIssue=if(error.errorCode in setOf(PlaybackException.ERROR_CODE_DECODING_FAILED,PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED))StreamIssue.FORMAT else StreamIssue.from(error.cause);issueMediaId=failed;publishExtras()}
                 if (failed != null && !failed.startsWith("engine:")) scope.launch(Dispatchers.IO) { app.repository.playbackFailure(failed,error.errorCode) }
@@ -228,8 +246,8 @@ class PlaybackService : MediaSessionService() {
                     val item=player.getMediaItemAt(index)
                     val original=remoteSong(item) ?: continue
                     val latest=updates[item.mediaId] ?: continue
-                    if(latest.videoId!=original.videoId || latest.artwork.isBlank() || latest.artwork==original.artwork)continue
-                    val song=original.copy(artwork=latest.artwork)
+                    if(latest.videoId!=original.videoId || latest.artwork.isBlank() || (latest.artwork==original.artwork && latest.artworkCandidates==original.artworkCandidates))continue
+                    val song=original.copy(artwork=latest.artwork,artworkCandidates=latest.artworkCandidates,albumId=latest.albumId)
                     val extras=android.os.Bundle(item.mediaMetadata.extras ?: android.os.Bundle()).apply {putString("yono.remote",StreamRepository.encode(song).toString())}
                     val updated=item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon()
                         .setArtworkUri(android.net.Uri.parse(song.artwork)).setExtras(extras).build()).build()

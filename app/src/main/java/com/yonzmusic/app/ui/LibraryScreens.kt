@@ -39,15 +39,6 @@ import kotlinx.coroutines.withContext
     val albums=remember(tracks) { tracks.filter { it.available && MetadataPolicy.known(it.album).isNotBlank() }.distinctBy(::albumKey).take(5) }
     var mix by remember { mutableStateOf<SmartMix.Mix?>(null) }
     LazyColumn(state=scrollState,contentPadding=PaddingValues(bottom=Design.page)) {
-        if(current!=null && vm!=null)item("continue_listening") {
-            SectionTitle("Lanjutkan mendengarkan")
-            ListItem(headlineContent={Text(current.title,maxLines=1,overflow=TextOverflow.Ellipsis)},
-                supportingContent={Text(current.artist,maxLines=1,overflow=TextOverflow.Ellipsis)},
-                leadingContent={Artwork(current,Modifier.size(56.dp))},trailingContent={
-                    val playback by vm.playback.state.collectAsStateWithLifecycle()
-                    ActionIcon(if(playback.playing)Icons.Rounded.Pause else Icons.Rounded.PlayArrow,"Putar atau jeda",vm.playback::toggle)
-                },modifier=Modifier.clickable(onClick=onContinue).padding(horizontal=Design.md))
-        }
         if(vm!=null)item("for_you") {MusicForYou(vm,onSearch)}
         if(tracks.isEmpty() && vm==null) item { EmptyState("Mulai dari musikmu", "Pilih berkas atau folder. Koleksi dan pemutaran tetap berfungsi tanpa internet.",action={ Button(onImport) { Text("Pilih musik") } }) }
         if(recent.isNotEmpty()) {

@@ -17,9 +17,9 @@ class RadioQueuePolicyTest {
         assertEquals(listOf(3,1,4,2,0),RadioQueuePolicy.manualFirst(listOf(3,1,2,0,4),1,setOf(0,2)))
         assertEquals(listOf(3,1,2),RadioQueuePolicy.manualFirst(listOf(3,1,2),1,emptySet()))
     }
-    @Test fun batchNeverAddsMoreThanFourAndRespectsRemainingSlots() {
-        val candidates=(0..10).map {song(it.toString())}
-        assertEquals(4,RadioQueuePolicy.pick(candidates,emptySet(),emptySet(),99).size)
+    @Test fun batchNeverAddsMoreThanThirtyAndRespectsRemainingSlots() {
+        val candidates=(0..50).map {song(it.toString())}
+        assertEquals(30,RadioQueuePolicy.pick(candidates,emptySet(),emptySet(),99).size)
         assertEquals(1,RadioQueuePolicy.pick(candidates,emptySet(),emptySet(),1).size)
         assertTrue(RadioQueuePolicy.pick(candidates,emptySet(),emptySet(),0).isEmpty())
     }

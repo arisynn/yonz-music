@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
                 Row(Modifier.fillMaxWidth().padding(horizontal=Design.page),verticalAlignment=Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         Text("Lanjutkan dengan radio",style=MaterialTheme.typography.titleSmall)
-                        Text(if(state.radioLoading)"Menyiapkan musik serupa…"else "Rekomendasi setelah antrean pilihanmu",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(if(state.radioLoading)"Menyiapkan musik serupa…"else "${(order.size-currentRow-1).coerceAtLeast(0)} lagu berikutnya · pilihanmu didahulukan",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(state.radioEnabled,connection::radio)
                 }

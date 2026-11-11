@@ -123,6 +123,7 @@ class PlaybackConnection(context: Context) {
     fun jump(index: Int) { controller?.let { if (index in 0 until it.mediaItemCount) { it.seekToDefaultPosition(index); it.prepare(); it.play() } } }
     private fun manualAppendIndex(player:MediaController):Int =
         ((player.currentMediaItemIndex+1) until player.mediaItemCount).firstOrNull {player.getMediaItemAt(it).generatedRadio()} ?: player.mediaItemCount
+    fun excludeRecommendation(id:String) {controller?.sendCustomCommand(SessionCommand(PlaybackService.RADIO,Bundle.EMPTY),Bundle().apply {putString("exclude",id)})}
     fun refreshRecommendations() {controller?.sendCustomCommand(SessionCommand(PlaybackService.RADIO,Bundle.EMPTY),Bundle().apply {putBoolean("refresh",true)})}
     fun radio(enabled:Boolean) {controller?.sendCustomCommand(SessionCommand(PlaybackService.RADIO,Bundle.EMPTY),Bundle().apply {putBoolean("enabled",enabled)})}
     fun timer(minutes: Int) { controller?.sendCustomCommand(SessionCommand(PlaybackService.TIMER, Bundle.EMPTY), Bundle().apply { putInt("minutes", minutes) }) }

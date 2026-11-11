@@ -17,6 +17,8 @@ class YonzApp : Application() {
     val database by lazy { Room.databaseBuilder(this, MusicDatabase::class.java, "yonz-music.db").addMigrations(MusicDatabase.MIGRATION_1_2, MusicDatabase.MIGRATION_2_3).build() }
     val repository by lazy { Repository(this, database) }
     val preferences by lazy { Preferences(this) }
+    val artwork by lazy { com.yonzmusic.app.artwork.ArtworkRepository(this) }
+    val recommendations by lazy { com.yonzmusic.app.search.RecommendationRepository(musicCatalog) }
     val forYou by lazy { com.yonzmusic.app.search.ForYouRepository(this) }
     val musicCatalog by lazy { com.yonzmusic.app.search.MusicCatalog(this) }
     val streams by lazy { com.yonzmusic.app.playback.StreamRepository(this) }

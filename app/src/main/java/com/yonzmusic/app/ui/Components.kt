@@ -43,63 +43,32 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Semaphore
 
+
+/** Compatibility for existing background callers; shares the same cache as every artwork view. */
 internal object ArtCache {
-    private val cache = object : LruCache<String, Bitmap>(12 * 1024 * 1024) { override fun sizeOf(key: String, value: Bitmap) = value.allocationByteCount }
-    private val misses = object : LruCache<String, Long>(1024) {}
-    private val permits = Semaphore(2)
-    fun load(context: Context, track: Track, requestedPixels: Int): Bitmap? {
-        val bucket=when { requestedPixels<=128 -> 128;requestedPixels<=256 -> 256;requestedPixels<=512 -> 512;requestedPixels<=1024 -> 1024;else -> 1536 }
-        val key = "${track.uri}|${track.artUri}|${track.sha256}|${track.artRevision}|$bucket"
-        cache.get(key)?.let { return it }
-        if (misses.get(key)?.let { android.os.SystemClock.uptimeMillis()-it<2000 }==true) return null
-        permits.acquire()
-        return try {
-            cache.get(key) ?: run {
-                val bytes = runCatching {
-                    if(track.source=="stream" && com.yonzmusic.app.search.SearchContract.https(track.artUri,com.yonzmusic.app.search.SearchContract.artHosts))com.yonzmusic.app.network.SafeHttp.get(track.artUri,com.yonzmusic.app.search.SearchContract.artHosts,limit=4*1024*1024).takeIf {it.status==200}?.bytes
-                    else if (track.artUri.isNotEmpty()) context.contentResolver.openInputStream(Uri.parse(track.artUri))?.use { input ->
-                        val out = java.io.ByteArrayOutputStream(); val buffer = ByteArray(8192)
-                        while (true) { val n = input.read(buffer); if (n < 0) break; if (out.size() + n > 8 * 1024 * 1024) return@use null; out.write(buffer, 0, n) }
-                        out.toByteArray()
-                    } else null
-                }.getOrNull() ?: runCatching { MediaMetadataRetriever().let { r -> try { r.setDataSource(context, Uri.parse(track.uri)); r.embeddedPicture } finally { r.release() } } }.getOrNull()
-                if (bytes == null || bytes.size > 8 * 1024 * 1024) { misses.put(key, android.os.SystemClock.uptimeMillis()); null }
-                else {
-                    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-                    require(bounds.outWidth>0 && bounds.outHeight>0 && bounds.outWidth.toLong()*bounds.outHeight<=40_000_000)
-                    var sample = 1
-                    while (bounds.outWidth / (sample*2) >= bucket || bounds.outHeight / (sample*2) >= bucket) sample *= 2
-                    val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
-                    if (bitmap != null) cache.put(key, bitmap) else misses.put(key, android.os.SystemClock.uptimeMillis())
-                    bitmap
-                }
-            }
-        } finally { permits.release() }
+    fun load(context:Context,track:Track,requestedPixels:Int):Bitmap?=kotlinx.coroutines.runBlocking(Dispatchers.IO) {
+        (context.applicationContext as com.yonzmusic.app.YonzApp).artwork.track(track,requestedPixels)
     }
 }
 
-@Composable fun Artwork(track: Track?, modifier: Modifier = Modifier, description: String? = null) {
-    val context=LocalContext.current.applicationContext
+@Composable fun Artwork(track: Track?, modifier: Modifier = Modifier, description: String? = null,maxPixels:Int=1536) {
+    val app=LocalContext.current.applicationContext as com.yonzmusic.app.YonzApp
+    val updates by app.streams.metadata.collectAsState()
+    val revision=updates[track?.id]?.artworkCandidates
     val density=androidx.compose.ui.platform.LocalDensity.current
-    BoxWithConstraints(modifier.clip(Design.small).semantics { if(description!=null)contentDescription=description }) {
-        val pixels=with(density) { maxWidth.takeIf { it.value.isFinite() }?.roundToPx() ?: 512 }.coerceIn(64,1536)
-        key(track?.id,track?.artUri,track?.sha256,track?.artRevision,pixels) {
+    BoxWithConstraints(modifier.clip(Design.small).semantics {if(description!=null)contentDescription=description}) {
+        val pixels=with(density) {maxWidth.takeIf {it.value.isFinite()}?.roundToPx() ?: 512}.coerceIn(64,maxPixels)
+        val bucket=com.yonzmusic.app.artwork.ArtworkPolicy.bucket(pixels)
+        key(track?.id,track?.artUri,track?.sha256,track?.artRevision,revision,bucket) {
             val bitmap by produceState<Bitmap?>(null) {
-                value=if(track!=null)withContext(Dispatchers.IO) {
-                    val loaded=runCatching {ArtCache.load(context,track,pixels)}.getOrNull()
-                    if(loaded==null && track.source=="stream") {
-                        val streams=(context as? com.yonzmusic.app.YonzApp)?.streams
-                        streams?.lookup(track.id)?.let {streams.requestArtwork(it,repair=true)}
-                    }
-                    loaded
-                }else null
+                value=if(track!=null)withContext(Dispatchers.IO) {runCatching {app.artwork.track(track,bucket)}.getOrNull()}else null
             }
-            if(bitmap!=null)Image(bitmap!!.asImageBitmap(),contentDescription=null,modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
-            else DefaultArt(Modifier.fillMaxSize(),track?.album ?: "")
+            if(bitmap!=null)Image(bitmap!!.asImageBitmap(),null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
+            else DefaultArt(Modifier.fillMaxSize(),track?.album.orEmpty())
         }
     }
 }
+
 @Composable fun DefaultArt(modifier: Modifier = Modifier, seed: String = "") {
     val colors = MaterialTheme.colorScheme
     val accent = if (seed.hashCode() % 2 == 0) colors.primary else colors.secondary
@@ -135,7 +104,7 @@ internal object ArtCache {
 @Composable fun EmptyState(title: String, message: String, kind: String = "library", action: (@Composable () -> Unit)? = null, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     Column(modifier.fillMaxWidth().padding(Design.page), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Design.gap)) {
-        Box(Modifier.size(136.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(80.dp), contentAlignment = Alignment.Center) {
             Canvas(Modifier.fillMaxSize()) {
                 drawCircle(colors.primary.copy(alpha = .04f), size.width * .48f)
                 drawCircle(colors.primary.copy(alpha = .16f), size.width * .40f, style = Stroke(1.dp.toPx()))
@@ -152,10 +121,10 @@ internal object ArtCache {
 }
 @Composable fun TrackRow(track: Track, active: Boolean, favorite: Boolean, onPlay: () -> Unit, onMenu: () -> Unit, modifier: Modifier = Modifier, trailing: (@Composable () -> Unit)? = null) {
     val c = MaterialTheme.colorScheme
-    Row(modifier.fillMaxWidth().clickable(onClick = onPlay).padding(start = Design.page, end = Design.md, top = Design.sm, bottom = Design.sm), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.md)) {
+    Row(modifier.fillMaxWidth().heightIn(min=64.dp).clickable(onClick = onPlay).padding(start = Design.page, end = Design.md, top = Design.xs, bottom = Design.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.md)) {
         Box {
-            Artwork(track, Modifier.size(52.dp))
-            if (active) Box(Modifier.size(52.dp).clip(Design.small).background(c.surface.copy(alpha = .6f)), contentAlignment = Alignment.Center) { PlayingBars(Modifier.size(28.dp)) }
+            Artwork(track, Modifier.size(48.dp))
+            if (active) Box(Modifier.size(48.dp).clip(Design.small).background(c.surface.copy(alpha = .6f)), contentAlignment = Alignment.Center) { PlayingBars(Modifier.size(28.dp)) }
         }
         Column(Modifier.weight(1f)) {
             Text(track.title, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium, color = if (active) c.primary else c.onSurface)
@@ -170,7 +139,7 @@ internal object ArtCache {
     Box(modifier.clip(Design.card).background(c.surfaceVariant.copy(alpha = if (enabled) Design.glassOpacity else 1f)).border(1.dp, c.outlineVariant.copy(alpha = .5f), Design.card)) {
         if (enabled && Build.VERSION.SDK_INT >= 31) {
             // Blur only the cached artwork layer; foreground text and controls stay sharp.
-            Artwork(track, Modifier.matchParentSize().blur(28.dp).alpha(.14f))
+            Artwork(track, Modifier.matchParentSize().blur(28.dp).alpha(.10f),maxPixels=128)
         } else Box(Modifier.matchParentSize().background(Brush.horizontalGradient(listOf(c.primary.copy(alpha = .06f), Color.Transparent))))
         content()
     }

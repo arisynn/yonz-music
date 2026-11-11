@@ -97,6 +97,27 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual("https://lh3.googleusercontent.com/actual",artwork({"thumbnails":[{"url":"//lh3.googleusercontent.com/actual","width":512}]}))
         self.assertEqual("",artwork({"thumbnails":[{"url":"https://yt3.ggpht.com.evil.test/image"}]}))
 
+    def test_album_artwork_requires_verified_track_membership(self):
+        ident="00000000001"
+        class AlbumCatalog:
+            matches=True
+            def call(self,method,*args,**kwargs):
+                if method=="get_song":return {"videoDetails":{"videoId":ident,"thumbnail":{"thumbnails":[{"url":"https://i.ytimg.com/small.jpg","width":128,"height":128}]}}}
+                return {"thumbnails":[{"url":"https://lh3.googleusercontent.com/album","width":1024,"height":1024}],"tracks":[{"videoId":ident if self.matches else "00000000002"}]}
+        catalog=AlbumCatalog();request={"operation":"artwork","video_id":ident,"target_pixels":1024,"album_id":"MPREaaaaaaaaaa"}
+        result=run(request,Control("fixture"),catalog)
+        self.assertEqual("https://lh3.googleusercontent.com/album",result["artwork"])
+        self.assertEqual(1024,result["artwork_candidates"][0]["width"])
+        catalog.matches=False
+        self.assertEqual("https://i.ytimg.com/small.jpg",run(request,Control("fixture"),catalog)["artwork"])
+
+    def test_radio_requests_a_real_candidate_pool_without_inventing_positions(self):
+        catalog=FakeCatalog([row(i,title="Song "+str(i),credit="Artist "+str(i%10)) for i in range(1,70)])
+        result=run({"operation":"radio","video_id":"00000000000"},Control("fixture"),catalog)
+        self.assertEqual(60,catalog.calls[0][2]["limit"])
+        self.assertEqual(60,len(result["songs"]))
+        self.assertNotIn("rank",result["songs"][0])
+
     def test_invalid_ids_and_regions_do_not_request_network(self):
         for payload in [{"operation":"radio","video_id":"bad"},{"operation":"artist","artist_id":"../bad"},{"operation":"popular_songs","region":"invalid"}]:
             catalog=FakeCatalog()

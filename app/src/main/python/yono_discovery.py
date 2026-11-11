@@ -28,25 +28,7 @@ class MusicCatalogue(Catalogue):
         return self._client
 
 
-def artwork(images):
-    valid = []
-    if isinstance(images, dict):
-        images = images.get("thumbnails") or images.get("thumbnail") or []
-    for image in images if isinstance(images, list) else []:
-        try:
-            url = image.get("url", "")
-            if url.startswith("//"):
-                url = "https:" + url
-            p = urlsplit(url)
-            if (len(url) <= 4096 and p.scheme == "https" and p.hostname in ART_HOSTS
-                    and not p.username and not p.password and p.port in (None, 443) and not p.fragment):
-                valid.append((int(image.get("width") or 0), url))
-        except (ValueError, TypeError, AttributeError):
-            pass
-    if not valid:
-        return ""
-    # Prefer a supplied medium thumbnail over a large original; never invent an image URL.
-    return min(valid, key=lambda image: (0 if 256 <= image[0] <= 768 else 1, abs(image[0] - 512)))[1]
+from yono_core.artwork import candidates as image_candidates, choose as artwork
 
 
 def song(row, query="", *, videos=False):
@@ -81,6 +63,8 @@ def song(row, query="", *, videos=False):
             "album": clean(album.get("name")) if isinstance(album, dict) else "",
             "duration_ms": int(duration * 1000),
             "artwork": artwork(row.get("thumbnails") or row.get("thumbnail")),
+            "artwork_candidates": image_candidates(row.get("thumbnails") or row.get("thumbnail")),
+            "album_id": clean(album.get("id"),100) if isinstance(album,dict) else "",
             "page": "https://www.youtube.com/watch?v=" + ident}
 
 
@@ -140,8 +124,17 @@ def run(payload, control, catalogue):
         if video.get("videoId") != ident:
             raise ValueError("artwork identity changed")
         # Prefer the extractor's actual video thumbnail; never manufacture thumbnail URLs.
-        images = video.get("thumbnail") or {}
-        return {"ok": True, "video_id": ident, "artwork": artwork(images)}
+        images = image_candidates(video.get("thumbnail") or {})
+        target=max(128,min(1536,int(payload.get("target_pixels",512))))
+        album_id=payload.get("album_id","")
+        if target>=512 and isinstance(album_id,str) and re.fullmatch(r"MPRE[A-Za-z0-9_-]{6,96}",album_id):
+            try:
+                album=catalogue.call("get_album",album_id)
+                if any(r.get("videoId")==ident for r in album.get("tracks",[]) if isinstance(r,dict)):
+                    images=image_candidates(image_candidates(album.get("thumbnails"))+images)
+            except Stopped:raise
+            except Exception:pass
+        return {"ok": True, "video_id": ident, "artwork": artwork(images,target), "artwork_candidates": images}
     if op == "artist":
         ident = payload.get("artist_id", "")
         if not isinstance(ident, str) or not ARTIST.fullmatch(ident):
@@ -157,8 +150,8 @@ def run(payload, control, catalogue):
         ident = payload.get("video_id", "")
         if not isinstance(ident, str) or not VIDEO.fullmatch(ident):
             raise ValueError("invalid seed")
-        rows = catalogue.call("get_watch_playlist", videoId=ident, radio=True, limit=20).get("tracks") or []
-        return {"ok": True, "songs": unique([song(r) for r in rows if r.get("videoId") != ident], "video_id")[:20]}
+        rows = catalogue.call("get_watch_playlist", videoId=ident, radio=True, limit=60).get("tracks") or []
+        return {"ok": True, "songs": unique([song(r) for r in rows if r.get("videoId") != ident], "video_id")[:60]}
     if op in {"popular_songs", "popular_artists"}:
         region = payload.get("region", "ID")
         if region not in {"ID", "ZZ"}:

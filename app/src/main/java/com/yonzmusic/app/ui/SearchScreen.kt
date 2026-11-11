@@ -177,6 +177,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
                 OnlineResultAction("Antrean","Tambah antrean",Icons.Rounded.QueueMusic,Modifier.weight(1f)){vm.playOnline(song,false);close()}
                 OnlineResultAction("Unduh","Simpan untuk luring",Icons.Rounded.Download,Modifier.weight(1f)){onDownload(song);close()}
             }
+            TextButton({vm.lessSuitable(song);close()}) {Text("Kurang cocok")}
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
             TextButton({
                 if(SearchContract.https(song.page,SearchContract.sourceHosts))runCatching {

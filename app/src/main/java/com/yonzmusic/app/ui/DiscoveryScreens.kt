@@ -41,22 +41,34 @@ import com.yonzmusic.app.search.*
             items(state.songs,key={it.id}) {song->ForYouCard(song,vm)}
         }
         if(state.recent.isNotEmpty()) {
-            SectionTitle("Baru kamu putar")
-            LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
-                items(state.recent,key={it.id}) {song->ForYouCard(song,vm,120)}
+            SectionTitle("Baru diputar")
+            Column(Modifier.padding(horizontal=Design.page)) {
+                state.recent.take(4).forEach {song->
+                    Row(Modifier.fillMaxWidth().heightIn(min=64.dp).clickable {vm.selectOnline(song)},verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
+                        SongThumbnail(song,Modifier.size(44.dp))
+                        Column(Modifier.weight(1f)) {Text(song.title,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium);Text(song.credit,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
+                    }
+                    HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant.copy(alpha=.35f))
+                }
             }
         }
     }
 }
-@Composable private fun ForYouCard(song:OnlineSong,vm:MusicViewModel,size:Int=152) {
+@OptIn(ExperimentalFoundationApi::class)
+@Composable private fun ForYouCard(song:OnlineSong,vm:MusicViewModel,size:Int=136) {
     val playback by vm.playback.state.collectAsStateWithLifecycle()
     val current=playback.id==song.id || vm.isCurrentOnline(song)
-    Column(Modifier.width(size.dp).clip(Design.small).clickable {vm.selectOnline(song)}.padding(bottom=Design.sm)) {
+    var menu by remember {mutableStateOf(false)}
+    Column(Modifier.width(size.dp).clip(Design.small).combinedClickable(onClick={vm.selectOnline(song)},onLongClickLabel="Opsi lagu",onLongClick={menu=true}).padding(bottom=Design.sm)) {
         SongThumbnail(song,Modifier.size(size.dp))
         Spacer(Modifier.height(Design.sm))
         Text(song.title,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium,
             color=if(current)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
         Text(song.credit,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        DropdownMenu(menu,{menu=false}) {
+            DropdownMenuItem(text={Text("Putar berikutnya")},onClick={menu=false;vm.playOnline(song,true)})
+            DropdownMenuItem(text={Text("Kurang cocok")},onClick={menu=false;vm.lessSuitable(song)})
+        }
     }
 }
 @Composable internal fun OnlineArtistRow(artist:OnlineArtist,open:()->Unit) {

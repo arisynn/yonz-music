@@ -1,52 +1,43 @@
 package com.yonzmusic.app.ui
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.LruCache
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.yonzmusic.app.YonzApp
-import com.yonzmusic.app.search.OnlineSong
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.yonzmusic.app.network.SafeHttp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yonzmusic.app.YonzApp
+import com.yonzmusic.app.artwork.ArtworkPolicy
+import com.yonzmusic.app.search.OnlineSong
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fun sizeOf(key:String,value:Bitmap)=value.allocationByteCount}
-/** Public source artwork only, with exact host validation and bounded image decoding. */
 @Composable fun SongThumbnail(song:OnlineSong,modifier:Modifier=Modifier.size(44.dp)) {
     val app=LocalContext.current.applicationContext as YonzApp
     val metadata by app.streams.metadata.collectAsStateWithLifecycle()
-    val latest=metadata[song.id] ?: song
-    LaunchedEffect(song.id,latest.artwork) {if(latest.artwork.isBlank())app.streams.requestArtwork(song)}
-    SourceThumbnail(latest.artwork,modifier) {app.streams.requestArtwork(latest,repair=true)}
+    val latest=metadata[song.id]?.let {it.copy(artworkCandidates=(it.artworkCandidates+song.artworkCandidates).distinctBy {c->c.url})} ?: song
+    ThumbnailFrame(listOf(latest.id,latest.artwork,latest.artworkCandidates),modifier) {pixels->app.artwork.song(latest,pixels)}
 }
 @Composable fun SourceThumbnail(url:String,modifier:Modifier=Modifier.size(44.dp),onFailure:(()->Unit)?=null) {
-    key(url) {SourceThumbnailContent(url,modifier,onFailure)}
-}
-@Composable private fun SourceThumbnailContent(url:String,modifier:Modifier,onFailure:(()->Unit)?) {
+    val app=LocalContext.current.applicationContext as YonzApp
     val failure by rememberUpdatedState(onFailure)
-    val allowed=setOf("i.ytimg.com","img.youtube.com","i.scdn.co","lh3.googleusercontent.com")+com.yonzmusic.app.search.SearchContract.artHosts
-    val image by produceState<Bitmap?>(sourceImages.get(url),url) {
-        if(value==null && url.isNotBlank())value=withContext(Dispatchers.IO) { runCatching {
-            val response=SafeHttp.get(url,allowed,limit=2*1024*1024)
-            require(response.status==200)
-            val data=response.bytes
-            val bounds=BitmapFactory.Options().apply {inJustDecodeBounds=true}
-            BitmapFactory.decodeByteArray(data,0,data.size,bounds)
-            require(bounds.outWidth>0 && bounds.outHeight>0 && bounds.outWidth.toLong()*bounds.outHeight<=40_000_000)
-            var sample=1;while(maxOf(bounds.outWidth,bounds.outHeight)/sample>256)sample*=2
-            BitmapFactory.decodeByteArray(data,0,data.size,BitmapFactory.Options().apply {inSampleSize=sample})?.also {sourceImages.put(url,it)}
-        }.getOrNull() }
-        if(value==null && url.isNotBlank())failure?.invoke()
+    ThumbnailFrame(url,modifier) {pixels->app.artwork.url(url,pixels).also {if(it==null && url.isNotBlank())failure?.invoke()}}
+}
+@Composable private fun ThumbnailFrame(identity:Any,modifier:Modifier,load:suspend (Int)->Bitmap?) {
+    val density=LocalDensity.current
+    BoxWithConstraints(modifier.clip(Design.small)) {
+        val pixels=with(density){maxWidth.takeIf {it.value.isFinite()}?.roundToPx() ?: 512}.coerceIn(64,1536)
+        val bucket=ArtworkPolicy.bucket(pixels)
+        key(identity,bucket) {
+            val bitmap by produceState<Bitmap?>(null) {value=withContext(Dispatchers.IO) {load(bucket)}}
+            if(bitmap!=null)Image(bitmap!!.asImageBitmap(),null,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
+            else DefaultArt(Modifier.fillMaxSize())
+        }
     }
-    if(image!=null)Image(image!!.asImageBitmap(),null,modifier.clip(Design.small),contentScale=ContentScale.Crop)
-    else DefaultArt(modifier.clip(Design.small))
 }

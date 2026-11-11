@@ -31,7 +31,7 @@ import java.util.Date
 
 @Composable fun SettingsScreen(preferences: UserPreferences, tracks: List<Track>, scanning: Boolean, sleepEnd: Long,
     theme: (String) -> Unit, motion: (Boolean) -> Unit, glass: (Boolean) -> Unit, scan: () -> Unit, timer: (Int) -> Unit,
-    equalizer: () -> Unit, onImport: () -> Unit, appSettings: () -> Unit, smartMix: (Boolean) -> Unit = {}, hideDownloads: (Boolean) -> Unit = {}, galleryNotice: String = ""
+    equalizer: () -> Unit, onImport: () -> Unit, appSettings: () -> Unit, smartMix: (Boolean) -> Unit = {}, hideDownloads: (Boolean) -> Unit = {}, galleryNotice: String = "", clearArtwork:()->Unit = {}, resetTaste:()->Unit = {}
 ) {
     val c = MaterialTheme.colorScheme
     var licenses by remember { mutableStateOf(false) }
@@ -76,6 +76,8 @@ import java.util.Date
         item { MenuAction(Icons.Rounded.LibraryAdd, "Impor musik atau daftar putar", onImport) }
         item { ListItem(headlineContent = { Text("Kemungkinan rekaman duplikat") }, supportingContent = { Text("$duplicates kelompok metadata. Berkas tidak pernah dihapus atau digabung otomatis.") }, leadingContent = { Icon(Icons.Rounded.CopyAll, null) }) }
         item { MenuAction(Icons.Rounded.Security, "Kelola izin Android", appSettings) }
+        item { MenuAction(Icons.Rounded.Refresh, "Bersihkan cache gambar · maksimal 100 MB", clearArtwork) }
+        item { MenuAction(Icons.Rounded.Refresh, "Reset preferensi rekomendasi", resetTaste) }
         item { MenuAction(Icons.Rounded.Info, "Lisensi sumber terbuka", { licenses = true }) }
         item { UpdateSettings() }
         item { SectionTitle("Ruang musikmu", "Yono Music · ${com.yonzmusic.app.BuildConfig.VERSION_NAME}") }

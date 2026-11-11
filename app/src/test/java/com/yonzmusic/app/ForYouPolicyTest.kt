@@ -12,7 +12,7 @@ class ForYouPolicyTest {
         assertEquals(listOf("engine:c","engine:e"),result.map {it.id})
     }
     @Test fun sourceOrderAndIdentityArePreservedWithBoundedHomeResults() {
-        val candidates=(0..30).map {song(it.toString())}
+        val candidates=(0..30).map {song(it.toString(),artist="Artist ${it%10}")}
         val result=ForYouPolicy.select(song("seed"),candidates,emptyList())
         assertEquals(candidates.take(12),result)
         assertTrue(ForYouPolicy.select(song("seed"),emptyList(),emptyList()).isEmpty())

@@ -29,7 +29,7 @@ class MusicCatalog(context:Context) {
                 val module=PythonRuntime.module(app,"yono_discovery")
                 if(!continuation.isActive)return@FutureTask
                 val raw=module.callAttr("execute",payload.toString(),config.toString(),Callback(stop)).toString()
-                require(raw.length<=256*1024)
+                require(raw.length<=512*1024)
                 val result=JSONObject(raw)
                 if(!result.optBoolean("ok"))throw SearchFailure(SearchContract.text(result.optJSONObject("error")?.optString("message").orEmpty()).ifBlank {"Katalog musik belum tersedia."})
                 if(continuation.isActive)continuation.resume(result)
@@ -43,7 +43,7 @@ class MusicCatalog(context:Context) {
         }
     }
     suspend fun radio(videoId:String):List<OnlineSong> = SearchContract.engine(request(JSONObject()
-        .put("operation","radio").put("video_id",videoId)).toString(),20).songs
+        .put("operation","radio").put("video_id",videoId)).toString(),60).songs
     private companion object {
         val artWorkers=ThreadPoolExecutor(1,1,30,TimeUnit.SECONDS,ArrayBlockingQueue<Runnable>(4),
             {r->Thread(r,"yono-artwork-metadata").apply {isDaemon=true}})

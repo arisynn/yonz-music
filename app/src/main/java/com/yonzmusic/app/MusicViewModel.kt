@@ -67,6 +67,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         if(artistPage.value.artist?.id!=artist.id || (artistPage.value.loading && artistJob?.isActive!=true))openArtist(artist)
     }
     fun closeArtist(){artistJob?.cancel()}
+    fun lessSuitable(song:com.yonzmusic.app.search.OnlineSong) {app.forYou.hide(song.id);playback.excludeRecommendation(song.id);notify("Lagu ini disembunyikan dari rekomendasi selama 30 hari.")}
+    fun resetRecommendations() {app.forYou.resetTaste();playback.refreshRecommendations();notify("Preferensi rekomendasi direset.")}
+    fun clearArtworkCache() {action {withContext(Dispatchers.IO){app.artwork.clear()};notify("Cache gambar dibersihkan. Audio dan cover unduhan tetap tersimpan.")}}
     fun onlineRadio(enabled:Boolean){action {app.preferences.onlineRadio(enabled)}}
     private var streamPlayJob:Job?=null
     fun isCurrentOnline(song:com.yonzmusic.app.search.OnlineSong):Boolean {

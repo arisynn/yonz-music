@@ -3,6 +3,7 @@ package com.yonzmusic.app.playback
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.yonzmusic.app.YonzApp
+import com.yonzmusic.app.search.*
 import kotlinx.coroutines.*
 
 /** Extends the existing queue only. Owns no player, source resolver, audio cache or playback session. */
@@ -21,6 +22,7 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
     private var generation=0L
     private var job:Job?=null
     private var failedSeed=""
+    private var radioSeed:OnlineSong?=null
     private val seenIds=mutableSetOf<String>()
     private val seenRecordings=mutableSetOf<String>()
 
@@ -49,8 +51,18 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
         if(!value)upcoming().filter {player.getMediaItemAt(it).generatedRadio()}.sortedDescending().forEach(player::removeMediaItem)
         publish();update()
     }
+    fun exclude(id:String) {
+        app.forYou.hide(id);cancelPending();failedSeed=""
+        upcoming().filter {player.getMediaItemAt(it).generatedRadio() && player.getMediaItemAt(it).mediaId==id}.sortedDescending().forEach(player::removeMediaItem)
+        update()
+    }
     fun refreshRecommendations() {app.forYou.refresh();failedSeed="";update()}
     fun update() {
+        val timeline=player.currentTimeline
+        val order=mutableListOf<Int>();var cursor=timeline.getFirstWindowIndex(player.shuffleModeEnabled)
+        while(cursor in 0 until player.mediaItemCount && cursor !in order){order+=cursor;cursor=timeline.getNextWindowIndex(cursor,Player.REPEAT_MODE_OFF,player.shuffleModeEnabled)}
+        val before=order.take(order.indexOf(player.currentMediaItemIndex).coerceAtLeast(0)).filter {player.getMediaItemAt(it).generatedRadio()}
+        if(before.size>20){before.take(before.size-20).sortedDescending().forEach(player::removeMediaItem);return}
         val items=(0 until player.mediaItemCount).map(player::getMediaItemAt)
         val keys=items.map {it.mediaMetadata.extras?.getString("yono.queue.key") ?: it.mediaId}
         val context=items.firstOrNull {it.mediaMetadata.extras?.getString(RADIO_SESSION)!=null}?.mediaMetadata?.extras
@@ -61,12 +73,13 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
         available=nextAvailable
         if(nextSession!=session) {
             session=nextSession;origin=nextOrigin;enabled=available && origin=="direct" && defaultEnabled
-            seenIds.clear();seenRecordings.clear();failedSeed="";error="";changed=true
+            seenIds.clear();seenRecordings.clear();failedSeed="";radioSeed=null;error="";changed=true
         }
         val nextKey=player.currentMediaItem?.mediaMetadata?.extras?.getString("yono.queue.key")
         if(signature!=keys || activeKey!=nextKey) {
             signature=keys;activeKey=nextKey;cancelPending();changed=true
         }
+        seenIds.clear();seenRecordings.clear()
         items.forEach {item->
             seenIds+=item.mediaId
             item.mediaMetadata.extras?.getString(RADIO_SEED)?.let {seenIds+="engine:$it"}
@@ -82,14 +95,22 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
         val current=player.currentMediaItem ?: return
         val song=remoteSong(current)
         if(player.isPlaying && !current.generatedRadio()) {
-            if(song!=null)app.forYou.remember(song)
-            else current.mediaMetadata.extras?.getString(RADIO_SEED)?.let {id->app.streams.metadata.value["engine:$id"]?.let(app.forYou::remember)}
+            if(song!=null){
+                if(radioSeed?.id!=null && radioSeed?.id!=song.id) {
+                    radioSeed=song;app.forYou.remember(song);cancelPending()
+                    val stale=upcoming().filter {player.getMediaItemAt(it).generatedRadio()}
+                    if(stale.isNotEmpty()) {stale.sortedDescending().forEach(player::removeMediaItem);return}
+                }
+                app.forYou.remember(song);radioSeed=song
+            }
+            else current.mediaMetadata.extras?.getString(RADIO_SEED)?.let {id->app.streams.metadata.value["engine:$id"]?.let {app.forYou.remember(it);radioSeed=it}}
         }
         if(!available || !player.isPlaying || job?.isActive==true)return
-        val seed=song?.videoId ?: current.mediaMetadata.extras?.getString(RADIO_SEED) ?: return
+        val selectedSeed=radioSeed ?: song ?: return
+        val seed=selectedSeed.videoId
         val needsHome=app.forYou.needs(seed)
         val ahead=upcoming()
-        if((!enabled || player.repeatMode!=Player.REPEAT_MODE_OFF || ahead.size>=2) && !needsHome)return
+        if((!enabled || player.repeatMode!=Player.REPEAT_MODE_OFF || ahead.size>=RecommendationEngine.REFILL_BELOW) && !needsHome)return
         if(!StreamRepository.valid(seed) || seed==failedSeed)return
         val serial=generation;val currentKey=current.mediaMetadata.extras?.getString("yono.queue.key")
         val currentSession=session
@@ -109,19 +130,23 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
                     delay(500)
                 }
                 if(!stable())return@launch
-                val candidates=withTimeout(22000) {app.musicCatalog.radio(seed)}
+                val profile=app.forYou.profile
+                val recent=app.forYou.state.value.recent
+                val candidates=app.recommendations.candidates(selectedSeed,profile,recent,seenIds,seenRecordings)
                 ensureActive()
                 if(!valid(serial,currentSession,currentKey))return@launch
-                app.forYou.offer(seed,candidates)
-                if(!enabled || player.repeatMode!=Player.REPEAT_MODE_OFF || upcoming().size>=2)return@launch
-                val slots=4-upcoming().size
-                val chosen=RadioQueuePolicy.pick(candidates,seenIds,seenRecordings,slots)
-                if(chosen.isEmpty()) {failedSeed=seed;error="Rekomendasi baru belum tersedia.";return@launch}
+                val ranked=RecommendationEngine.rank(selectedSeed,candidates,app.forYou.profile,app.forYou.state.value.recent)
+                app.forYou.offer(seed,ranked,ranked=true)
+                if(!enabled || player.repeatMode!=Player.REPEAT_MODE_OFF || upcoming().size>=RecommendationEngine.REFILL_BELOW)return@launch
+                val slots=RecommendationEngine.TARGET-upcoming().size
+                val chosen=RecommendationEngine.rank(selectedSeed,candidates,app.forYou.profile,app.forYou.state.value.recent,slots,seenIds,seenRecordings,
+                    upcomingArtists=upcoming().map {player.getMediaItemAt(it).mediaMetadata.artist?.toString().orEmpty()})
+                if(chosen.isEmpty()) {failedSeed=seed;error="Pilihan relevan baru belum tersedia.";return@launch}
                 withContext(Dispatchers.IO) {chosen.forEach {ensureActive();app.streams.register(it)}}
                 ensureActive()
                 if(!valid(serial,currentSession,currentKey))return@launch
                 val ended=player.playbackState==Player.STATE_ENDED
-                player.addMediaItems(chosen.map {radioItem(remoteMediaItem(it),origin.ifBlank {"playlist"},session,it.videoId,true)})
+                player.addMediaItems(chosen.filter {app.forYou.profile.hidden[it.id]?.let {until->until>System.currentTimeMillis()}!=true}.map {radioItem(remoteMediaItem(it),origin.ifBlank {"playlist"},session,it.videoId,true)})
                 if(ended && player.playbackState==Player.STATE_ENDED && player.playWhenReady && player.currentMediaItem?.mediaMetadata?.extras?.getString("yono.queue.key")==currentKey && player.hasNextMediaItem()) {player.seekToNextMediaItem();player.prepare()}
             }catch(exception:CancellationException){throw exception}
             catch(_:Exception) {
