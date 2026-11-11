@@ -1,0 +1,24 @@
+# Yono Music 2.0.0 Preview 2 — focused validation
+
+This prerelease changes discovery, catalogue storage, offline source selection, and download containers. Verification is limited to those paths; the historical full regression suites were not repeated.
+
+## Focused cases
+
+- Python: actual chart playlist selection without invented artist ranks; conservative metadata enrichment rejects live/studio mismatches and ambiguous recordings; a real owned Opus/WebM fixture becomes Ogg Opus, embeds tags/cover, retains identical compressed audio packets, and rejects an actual AAC fixture.
+- Android API 26: real Media3 Opus remux, native container/duration validation, Mutagen tagging, seek and offline decode; additive Room 4→5 migration; canonical catalogue identity/source mapping reuses a hash-verified content URI with a network data source that throws on any attempted use.
+- Production update: install code 18 over owner-signed code 17, retain the same package/certificate, and compare complete row snapshots of tracks, favorites, history, playlists, playlist_entries, and online_activity. Validate the added catalogue tables.
+- UI: 320dp display, 150% font; Beranda/Cari/Koleksi in light mode and Koleksi in dark mode. Check the final APK for runtime crashes while navigating.
+
+The final outcomes and APK identity are stored under [docs/verification/v2.0.0-preview.2](docs/verification/v2.0.0-preview.2). The Android harness required fixture corrections: ByteArrayDataSource input must be nonempty, and Python `exec` called from Java needs explicit globals with the file path passed as a value instead of a JSON-escaped Python literal. Its initial output is retained separately; final results use the corrected harness.
+
+## Public providers and limits
+
+A live MusicBrainz probe returned Last Child and Diary Depresiku recordings, including the Everything We Are Everything release. A subsequent album query returned HTTP 503. The unauthenticated YouTube Music Charts request failed with CATALOGUE_NETWORK from this environment. Neither a live chart listing nor a complete public browse→download→airplane playback journey is claimed as verified. The controlled offline/native cases are separate from public-provider availability.
+
+Provider failures show retry/error states and use prior successful cached responses. Song search can fall back to source metadata. Missing or ambiguous catalogue matches are reported rather than selecting another performance. Physical-device battery/network behavior and every album/radio variant remain outside this focused pass. Radio and album downloads expose per-track queue results; some sources may not offer a standalone Opus stream.
+
+## Build
+
+Release uses code 18, `com.yonzmusic.app`, owner signing, R8/resource shrinking, and release vital lint. yt-dlp 2026.10.26; EJS 0.8.0; ytmusicapi 1.12.3; all Media3 modules 1.11.1; AGP 8.10.1; compile SDK 36; target SDK 35; min SDK 26; JDK 17. Build/R8 and emulator verification run sequentially.
+
+Completed old WebM files remain unchanged. New requests publish real Ogg Opus `.opus` only; original compressed packets are remuxed without reencoding. No private signing files, credentials, or production-targeted QA instrumentation are included in release assets.

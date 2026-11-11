@@ -24,7 +24,7 @@ class LocationStatesTest {
   }
   helper.runMigrationsAndValidate(name,3,true,MusicDatabase.MIGRATION_2_3).close()
   val context=ApplicationProvider.getApplicationContext<android.content.Context>()
-  val db=Room.databaseBuilder(context,MusicDatabase::class.java,name).addMigrations(MusicDatabase.MIGRATION_2_3,MusicDatabase.MIGRATION_3_4).build()
+  val db=Room.databaseBuilder(context,MusicDatabase::class.java,name).addMigrations(MusicDatabase.MIGRATION_2_3,MusicDatabase.MIGRATION_3_4,MusicDatabase.MIGRATION_4_5).build()
   try { val d=db.music();assertNotNull(d.track("kept"));assertNotNull(d.favoriteRow("kept"));assertEquals("kept",d.entries(1).single().trackId);assertEquals(456L,d.historyRow("kept")!!.position) }
   finally { db.close();context.deleteDatabase(name) }
  }

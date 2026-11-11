@@ -56,7 +56,7 @@ internal object ArtCache {
         return try {
             cache.get(key) ?: run {
                 val bytes = runCatching {
-                    if(track.source=="stream" && com.yonzmusic.app.search.SearchContract.https(track.artUri,com.yonzmusic.app.search.SearchContract.artHosts))com.yonzmusic.app.network.SafeHttp.get(track.artUri,com.yonzmusic.app.search.SearchContract.artHosts,limit=4*1024*1024).takeIf {it.status==200}?.bytes
+                    if(track.source=="stream" && com.yonzmusic.app.search.SearchContract.artwork(track.artUri))CatalogArtBytes.load(context,track.artUri,4*1024*1024)
                     else if (track.artUri.isNotEmpty()) context.contentResolver.openInputStream(Uri.parse(track.artUri))?.use { input ->
                         val out = java.io.ByteArrayOutputStream(); val buffer = ByteArray(8192)
                         while (true) { val n = input.read(buffer); if (n < 0) break; if (out.size() + n > 8 * 1024 * 1024) return@use null; out.write(buffer, 0, n) }
@@ -67,6 +67,7 @@ internal object ArtCache {
                 else {
                     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                     BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+                    require(bounds.outWidth>0 && bounds.outHeight>0 && bounds.outWidth.toLong()*bounds.outHeight<=40_000_000)
                     var sample = 1
                     while (bounds.outWidth / (sample*2) >= bucket || bounds.outHeight / (sample*2) >= bucket) sample *= 2
                     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
@@ -84,7 +85,7 @@ internal object ArtCache {
     BoxWithConstraints(modifier.clip(Design.small).semantics { if(description!=null)contentDescription=description }) {
         val pixels=with(density) { maxWidth.takeIf { it.value.isFinite() }?.roundToPx() ?: 512 }.coerceIn(64,1536)
         val bitmap by produceState<Bitmap?>(null,track?.uri,track?.artUri,track?.sha256,track?.artRevision,pixels) {
-            value=if(track!=null) withContext(Dispatchers.IO) { runCatching { ArtCache.load(context,track,pixels) }.getOrNull() } else null
+            value=if(track!=null) withContext(Dispatchers.IO) { if(track.source=="stream")com.yonzmusic.app.playback.StreamWork.awaitAudio();runCatching { ArtCache.load(context,track,pixels) }.getOrNull() } else null
         }
         if(bitmap!=null)Image(bitmap!!.asImageBitmap(),contentDescription=null,modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop)
         else DefaultArt(Modifier.fillMaxSize(),track?.album ?: "")

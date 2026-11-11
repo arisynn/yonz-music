@@ -30,6 +30,16 @@ class Sources:
             from yono_stream import inspect_video
             ident = request.get("video_id")
             record = inspect_video(ident, self.control, self.runtime)
+            metadata = request.get('metadata') or {}
+            if metadata.get('catalog'):
+                from .model import title_key, variants, duration_matches
+                canonical = json.loads(metadata['catalog'])
+                source = record['song']
+                if (title_key(source['title']) == title_key(canonical['title'])
+                        and variants(source['title']) == variants(canonical['title'])
+                        and duration_matches(source['duration'], canonical.get('duration_ms', 0) / 1000)):
+                    source.update(title=canonical['title'], artists=canonical.get('artists') or source['artists'],
+                                  album=canonical.get('album', ''), artwork_url=canonical.get('artwork', ''), isrc=canonical.get('isrc', ''))
             return {"name": record["song"]["title"], "origin": record["song"]["source_url"], "completeness": "complete",
                     "entries": [{"song": record["song"], "input": record["song"]["source_url"], "selected_exact": True}]}
         if request.get("kind") in {"text", "txt", "csv", "json", "spotdl", "m3u", "m3u8"}:

@@ -57,6 +57,8 @@ class Catalogue:
         queries = [f"{' '.join(request.artists)} {request.title}".strip()]
         if request.album:
             queries.append(f"{request.title} {' '.join(request.artists)} {request.album}")
+        if request.isrc:
+            queries.insert(0, request.isrc)
         rows, seen = [], set()
         for query in queries:
             self.control.emit("matching", title=request.title, message="Mencari rilisan katalog…")

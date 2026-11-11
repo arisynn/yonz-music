@@ -33,7 +33,7 @@ object OnlineCollectionContract {
         require(runCatching{UUID.fromString(p.id).toString()==p.id}.getOrDefault(false))
         require(p.name.isNotBlank() && p.name.length<=100 && p.name.none{it.isISOControl()}){"Nama playlist tidak valid."}
         require(p.songs.size<=MAX_SONGS && p.songs.distinctBy{it.id}.size==p.songs.size){"Playlist maksimal500 lagu unik."}
-        p.songs.forEach {s->require(StreamRepository.valid(s.videoId) && s.id=="engine:${s.videoId}" && s.page=="https://www.youtube.com/watch?v=${s.videoId}" && s.title.isNotBlank())}
+        p.songs.forEach {s->require(s.title.isNotBlank() && ((StreamRepository.valid(s.videoId) && s.id=="engine:${s.videoId}" && s.page=="https://www.youtube.com/watch?v=${s.videoId}") || (s.id.matches(Regex("mb:recording:[a-f0-9-]{36}")) && s.catalogJson.isNotBlank())))}
         require(p.origin.isBlank() || playlistUrl(p.origin)==p.origin)
         return p
     }

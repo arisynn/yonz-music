@@ -1,3 +1,5 @@
+> Historical Preview 1 behavior. For Preview 2, see [DISCOVERY_PREVIEW_2.md](DISCOVERY_PREVIEW_2.md).
+
 # Yono Music 2.0 — streaming candidate
 
 Based on the official v1.5.2 tag (4aa2fb6). This working version is not a published stable release. Production package remains `com.yonzmusic.app`; code 17, name 2.0.0. Preview uses `com.yonzmusic.app.dev` / `2.0.0-preview.1`. Promotion requires real-source playback verification and the comparison described in TEST_REPORT.md.

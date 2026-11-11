@@ -58,7 +58,7 @@ def normalize(row):
 def run(payload, control, factory=youtube_dl):
     query = clean(payload.get("query"), 200)
     page = payload.get("page", 0)
-    if not query or len(query) < 3 or type(page) is not int or not 0 <= page <= MAX_PAGE:
+    if not query or len(query) < 2 or type(page) is not int or not 0 <= page <= MAX_PAGE:
         raise ValueError("invalid search")
     ident = video_id(query)
     if "://" in query and not ident:

@@ -19,9 +19,10 @@ class CollectionBackup(private val app: YonzApp) {
             val tracks = JSONArray().apply { dao.allTracks().forEach { t -> put(JSONObject().put("id", t.id).put("uri", t.uri).put("title", t.title).put("artist", t.artist).put("album", t.album).put("folder", t.folder).put("fileName", t.fileName).put("duration", t.duration).put("added", t.added).put("sha256",t.sha256).put("fileSize",t.fileSize).put("sourceIdentity",t.sourceIdentity).put("sourceUrl",t.sourceUrl).put("metadataOrigin",t.metadataOrigin)) } }
             val playlists = JSONArray().apply { dao.playlists().first().forEach { p -> put(JSONObject().put("name", p.name).put("ids", JSONArray(dao.entries(p.id).map { it.trackId }))) } }
             val history = JSONArray().apply { dao.history().first().forEach { h -> put(JSONObject().put("id", h.trackId).put("playedAt", h.playedAt).put("position", h.position)) } }
-            JSONObject().put("schemaVersion", 2).put("applicationId", "com.yonzmusic.app").put("tracks", tracks).put("playlists", playlists)
+            JSONObject().put("schemaVersion", 3).put("applicationId", "com.yonzmusic.app").put("tracks", tracks).put("playlists", playlists)
                 .put("favorites", JSONArray(dao.favorites().first().map { it.trackId })).put("history", history)
                 .put("onlinePlaylists",JSONArray().apply {dao.states(OnlineCollectionContract.PREFIX+"%").forEach {put(OnlineCollectionContract.encode(OnlineCollectionContract.decode(JSONObject(it.value))))}})
+                .put("savedCatalog",JSONArray().apply {dao.savedCatalog().first().forEach {put(JSONObject(it.metadata))}})
                 .put("onlineActivity",JSONArray().apply {dao.onlineActivity().first().forEach {row->put(JSONObject().put("song",JSONObject(row.metadata)).put("favorite",row.favorite).put("lastPlayed",row.lastPlayed).put("playCount",row.playCount).put("listenedMs",row.listenedMs).put("position",row.position))}})
         }
         app.preferences.snapshot()?.let { snapshot ->
@@ -40,7 +41,7 @@ class CollectionBackup(private val app: YonzApp) {
             while (true) { val n = input.read(buffer); if (n < 0) break; require(out.size() + n <= LIMIT) { "Backup exceeds 10 MB." }; out.write(buffer, 0, n) }; out.toString("UTF-8")
         } ?: error("Backup could not be read.")
         val root = JsonGuard.parse(text, LIMIT)
-        require(root.getInt("schemaVersion") in 1..2 && root.getString("applicationId") == "com.yonzmusic.app") { "Not a supported Yono collection backup." }
+        require(root.getInt("schemaVersion") in 1..3 && root.getString("applicationId") == "com.yonzmusic.app") { "Not a supported Yono collection backup." }
         val tracks = root.getJSONArray("tracks"); val playlists = root.getJSONArray("playlists"); val favorites = root.getJSONArray("favorites"); val history = root.getJSONArray("history")
         require(tracks.length() <= 10000 && playlists.length() <= 1000 && favorites.length() <= 10000 && history.length() <= 1000)
         val onlineRows=root.optJSONArray("onlinePlaylists") ?: JSONArray()
@@ -50,7 +51,7 @@ class CollectionBackup(private val app: YonzApp) {
         require(activityRows.length()<=6000) {"Terlalu banyak aktivitas daring."}
         val activity=(0 until activityRows.length()).map {n->
             val value=activityRows.getJSONObject(n);val song=StreamRepository.decode(value.getJSONObject("song"))
-            OnlineActivity(song.videoId,StreamRepository.encode(song).toString(),value.optBoolean("favorite"),value.optLong("lastPlayed").coerceIn(0,System.currentTimeMillis()),
+            OnlineActivity(if(song.id.startsWith("mb:"))song.id else song.videoId,StreamRepository.encode(song).toString(),value.optBoolean("favorite"),value.optLong("lastPlayed").coerceIn(0,System.currentTimeMillis()),
                 value.optLong("playCount").coerceIn(0,Int.MAX_VALUE.toLong()),value.optLong("listenedMs").coerceIn(0,Long.MAX_VALUE/2),value.optLong("position").coerceIn(0,7*86400000L))
         }
         require(activity.map {it.videoId}.distinct().size==activity.size)
@@ -70,6 +71,9 @@ class CollectionBackup(private val app: YonzApp) {
                     sha256=item.optString("sha256").takeIf { it.matches(Regex("[a-f0-9]{64}")) }.orEmpty(),fileSize=item.optLong("fileSize"),
                     sourceIdentity=field("sourceIdentity"),sourceUrl=field("sourceUrl",4096),metadataOrigin=item.optString("metadataOrigin","tags"))
             }
+            val saved=root.optJSONArray("savedCatalog") ?: JSONArray()
+            require(saved.length()<=2000)
+            repeat(saved.length()){app.discovery.save(com.yonzmusic.app.search.DiscoveryRepository.parseItem(saved.getJSONObject(it)))}
             online.forEach {p->app.onlineCollections.save(p.copy(id=java.util.UUID.randomUUID().toString()))}
             activity.forEach {row->
                 val old=dao.onlineActivity(row.videoId)

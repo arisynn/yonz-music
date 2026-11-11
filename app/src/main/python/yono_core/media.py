@@ -61,7 +61,7 @@ def probe(path, control, ffprobe="", host=None):
             audio = [s for s in data.get("streams", []) if s.get("codec_type") == "audio"]
             video = [s for s in data.get("streams", []) if s.get("codec_type") == "video" and not (s.get("disposition") or {}).get("attached_pic")]
             return {"duration": float(data.get("format", {}).get("duration") or (audio[0].get("duration") if audio else 0) or 0),
-                    "audio": bool(audio), "video": bool(video)}
+                    "audio": bool(audio), "video": bool(video), "codec": audio[0].get("codec_name", "") if audio else ""}
         except (ValueError, TypeError, IndexError) as error:
             raise EngineError("INVALID_AUDIO", "Durasi/struktur audio tidak dapat diperiksa.") from error
     if host is not None and hasattr(host, "probe"):
@@ -71,7 +71,7 @@ def probe(path, control, ffprobe="", host=None):
     audio = mutagen.File(path)
     if audio is None:
         raise EngineError("PROBE_REQUIRED", "Kontainer ini memerlukan pemeriksa audio Android atau FFprobe.")
-    return {"duration": audio.info.length, "audio": True, "video": False}
+    return {"duration": audio.info.length, "audio": True, "video": False, "codec": "opus" if type(audio).__name__ == "OggOpus" else ""}
 
 
 def tag(path, song, picture=None):
@@ -188,7 +188,12 @@ class Media:
             return path
         url = f"https://music.youtube.com/watch?v={song.youtube_id}"
         with youtube_dl(self.control, self.runtime, output=workspace) as downloader:
-            data = downloader.extract_info(url, download=False)
+            downloader.params['format'] = 'bestaudio[acodec=opus][vcodec=none][protocol=https]'
+            try:
+                data = downloader.extract_info(url, download=False)
+            except Exception as error:
+                self.control.check()
+                raise EngineError('OPUS_UNAVAILABLE', 'Opus tidak tersedia untuk sumber ini. Lagu tetap dapat di-stream.') from error
             if (not isinstance(data, dict) or data.get("id") != song.youtube_id or data.get("is_live")
                     or data.get("has_drm") or data.get("availability") in {"private", "premium_only", "subscriber_only", "needs_auth"}):
                 raise EngineError("SOURCE_CHANGED", "Sumber berubah atau memerlukan akses yang tidak tersedia.")
@@ -212,14 +217,26 @@ class Media:
                 self.control.check()
         return None
 
-    def finish(self, source, song, workspace, *, output_format="original", bitrate=192):
+    def finish(self, source, song, workspace, *, output_format="opus", bitrate=192):
         self.control.emit("validating_audio", title=song.title, message="Memeriksa audio lengkap…")
         original = probe(source, self.control, self.ffprobe, self.host)
         if not original.get("audio") or original.get("video") or not duration_matches(song.duration, original.get("duration")):
             raise EngineError("DURATION_MISMATCH", "Kontainer/durasi audio tidak sesuai. Audio tidak disimpan.")
-        if output_format != "original":
-            raise EngineError("ORIGINAL_ONLY", "Unduhan selalu memakai format audio asli; konversi dinonaktifkan.")
-        path = source
+        if output_format != "opus":
+            raise EngineError("OPUS_REQUIRED", "Unduhan baru menggunakan Ogg Opus asli.")
+        if original.get('codec') != 'opus':
+            raise EngineError('OPUS_UNAVAILABLE', 'Sumber tidak menyediakan Opus. Lagu tetap dapat di-stream.')
+        path = workspace / 'audio-remux.opus'
+        if self.host is not None and hasattr(self.host, 'remuxOpus'):
+            path = Path(str(self.host.remuxOpus(str(source))))
+        elif self.ffmpeg:
+            command([self.ffmpeg, '-y', '-v', 'error', '-i', source, '-map', '0:a:0', '-c:a', 'copy', '-f', 'opus', path], self.control)
+        else:
+            raise EngineError('REMUX_REQUIRED', 'Penyimpan Ogg Opus belum tersedia.')
+        with path.open('rb') as header:
+            is_ogg = header.read(4) == b'OggS'
+        if path.suffix != '.opus' or not is_ogg:
+            raise EngineError('INVALID_OPUS', 'Kontainer keluaran bukan Ogg Opus.')
         self.control.emit("artwork", title=song.title, message="Menulis informasi dan sampul…")
         picture = self.artwork(song)
         embedded = tag(path, song, picture)
@@ -231,7 +248,7 @@ class Media:
             artwork = {"artwork_path": str(cover), "artwork_sha256": file_hash(cover, self.control),
                        "artwork_extension": extension, "artwork_mime": "image/png" if extension == "png" else "image/jpeg"}
         final = probe(path, self.control, self.ffprobe, self.host)
-        if not final.get("audio") or final.get("video") or not duration_matches(song.duration, final.get("duration")):
+        if final.get("codec") != "opus" or not final.get("audio") or final.get("video") or not duration_matches(song.duration, final.get("duration")):
             raise EngineError("DURATION_MISMATCH", "Validasi audio setelah penulisan tag gagal.")
         extension = path.suffix.lower().lstrip(".")
         if extension not in MIMES:

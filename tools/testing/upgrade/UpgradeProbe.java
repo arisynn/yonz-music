@@ -22,7 +22,7 @@ public final class UpgradeProbe extends Instrumentation {
             if(launch==null)throw new AssertionError("Target launcher missing");
             startActivitySync(launch);
             String path=getTargetContext().getDatabasePath("yonz-music.db").getPath();
-            int expected="seed".equals(mode)?3:4;
+            int expected=mode.equals("verify-preview2")?5:("seed".equals(mode)?3:4);
             long deadline=android.os.SystemClock.elapsedRealtime()+60000;
             boolean ready=false;
             while(android.os.SystemClock.elapsedRealtime()<deadline) {
@@ -36,7 +36,28 @@ public final class UpgradeProbe extends Instrumentation {
             check(ready,"Target Room schema did not open");
             try(SQLiteDatabase db=SQLiteDatabase.openDatabase(path,null,SQLiteDatabase.OPEN_READWRITE)) {
                 int version=Integer.parseInt(scalar(db,"PRAGMA user_version"));
-                if("seed".equals(mode)) {
+                if(mode.equals("snapshot-preview1") || mode.equals("verify-preview2")) {
+                    int code=getTargetContext().getPackageManager().getPackageInfo("com.yonzmusic.app",0).versionCode;
+                    check(code==(mode.equals("snapshot-preview1")?17:18),"Unexpected production version code");
+                    org.json.JSONObject snapshot=new org.json.JSONObject();
+                    for(String table:new String[]{"tracks","favorites","history","playlists","playlist_entries","online_activity"}) {
+                        java.security.MessageDigest digest=java.security.MessageDigest.getInstance("SHA-256");
+                        try(Cursor rows=db.rawQuery("SELECT * FROM "+table+(table.equals("favorites")?" ORDER BY 1":" ORDER BY 1,2"),null)) {
+                            while(rows.moveToNext())for(int col=0;col<rows.getColumnCount();col++) {
+                                digest.update(String.valueOf(rows.getString(col)).getBytes(java.nio.charset.StandardCharsets.UTF_8));digest.update((byte)0);
+                            }
+                        }
+                        StringBuilder hex=new StringBuilder();for(byte b:digest.digest())hex.append(String.format("%02x",b&255));
+                        snapshot.put(table,hex.toString());
+                    }
+                    if(mode.equals("snapshot-preview1"))db.execSQL("INSERT OR REPLACE INTO app_state VALUES ('qa-preview2-snapshot',?)",new Object[]{snapshot.toString()});
+                    else {
+                        org.json.JSONObject before=new org.json.JSONObject(scalar(db,"SELECT value FROM app_state WHERE name='qa-preview2-snapshot'"));
+                        java.util.Iterator<String> keys=before.keys();while(keys.hasNext()){String key=keys.next();check(before.getString(key).equals(snapshot.getString(key)),"Changed collection data: "+key);}
+                        check("2".equals(scalar(db,"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name IN ('catalog_cache','saved_catalog')")),"New catalogue tables missing");
+                    }
+                    result.putInt("versionCode",code);
+                } else if("seed".equals(mode)) {
                     check(version==3,"Baseline must use Room3");
                     db.beginTransaction();
                     try {

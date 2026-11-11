@@ -73,7 +73,7 @@ import com.yonzmusic.app.playback.StreamTimings
     selected?.let {song->OnlineSongActions(vm,song,onDownload,onConfigure){selected=null}}
 }
 
-@Composable private fun OnlineShelf(songs: List<OnlineSong>, play: (OnlineSong)->Unit, menu: (OnlineSong)->Unit) {
+@Composable internal fun OnlineShelf(songs: List<OnlineSong>, play: (OnlineSong)->Unit, menu: (OnlineSong)->Unit) {
     LazyRow(contentPadding=PaddingValues(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.md)) {
         items(songs,key={it.id}) {song->
             Column(Modifier.width(144.dp).clip(Design.small).clickable {play(song)},verticalArrangement=Arrangement.spacedBy(Design.xs)) {

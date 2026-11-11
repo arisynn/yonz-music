@@ -17,9 +17,9 @@ class OnlineActivityRepository(private val app: YonzApp) {
     private val dao get() = app.repository.dao
     suspend fun favorite(song: OnlineSong) = app.database.withTransaction {
         app.streams.register(song)
-        val old = dao.onlineActivity(song.videoId)
+        val old = dao.onlineActivity(if(song.id.startsWith("mb:"))song.id else song.videoId)
         require(old?.favorite == true || dao.onlineActivity().first().count { it.favorite } < 5000) { "Maksimal 5.000 favorit daring." }
-        dao.onlineActivity((old ?: OnlineActivity(song.videoId, "")).copy(metadata = StreamRepository.encode(song).toString(), favorite = old?.favorite != true))
+        dao.onlineActivity((old ?: OnlineActivity(if(song.id.startsWith("mb:"))song.id else song.videoId, "")).copy(metadata = StreamRepository.encode(song).toString(), favorite = old?.favorite != true))
         dao.trimOnlineActivity()
     }
     suspend fun listened(id: String, milliseconds: Long, epoch: Long = historyToken()) {
@@ -28,7 +28,7 @@ class OnlineActivityRepository(private val app: YonzApp) {
         app.database.withTransaction {
             // Recheck inside the transaction so clearing/disabling history cannot resurrect an old write.
             if (!app.preferences.flow.first().onlineHistory || historyEpoch.get()!=epoch) return@withTransaction
-            val old = dao.onlineActivity(song.videoId) ?: OnlineActivity(song.videoId, "")
+            val old = dao.onlineActivity(if(song.id.startsWith("mb:"))song.id else song.videoId) ?: OnlineActivity(if(song.id.startsWith("mb:"))song.id else song.videoId, "")
             dao.onlineActivity(old.copy(metadata = StreamRepository.encode(song).toString(), lastPlayed = System.currentTimeMillis(),
                 playCount = old.playCount + 1, listenedMs = old.listenedMs + milliseconds.coerceAtLeast(0)))
             dao.trimOnlineActivity()

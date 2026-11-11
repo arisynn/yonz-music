@@ -104,7 +104,7 @@ def execute(action, payload_json, config_json, callback, storage):
                 plan = engine.load_plan(payload["plan_id"])
                 update_review(plan, payload)
                 engine.save(plan)
-            result = engine.acquire(payload["plan_id"], payload["entry_ids"], output_format=payload.get("format", "original"), bitrate=payload.get("bitrate", 192))
+            result = engine.acquire(payload["plan_id"], payload["entry_ids"], output_format=payload.get("format", "opus"), bitrate=payload.get("bitrate", 192))
         elif action == "cancel_entries":
             result = engine.load_plan(payload["plan_id"])
             ids = set(payload["entry_ids"])

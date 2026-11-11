@@ -66,9 +66,10 @@ import com.yonzmusic.app.search.OnlineSong
     if(p==null){EmptyState("Daftar putar tidak ditemukan","Kembali ke Daftar putar untuk memilih koleksi.","playlist");return}
     LazyColumn(contentPadding=PaddingValues(bottom=Design.page)) {
         item {Row(Modifier.fillMaxWidth().padding(horizontal=Design.page,vertical=Design.sm),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
-            Column(Modifier.weight(1f)){Text("${p.songs.size} lagu · daring",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodyMedium);Text("Perlu internet",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
+            Column(Modifier.weight(1f)){Text("${p.songs.size} lagu · daring",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodyMedium);Text("Unduh untuk mendengarkan offline",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
             FilledIconButton({vm.playOnlineCollection(p)},enabled=p.songs.isNotEmpty()){Icon(Icons.Rounded.PlayArrow,"Putar daftar putar daring")}
             Box {ActionIcon(Icons.Rounded.MoreVert,"Opsi daftar putar daring",{menu=true});DropdownMenu(menu,{menu=false}) {
+                DropdownMenuItem(text={Text("Unduh semua (.opus)")},enabled=p.songs.isNotEmpty(),onClick={menu=false;vm.downloadSongs(p.songs){p.songs.firstOrNull()?.let(download)}})
                 DropdownMenuItem(text={Text("Tambah lagu")},onClick={menu=false;add()})
                 DropdownMenuItem(text={Text("Ubah nama")},onClick={menu=false;rename=true})
                 DropdownMenuItem(text={Text("Hapus daftar putar")},onClick={menu=false;delete=true})

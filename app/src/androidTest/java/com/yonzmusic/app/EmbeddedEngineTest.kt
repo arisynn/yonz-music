@@ -46,7 +46,7 @@ class EmbeddedEngineTest {
     @Test fun runtimeAndOriginalAudioTransferTagsArtworkAndNativeProbe() = server { url ->
         val runtime = JSONObject(EmbeddedEngine.runtimeReport(app))
         assertTrue(runtime.getString("python").startsWith("3.12"))
-        assertEquals("2026.10.21", runtime.getString("yt_dlp"))
+        assertEquals("2026.10.26", runtime.getString("yt_dlp"))
         assertEquals("0.8.0", runtime.getString("ejs"))
         assertEquals(0, runtime.getInt("quickjsExit"))
         assertTrue(runtime.getString("quickjs").contains("42"))

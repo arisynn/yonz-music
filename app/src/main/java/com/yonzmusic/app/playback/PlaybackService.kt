@@ -70,8 +70,8 @@ class PlaybackService : MediaSessionService() {
                 index = if (index in 0 until timeline.windowCount)
                     timeline.getNextWindowIndex(index, player.repeatMode, player.shuffleModeEnabled) else C.INDEX_UNSET
                 if (index in 0 until player.mediaItemCount && visited.add(index)) {
-                    player.getMediaItemAt(index).mediaId.takeIf { it.startsWith("engine:") }
-                        ?.removePrefix("engine:")?.let(ids::add)
+                    player.getMediaItemAt(index).mediaId.takeIf { it.isRemoteId() }
+                        ?.takeIf {it.startsWith("engine:")}?.removePrefix("engine:")?.let(ids::add)
                 }
             }
         }
@@ -124,9 +124,9 @@ class PlaybackService : MediaSessionService() {
     private fun listenTick(restart: Boolean = false) {
         val result=listens.tick(player.currentMediaItem?.mediaId,player.duration.coerceAtLeast(0),player.isPlaying,android.os.SystemClock.elapsedRealtime(),restart)
         result?.let { q ->
-            val historyToken=if(q.trackId.startsWith("engine:"))app.onlineActivity.historyToken() else 0L
+            val historyToken=if(q.trackId.isRemoteId())app.onlineActivity.historyToken() else 0L
             app.persistenceScope.launch {
-            if(q.trackId.startsWith("engine:")) {
+            if(q.trackId.isRemoteId()) {
                 app.onlineActivity.listened(q.trackId,q.listenedMs,historyToken)
                 return@launch
             }
@@ -150,7 +150,7 @@ class PlaybackService : MediaSessionService() {
             notifications.createNotificationChannel(it)
         } }
         player = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this).setLoadErrorHandlingPolicy(StreamLoadPolicy()).setDataSourceFactory(androidx.media3.datasource.DefaultDataSource.Factory(this, app.streamTestDataSource ?: app.streamCache.factory())))
+            .setMediaSourceFactory(androidx.media3.exoplayer.source.DefaultMediaSourceFactory(this).setLoadErrorHandlingPolicy(StreamLoadPolicy()).setDataSourceFactory(androidx.media3.datasource.DefaultDataSource.Factory(this, app.streamTestDataSource ?: androidx.media3.datasource.DataSource.Factory { CatalogDataSource(app, app.streamCache.factory().createDataSource()) })))
             .setLoadControl(androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(5000,30000,1000,2500).build())
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
             .setHandleAudioBecomingNoisy(true).setWakeMode(C.WAKE_MODE_LOCAL).build()
@@ -169,7 +169,7 @@ class PlaybackService : MediaSessionService() {
                 scope.launch {
                     try {
                         val local = withContext(Dispatchers.IO) { mediaItems.take(10000).mapNotNull { requested ->
-                            if(requested.mediaId.startsWith("engine:")) {
+                            if(requested.mediaId.isRemoteId()) {
                                 val remote=app.streams.lookup(requested.mediaId) ?: return@mapNotNull null
                                 val admitted=remoteMediaItem(remote,requested.mediaMetadata.extras?.getString("yono.queue.key"),requested.mediaMetadata.extras?.getBoolean("yono.next")==true)
                                 return@mapNotNull admitted.buildUpon().setMediaMetadata(admitted.mediaMetadata.buildUpon().setExtras(Bundle(admitted.mediaMetadata.extras).apply {
@@ -213,7 +213,7 @@ class PlaybackService : MediaSessionService() {
                 if(streamIssue!=null && (player.currentMediaItem?.mediaId!=issueMediaId || (player.playerError==null && player.playbackState!=Player.STATE_IDLE))) {streamIssue=null;issueMediaId=null;publishExtras()}
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED)) updateShuffleCycle()
                 if (events.containsAny(Player.EVENT_TIMELINE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION, Player.EVENT_SHUFFLE_MODE_ENABLED_CHANGED, Player.EVENT_REPEAT_MODE_CHANGED, Player.EVENT_IS_PLAYING_CHANGED)) warmUpcoming()
-                StreamWork.buffering=player.currentMediaItem?.mediaId?.startsWith("engine:")==true && player.playbackState==Player.STATE_BUFFERING && player.playWhenReady
+                StreamWork.buffering=player.currentMediaItem?.mediaId?.isRemoteId()==true && player.playbackState==Player.STATE_BUFFERING && player.playWhenReady
                 if(player.playbackState==Player.STATE_BUFFERING && bufferingAt==0L)bufferingAt=android.os.SystemClock.elapsedRealtime()
                 if(player.playbackState!=Player.STATE_BUFFERING && bufferingAt>0) {StreamTimings.record("buffering",android.os.SystemClock.elapsedRealtime()-bufferingAt);bufferingAt=0}
                 if(!player.playWhenReady) {radioJob?.cancel();radioJob=null;attemptedTail=null}
@@ -236,9 +236,9 @@ class PlaybackService : MediaSessionService() {
             }
             override fun onPlayerError(error: PlaybackException) {
                 val failed = player.currentMediaItem?.mediaId
-                if(failed?.startsWith("engine:")==true) {streamIssue=if(error.errorCode in setOf(PlaybackException.ERROR_CODE_DECODING_FAILED,PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED))StreamIssue.FORMAT else StreamIssue.from(error.cause);issueMediaId=failed;publishExtras()}
-                if(failed?.startsWith("engine:")==true) {failedRadio.add(failed);if(failedRadio.size>200)failedRadio.remove(failedRadio.first())}
-                if (failed != null && !failed.startsWith("engine:")) scope.launch(Dispatchers.IO) { app.repository.playbackFailure(failed,error.errorCode) }
+                if(failed?.isRemoteId()==true) {streamIssue=if(error.errorCode in setOf(PlaybackException.ERROR_CODE_DECODING_FAILED,PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED))StreamIssue.FORMAT else StreamIssue.from(error.cause);issueMediaId=failed;publishExtras()}
+                if(failed?.isRemoteId()==true) {failedRadio.add(failed);if(failedRadio.size>200)failedRadio.remove(failedRadio.first())}
+                if (failed != null && !failed.isRemoteId()) scope.launch(Dispatchers.IO) { app.repository.playbackFailure(failed,error.errorCode) }
                 consecutiveErrors++
                 if (player.hasNextMediaItem() && consecutiveErrors < player.mediaItemCount) { player.seekToNextMediaItem(); player.prepare() }
                 else player.pause()
@@ -278,7 +278,7 @@ class PlaybackService : MediaSessionService() {
             val saved = app.preferences.snapshot() ?: return@launch
             val restoredIds = withContext(Dispatchers.IO) { saved.ids.map { app.repository.dao.state("track_alias:$it")?.value ?: it } }
             val restored = withContext(Dispatchers.IO) { restoredIds.mapNotNull {id->
-                if(id.startsWith("engine:"))app.streams.lookup(id)?.let {remoteMediaItem(it)}
+                if(id.isRemoteId())app.streams.lookup(id)?.let {remoteMediaItem(it)}
                 else app.repository.dao.track(id)?.takeIf {it.active && it.available}?.mediaItem()
             } }
             if (restored.isNotEmpty() && player.mediaItemCount == 0) {
@@ -299,8 +299,8 @@ class PlaybackService : MediaSessionService() {
         val explicit=current.mediaMetadata.extras?.getBoolean("yono.radio")==true
         val index=player.currentMediaItemIndex
         val remaining=player.mediaItemCount-index-1
-        if(!RadioPolicy.eligible(current.mediaId.startsWith("engine:"),player.playWhenReady,player.repeatMode,remaining,settings.autoplay || explicit))return
-        if((index until player.mediaItemCount).any {!player.getMediaItemAt(it).mediaId.startsWith("engine:")})return
+        if(!RadioPolicy.eligible(current.mediaId.isRemoteId(),player.playWhenReady,player.repeatMode,remaining,settings.autoplay || explicit))return
+        if((index until player.mediaItemCount).any {!player.getMediaItemAt(it).mediaId.isRemoteId()})return
         if(radioJob?.isActive==true || player.mediaItemCount>=500 || failedRadio.size>=20)return
         val tail=player.getMediaItemAt(player.mediaItemCount-1)
         val token=tail.mediaMetadata.extras?.getString("yono.queue.key") ?: return
@@ -309,7 +309,8 @@ class PlaybackService : MediaSessionService() {
         val originalKeys=(0 until player.mediaItemCount).map {player.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key")}
         radioJob=scope.launch {
             try {
-                val candidates=app.catalog.related(tail.mediaId.removePrefix("engine:"))
+                val seed=app.streams.lookup(tail.mediaId)?.let {app.discovery.audio(it)}?.videoId ?: return@launch
+                val candidates=app.catalog.related(seed)
                 ensureActive()
                 val keys=(0 until player.mediaItemCount).map {player.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key")}
                 if(keys!=originalKeys || !player.playWhenReady || player.repeatMode!=Player.REPEAT_MODE_OFF || (!settings.autoplay && !explicit)) {attemptedTail=null;return@launch}

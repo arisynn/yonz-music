@@ -1,3 +1,5 @@
+@file:androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+
 package com.yonzmusic.engine
 
 import android.content.Context
@@ -240,10 +242,24 @@ class SafDocumentStore(context: Context, private val destination: Uri) {
     private fun displayName(value: Uri): String = resolver.query(value,arrayOf(OpenableColumns.DISPLAY_NAME),null,null,null)?.use { if(it.moveToFirst())it.getString(0).orEmpty() else "" }.orEmpty()
     @Keep fun hash(value: String): String { require(Uri.parse(value).scheme=="content");return digest(Uri.parse(value)) }
 
+    @Keep fun isOpus(value:String):Boolean = runCatching {
+        checkActive()
+        val uri=Uri.parse(value);require(uri.scheme=="content")
+        val header=ByteArray(4)
+        require(resolver.openInputStream(uri)?.use {it.read(header)}==4 && header.toString(Charsets.US_ASCII)=="OggS")
+        val extractor=androidx.media3.inspector.MediaExtractorCompat(app)
+        try {extractor.setDataSource(app,uri,null);extractor.trackCount==1 && extractor.getTrackFormat(0).getString(android.media.MediaFormat.KEY_MIME)=="audio/opus"}finally{extractor.release()}
+    }.getOrDefault(false)
+    @Keep fun remuxOpus(path:String):String {
+        val file=File(path).canonicalFile
+        require(file.toPath().startsWith(File(root,"work").toPath()))
+        return OpusRemuxer.remux(app,file,::cancelledNow).absolutePath
+    }
+    private fun cancelledNow()=cancelled()
     @Keep fun probe(path: String): String {
         val file = File(path).canonicalFile
         require(file.toPath().startsWith(File(root, "work").toPath()))
         val info = com.yonzmusic.app.download.AudioValidation.validate(file, 0)
-        return JSONObject().put("duration", info.duration / 1000.0).put("audio", true).put("video", false).toString()
+        return JSONObject().put("duration", info.duration / 1000.0).put("audio", true).put("video", false).put("codec",if(info.mime=="audio/opus")"opus" else info.mime).put("extension",info.extension).toString()
     }
 }

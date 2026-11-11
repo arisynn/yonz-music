@@ -47,7 +47,7 @@ def run(payload, control, catalogue_factory=Catalogue):
     try:
         if operation=='search':
             page=payload.get('page',0)
-            if len(query)<3 or type(page) is not int or page not in range(3):
+            if len(query)<2 or type(page) is not int or page not in range(3):
                 raise ValueError('invalid search')
             try:
                 raw=catalogue.call('search',query,filter='songs',limit=(page+1)*12+1)

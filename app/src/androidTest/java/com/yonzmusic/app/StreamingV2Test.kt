@@ -55,7 +55,7 @@ class StreamingV2Test {
         }
         helper.runMigrationsAndValidate(name,4,true,MusicDatabase.MIGRATION_3_4).close()
         val context=ApplicationProvider.getApplicationContext<YonzApp>()
-        val db=Room.databaseBuilder(context,MusicDatabase::class.java,name).addMigrations(MusicDatabase.MIGRATION_3_4).build()
+        val db=Room.databaseBuilder(context,MusicDatabase::class.java,name).addMigrations(MusicDatabase.MIGRATION_3_4,MusicDatabase.MIGRATION_4_5).build()
         try {
             val dao=db.music()
             assertEquals("content://fixture/audio",dao.track("owned")!!.uri)

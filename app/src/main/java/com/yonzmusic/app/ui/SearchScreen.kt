@@ -173,6 +173,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
                 TextButton({vm.favoriteOnline(song);close()},Modifier.weight(1f)){Icon(if(liked)Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,null);Spacer(Modifier.width(Design.xs));Text(if(liked)"Disukai" else "Favorit")}
                 TextButton({vm.radio(song);close()},Modifier.weight(1f)){Text("Radio lagu")}
             }
+            TextButton({vm.saveRadioFor(song);close()}){Text("Simpan radio ke Koleksi")}
             Text("Kualitas audio",style=MaterialTheme.typography.labelMedium)
             QualityChoices(preferences.streamQuality,vm::streamQuality)
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {

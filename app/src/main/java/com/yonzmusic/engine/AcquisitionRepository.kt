@@ -28,10 +28,11 @@ class AcquisitionRepository(private val app: YonzApp) {
     private suspend fun updateQueued(id:String,expectedWork:String?=null,edit:(JSONObject)->Unit) {
         app.database.withTransaction {val j=dao.state("stream-download:$id")?.value?.let(::JSONObject) ?: return@withTransaction;if(expectedWork!=null && j.optString("work_id")!=expectedWork)return@withTransaction;edit(j);dao.state(AppState("stream-download:$id",j.toString()))};refreshQueued()
     }
-    fun enqueueSelected(song:com.yonzmusic.app.search.OnlineSong,destination:String,playlist:Boolean,onResult:((String)->Unit)?=null) {
+    fun enqueueSelected(requested:com.yonzmusic.app.search.OnlineSong,destination:String,playlist:Boolean,onResult:((String)->Unit)?=null) {
         app.persistenceScope.launch {
             queueReady.await();queueMutex.lock()
             try {
+                val song=app.discovery.audio(requested)
                 require(com.yonzmusic.app.playback.StreamRepository.valid(song.videoId) && song.page=="https://www.youtube.com/watch?v=${song.videoId}")
                 require(app.contentResolver.persistedUriPermissions.any {it.uri.toString()==destination && it.isReadPermission && it.isWritePermission}) {"Hubungkan ulang folder tujuan unduhan."}
                 refreshQueued()
@@ -150,7 +151,7 @@ class AcquisitionRepository(private val app: YonzApp) {
         else submit("cancel_entries",JSONObject().put("plan_id",planId).put("entry_ids",JSONArray(listOf(entryId))))
     }
     fun retryItem(planId: String, row: JSONObject) {
-        if(row.has("song")) submit("acquire",JSONObject().put("plan_id",planId).put("entry_ids",JSONArray(listOf(row.getString("id")))).put("format","original"))
+        if(row.has("song")) submit("acquire",JSONObject().put("plan_id",planId).put("entry_ids",JSONArray(listOf(row.getString("id")))).put("format","opus"))
         else submit("retry",JSONObject().put("plan_id",planId))
     }
     fun repairTrack(id: String) {
@@ -276,14 +277,14 @@ class AcquisitionRepository(private val app: YonzApp) {
             val result = if(selectedJob) {
                 val queued=JSONObject(dao.state("stream-download:$requestId")!!.value)
                 val planId=queued.optString("plan_id")
-                val prepared=if(planId.isNotBlank())call("get_plan",JSONObject().put("plan_id",planId))else call("prepare",JSONObject().put("kind","selected_video").put("video_id",payload.getString("video_id")).put("create_playlist",queued.optBoolean("playlist")))
+                val prepared=if(planId.isNotBlank())call("get_plan",JSONObject().put("plan_id",planId))else call("prepare",JSONObject().put("kind","selected_video").put("video_id",payload.getString("video_id")).put("metadata",queued.optJSONObject("song")).put("create_playlist",queued.optBoolean("playlist")))
                 job {it.put("plan_id",prepared.getString("id"))}
                 check(!JSONObject(dao.state("stream-download:$requestId")!!.value).optBoolean("cancel_requested")){"Dibatalkan"}
                 val ids=JSONArray();val entries=prepared.getJSONArray("entries")
                 for(i in 0 until entries.length()){val e=entries.getJSONObject(i);if(e.has("song"))ids.put(e.getString("id"))}
                 check(ids.length()>0){"Sumber belum dapat disiapkan."}
                 dao.state(AppState("engine-consent:${prepared.getString("id")}","1"));dao.state(AppState("engine-destination:${prepared.getString("id")}",destination))
-                call("acquire",JSONObject().put("plan_id",prepared.getString("id")).put("entry_ids",ids).put("create_playlist",queued.optBoolean("playlist")).put("format","original"))
+                call("acquire",JSONObject().put("plan_id",prepared.getString("id")).put("entry_ids",ids).put("create_playlist",queued.optBoolean("playlist")).put("format","opus"))
             }else call(action, payload)
             if (result.has("entries")) {
                 plan.value = result; dao.state(AppState("engine-last-plan", result.getString("id")))

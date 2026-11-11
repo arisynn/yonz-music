@@ -29,7 +29,7 @@ class SourceMigrationTest {
         }
         helper.runMigrationsAndValidate(name, 2, true, MusicDatabase.MIGRATION_1_2).close()
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val db = Room.databaseBuilder(context, MusicDatabase::class.java, name).addMigrations(MusicDatabase.MIGRATION_1_2,MusicDatabase.MIGRATION_2_3,MusicDatabase.MIGRATION_3_4).build()
+        val db = Room.databaseBuilder(context, MusicDatabase::class.java, name).addMigrations(MusicDatabase.MIGRATION_1_2,MusicDatabase.MIGRATION_2_3,MusicDatabase.MIGRATION_3_4,MusicDatabase.MIGRATION_4_5).build()
         try {
             val dao = db.music(); val repo = Repository(context, db)
             assertTrue(dao.tracks().first().isEmpty()); assertEquals(2, dao.allTracks().size)

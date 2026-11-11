@@ -27,7 +27,7 @@ class PlaybackConnection(context: Context) {
     }
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) = refresh()
-        override fun onPlayerError(error: PlaybackException) { state.value = state.value.copy(error = if(controller?.currentMediaItem?.mediaId?.startsWith("engine:")==true)streamingError(controller)else "Audio belum dapat diputar. Periksa lokasi file, izin folder, atau penyimpanan; rescan untuk menghubungkan ulang.") }
+        override fun onPlayerError(error: PlaybackException) { state.value = state.value.copy(error = if(controller?.currentMediaItem?.mediaId?.isRemoteId()==true)streamingError(controller)else "Audio belum dapat diputar. Periksa lokasi file, izin folder, atau penyimpanan; rescan untuk menghubungkan ulang.") }
     }
     init { Choreographer.getInstance().postFrameCallback(firstFrame) }
     private fun connect(context: Context) {
@@ -52,7 +52,7 @@ class PlaybackConnection(context: Context) {
             next = timeline.getNextWindowIndex(next, Player.REPEAT_MODE_OFF, p.shuffleModeEnabled)
         }
         state.value = PlaybackUi(p.currentMediaItem?.mediaId, p.isPlaying, (0 until p.mediaItemCount).map { p.getMediaItemAt(it).mediaId }, p.currentMediaItemIndex.coerceAtLeast(0), p.shuffleModeEnabled, p.repeatMode,
-            if (p.playerError != null) if(p.currentMediaItem?.mediaId?.startsWith("engine:")==true)streamingError(p)else "Audio unavailable. Check file access and rescan your library." else null, true,
+            if (p.playerError != null) if(p.currentMediaItem?.mediaId?.isRemoteId()==true)streamingError(p)else "Audio unavailable. Check file access and rescan your library." else null, true,
             (0 until p.mediaItemCount).map { p.getMediaItemAt(it).mediaMetadata.extras?.getString("yono.queue.key") ?: "legacy:$it" },
             order.takeIf { it.size == p.mediaItemCount } ?: (0 until p.mediaItemCount).toList(),
             (0 until p.mediaItemCount).mapNotNull {i->remoteSong(p.getMediaItemAt(i))?.let {s->StreamRepository.display(s).copy(duration=if(i==p.currentMediaItemIndex && p.duration>0)p.duration else s.durationMs)}},
@@ -84,7 +84,7 @@ class PlaybackConnection(context: Context) {
         controller?.apply {setMediaItem(radio);prepare();play()}
     }
     fun toggle() { controller?.let {
-        if(it.playerError!=null && it.currentMediaItem?.mediaId?.startsWith("engine:")==true) {
+        if(it.playerError!=null && it.currentMediaItem?.mediaId?.isRemoteId()==true) {
             val code=it.sessionExtras.getString(PlaybackService.STREAM_ISSUE)
             val position=if(code in setOf("FORMAT_CHANGED","SEEK","FORMAT"))0 else it.currentPosition.coerceAtLeast(0)
             val items=(0 until it.mediaItemCount).map(it::getMediaItemAt);val index=it.currentMediaItemIndex

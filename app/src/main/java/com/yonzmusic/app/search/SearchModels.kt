@@ -6,7 +6,7 @@ import java.net.URI
 enum class SearchProvider(val label: String) { ENGINE("Mesin yt-dlp") }
 data class OnlineSong(val id: String,val provider: SearchProvider,val title: String,val credit: String,
     val album: String="",val durationMs: Long=0,val artwork: String="",val page: String,
-    val videoId: String="",val artistVerified: Boolean=false)
+    val videoId: String="",val artistVerified: Boolean=false,val catalogJson:String="")
 data class SearchPage(val songs: List<OnlineSong>,val next: String="")
 data class OnlineSearchState(val query: String="",val provider: SearchProvider=SearchProvider.ENGINE,
     val loading: Boolean=false,val songs: List<OnlineSong> = emptyList(),val next: String="",
@@ -17,6 +17,10 @@ class SearchFailure(val userMessage: String): Exception(userMessage)
 object SearchContract {
     val sourceHosts=setOf("www.youtube.com","youtube.com","music.youtube.com","youtu.be")
     val artHosts=setOf("i.ytimg.com","img.youtube.com","lh3.googleusercontent.com")
+    fun artwork(value:String):Boolean=runCatching {
+        val host=URI(value).host.orEmpty().lowercase()
+        https(value,artHosts + "coverartarchive.org" + "archive.org" + host.takeIf {it.endsWith(".archive.org")}.orEmpty()) && (host in artHosts || host=="coverartarchive.org" || host=="archive.org" || host.endsWith(".archive.org"))
+    }.getOrDefault(false)
     fun https(value: String,hosts: Set<String>): Boolean=runCatching {
         val u=URI(value);value.length<=4096 && u.scheme=="https" && u.host?.lowercase() in hosts && u.userInfo==null && u.port in setOf(-1,443) && u.fragment==null
     }.getOrDefault(false)
@@ -33,7 +37,7 @@ object SearchContract {
             if(!id.matches(Regex("[A-Za-z0-9_-]{11}")) || title.isBlank() || page!="https://www.youtube.com/watch?v=$id")return@mapNotNull null
             val artists=r.optJSONArray("artists")?.let {a->(0 until minOf(a.length(),20)).map {text(a.optString(it))}.filter {it.isNotBlank()}} ?: emptyList()
             OnlineSong("engine:$id",SearchProvider.ENGINE,title,artists.joinToString(", ").ifBlank {text(r.optString("channel"))},text(r.optString("album")),
-                r.optLong("duration_ms").coerceIn(0,7*86400000L),r.optString("artwork").takeIf {https(it,artHosts)}.orEmpty(),page,id,artists.isNotEmpty())
+                r.optLong("duration_ms").coerceIn(0,7*86400000L),r.optString("artwork").takeIf {artwork(it)}.orEmpty(),page,id,artists.isNotEmpty())
         }.distinctBy {it.id}
         return SearchPage(songs,root.optString("next").takeIf {it in listOf("1","2")}.orEmpty())
     }

@@ -47,3 +47,7 @@ apksigner verify --verbose --print-certs app/build/outputs/apk/release/app-relea
 Online search is enabled by default in this streaming release. A wrong-key/unsigned APK is not a production update. The certificate SHA-256 must equal `ebefa44cc5fba1292fec9fc25bb4840e41e501bb0958a86931c046fd1be523e5`; package/code/ABI/SDK must also be checked. Recheck the current public versionCode before publication. Never include signing material in artifacts or source archives.
 
 Room schema 4 is exported alongside schemas 1–3; all migrations remain registered. Backup schema 2 accepts schema 1 imports. Native runtime/engine versions and dependency locks are retained; FFmpeg is only a host fixture-generation tool. See docs/STREAMING_2_0.md for quality, cache, radio, and data behavior and TEST_REPORT.md for actual results/limitations.
+
+## Preview 2
+
+Use Android platform 36, AGP 8.10.1 and JDK 17. `./gradlew :app:assembleRelease --max-workers=1` creates the owner-signed code-18 update when the private ignored signing.properties is configured. For focused Android verification, build `:app:assemblePreview :app:assemblePreviewAndroidTest -PtestBuildType=preview` and run `com.yonzmusic.app.DiscoveryPreview2Test`. Run R8 builds and emulator tests sequentially on memory-limited hosts. New dependencies and schema behavior are described in [DISCOVERY_PREVIEW_2.md](docs/DISCOVERY_PREVIEW_2.md).

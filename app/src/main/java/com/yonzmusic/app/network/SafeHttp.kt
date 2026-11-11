@@ -15,7 +15,7 @@ object SafeHttp {
         require(value.length <= 4096) { "Link is too long." }
         val uri = URI(value)
         require(uri.scheme == "https" && uri.userInfo == null && uri.port in setOf(-1, 443) && uri.fragment == null &&
-            uri.host?.lowercase() in allowed) { "Unsupported or unsafe source link." }
+            (uri.host?.lowercase() in allowed || ("coverartarchive.org" in allowed && (uri.host=="archive.org" || uri.host?.endsWith(".archive.org")==true)))) { "Unsupported or unsafe source link." }
         return uri.toURL()
     }
     private fun connect(value: String, allowed: Set<String>, etag: String? = null): HttpURLConnection {

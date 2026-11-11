@@ -49,6 +49,13 @@ data class ImportDetail(val importId: Long, val position: Int, val input: String
 
 @Dao
 interface MusicDao {
+    @Query("SELECT * FROM catalog_cache WHERE identity = :id") suspend fun catalogCache(id:String):CatalogCache?
+    @Upsert suspend fun catalogCache(row:CatalogCache)
+    @Query("DELETE FROM catalog_cache WHERE identity NOT LIKE 'audio:%' AND identity NOT IN (SELECT identity FROM catalog_cache WHERE identity NOT LIKE 'audio:%' ORDER BY updated DESC LIMIT 1500)") suspend fun trimCatalogCache()
+    @Query("SELECT * FROM saved_catalog ORDER BY added DESC") fun savedCatalog():Flow<List<SavedCatalog>>
+    @Upsert suspend fun saveCatalog(row:SavedCatalog)
+    @Query("DELETE FROM saved_catalog WHERE identity = :id") suspend fun removeCatalog(id:String)
+
     @Query("SELECT * FROM online_activity ORDER BY lastPlayed DESC, videoId") fun onlineActivity(): Flow<List<OnlineActivity>>
     @Query("SELECT * FROM online_activity WHERE videoId = :id") suspend fun onlineActivity(id: String): OnlineActivity?
     @Upsert suspend fun onlineActivity(row: OnlineActivity)
@@ -146,10 +153,16 @@ data class OnlineActivity(@PrimaryKey val videoId: String, val metadata: String,
     val lastPlayed: Long = 0, val playCount: Long = 0, val listenedMs: Long = 0, val position: Long = 0)
 
 @Database(entities = [Track::class, Favorite::class, History::class, Playlist::class, PlaylistEntry::class,
-    ImportLog::class, ImportDetail::class, MusicSource::class, TrackLocation::class, AppState::class, DownloadJob::class, ListenEvent::class, OnlineActivity::class], version = 4, exportSchema = true)
+    ImportLog::class, ImportDetail::class, MusicSource::class, TrackLocation::class, AppState::class, DownloadJob::class, ListenEvent::class, OnlineActivity::class, CatalogCache::class, SavedCatalog::class], version = 5, exportSchema = true)
 abstract class MusicDatabase : RoomDatabase() {
     abstract fun music(): MusicDao
     companion object {
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS catalog_cache (identity TEXT NOT NULL PRIMARY KEY, metadata TEXT NOT NULL, updated INTEGER NOT NULL)")
+                db.execSQL("CREATE TABLE IF NOT EXISTS saved_catalog (identity TEXT NOT NULL PRIMARY KEY, kind TEXT NOT NULL, metadata TEXT NOT NULL, added INTEGER NOT NULL)")
+            }
+        }
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS online_activity (videoId TEXT NOT NULL PRIMARY KEY, metadata TEXT NOT NULL, favorite INTEGER NOT NULL, lastPlayed INTEGER NOT NULL, playCount INTEGER NOT NULL, listenedMs INTEGER NOT NULL, position INTEGER NOT NULL)")
@@ -219,3 +232,6 @@ object PlaybackResume {
         return if (end - bounded <= 500) 0 else bounded
     }
 }
+
+@Entity(tableName="catalog_cache") data class CatalogCache(@PrimaryKey val identity:String,val metadata:String,val updated:Long)
+@Entity(tableName="saved_catalog") data class SavedCatalog(@PrimaryKey val identity:String,val kind:String,val metadata:String,val added:Long)

@@ -2,7 +2,9 @@
 
 Your Music. Your Space.
 
-**2.0.0 candidate (belum dirilis stable):** pengalaman streaming utama dengan Beranda minimalis, pencarian musik daring, favorit dan riwayat online, radio/autoplay, kualitas Seimbang, serta cache privat maksimal64MiB. Musik lokal dan unduhan tetap tersedia. [Perilaku dan batasan](docs/STREAMING_2_0.md) · [Build dan pengujian](BUILD_INSTRUCTIONS.md).
+**[2.0.0-preview.2](https://github.com/arisynn/yonz-music/releases/tag/v2.0.0-preview.2):** Beranda chart Indonesia/Global, pencarian album/artis, Koleksi terpadu, metadata MusicBrainz dan Cover Art Archive, radio tersimpan, serta unduhan Ogg Opus `.opus`. APK memakai package dan signing official sehingga dapat dipasang menimpa versi sebelumnya. [Rincian](docs/DISCOVERY_PREVIEW_2.md) · [Validasi](PREVIEW_2_TEST_REPORT.md).
+
+**Preview 1 (arsip kandidat 2.0.0):** pengalaman streaming utama dengan Beranda minimalis, pencarian musik daring, favorit dan riwayat online, radio/autoplay, kualitas Seimbang, serta cache privat maksimal64MiB. Musik lokal dan unduhan tetap tersedia. [Perilaku dan batasan](docs/STREAMING_2_0.md) · [Build dan pengujian](BUILD_INSTRUCTIONS.md).
 
 Rilis official publik yang menjadi basis tetap1.5.2 sampai kandidat ini lolos verifikasi sumber langsung dan rilis baru diterbitkan.
 

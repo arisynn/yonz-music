@@ -1,3 +1,5 @@
+@file:androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+
 package com.yonzmusic.app.download
 
 import android.media.MediaExtractor
@@ -16,7 +18,7 @@ object AudioValidation {
             for (i in 6..9) { require(header[i].toInt() and 128 == 0); length = (length shl 7) or header[i].toInt() }
             require(length <= 4 * 1024 * 1024) { "Audio metadata exceeds 4 MB." }
         }
-        val extractor = MediaExtractor()
+        val extractor = androidx.media3.inspector.MediaExtractorCompat(com.yonzmusic.app.YonzApp.instance)
         try {
             extractor.setDataSource(file.absolutePath)
             val tracks = (0 until extractor.trackCount).filter { extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true }
@@ -32,7 +34,7 @@ object AudioValidation {
                 mime == "audio/mpeg" -> "mp3"
                 prefix.startsWith("RIFF") && prefix.substring(8, 12) == "WAVE" -> "wav"
                 prefix.startsWith("fLaC") -> "flac"
-                prefix.startsWith("OggS") -> "ogg"
+                prefix.startsWith("OggS") -> if(mime=="audio/opus")"opus" else "ogg"
                 header.take(4) == listOf(0x1a.toByte(), 0x45.toByte(), 0xdf.toByte(), 0xa3.toByte()) && "webm" in prefix -> "webm"
                 "ftyp" in prefix.take(64) -> "m4a"
                 mime == "audio/mp4a-latm" && header.size >= 2 && header[0].toInt() and 255 == 255 && header[1].toInt() and 246 == 240 -> "aac"

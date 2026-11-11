@@ -20,11 +20,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 /** Persisted source references, not media URLs or fake Library tracks. */
 class StreamRepository(private val app:YonzApp):StreamResolver {
     suspend fun register(song:OnlineSong) {
-        require(valid(song.videoId) && song.page=="https://www.youtube.com/watch?v=${song.videoId}")
-        app.repository.dao.state(AppState("stream:${song.videoId}",encode(song).toString()))
+        require((valid(song.videoId) && song.page=="https://www.youtube.com/watch?v=${song.videoId}") || (song.id.startsWith("mb:recording:") && song.catalogJson.isNotBlank()))
+        app.repository.dao.state(AppState("stream:${if(song.id.startsWith("mb:"))song.id else song.videoId}",encode(song).toString()))
     }
     suspend fun lookup(mediaId:String):OnlineSong?=withContext(Dispatchers.IO) {
-        val id=mediaId.removePrefix("engine:");if(!mediaId.startsWith("engine:") || !valid(id))return@withContext null
+        val id=mediaId.removePrefix("engine:");if(!mediaId.isRemoteId() || (!mediaId.startsWith("mb:") && !valid(id)))return@withContext null
         app.repository.dao.state("stream:$id")?.value?.let {runCatching {decode(JSONObject(it))}.getOrNull()}
     }
     @Keep class Cancellation(private val flag:AtomicBoolean,private val thread:Thread) {
@@ -66,10 +66,10 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
 
     companion object {
         fun valid(id:String)=id.matches(Regex("[A-Za-z0-9_-]{11}"))
-        fun encode(s:OnlineSong)=JSONObject().put("id",s.videoId).put("title",s.title.take(250)).put("credit",s.credit.take(1000)).put("artist",s.artistVerified).put("album",s.album.take(250)).put("duration",s.durationMs).put("art",s.artwork)
+        fun encode(s:OnlineSong)=JSONObject().put("id",s.videoId).put("mediaId",s.id).put("catalog",s.catalogJson).put("title",s.title.take(250)).put("credit",s.credit.take(1000)).put("artist",s.artistVerified).put("album",s.album.take(250)).put("duration",s.durationMs).put("art",s.artwork)
         fun decode(j:JSONObject):OnlineSong {
-            val id=j.getString("id");require(valid(id))
-            return OnlineSong("engine:$id",SearchProvider.ENGINE,SearchContract.text(j.getString("title")),SearchContract.text(j.optString("credit"),1000),SearchContract.text(j.optString("album")),j.optLong("duration").coerceIn(0,7*86400000L),j.optString("art").takeIf {SearchContract.https(it,SearchContract.artHosts)}.orEmpty(),"https://www.youtube.com/watch?v=$id",id,j.optBoolean("artist"))
+            val id=j.getString("id");val mediaId=j.optString("mediaId","engine:$id");val catalog=j.optString("catalog");require(valid(id) || (mediaId.matches(Regex("mb:recording:[a-f0-9-]{36}")) && catalog.isNotBlank()))
+            return OnlineSong(mediaId,SearchProvider.ENGINE,SearchContract.text(j.getString("title")),SearchContract.text(j.optString("credit"),1000),SearchContract.text(j.optString("album")),j.optLong("duration").coerceIn(0,7*86400000L),j.optString("art").takeIf {SearchContract.artwork(it)}.orEmpty(),"https://www.youtube.com/watch?v=$id",id,j.optBoolean("artist"),catalog)
         }
         /** View-only adapter for existing artwork/player composables; never inserted into Room. */
         fun display(s:OnlineSong)=Track(s.id,"",s.title,if(s.artistVerified)s.credit else s.credit.takeIf {it.isNotBlank()}?.let {"Kanal: $it"}.orEmpty(),s.album.ifBlank {"Pemutaran daring"},duration=s.durationMs,artUri=s.artwork,source="stream")

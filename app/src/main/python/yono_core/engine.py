@@ -202,14 +202,19 @@ class Engine:
             raise EngineError("METADATA_COMMIT", "Audio tersimpan tetapi manifest metadata belum berhasil. Coba ulang tanpa mengunduh audio lagi.", retryable=True)
         row["metadata_uri"] = uri
 
-    def acquire(self, plan_id, selected, *, output_format="original", bitrate=192):
+    def acquire(self, plan_id, selected, *, output_format="opus", bitrate=192):
         plan = self.load_plan(plan_id)
         selected = set(selected)
         known = {r["id"] for r in plan["entries"]}
         if not selected.issubset(known):
             raise EngineError("INVALID_SELECTION", "Pilihan lagu tidak termasuk rencana ini.")
-        if output_format != "original":
-            raise EngineError("ORIGINAL_ONLY", "Unduhan selalu memakai format audio asli; konversi dinonaktifkan.")
+        # Pending jobs from Preview 1 also publish only the new Opus profile.
+        output_format = "opus"
+        for entry in plan['entries']:
+            if entry.get('status') == 'exists' and not entry.get('request', {}).get('local_path'):
+                entry['status'] = 'ready'
+            if entry.get('status') != 'downloaded' and (entry.get('audio') or {}).get('extension') != 'opus':
+                entry.pop('pending_sha256', None)
         # Old plans retain their layout and playlist behavior. New reviewed plans freeze here.
         if "create_playlist" in plan:
             update_review(plan, {"entry_ids": list(selected)})
@@ -248,7 +253,7 @@ class Engine:
                                 self.control.emit("item_result", completed=done, total=len(selected), entry=row)
                                 continue
                         existing, reason = self.index.find(song, exact_source=True) if row.get("request", {}).get("selected_exact") else self.index.find(song)
-                        if existing:
+                        if existing and hasattr(self.storage, "isOpus") and self.storage.isOpus(str(existing["uri"])):
                             row.update(status="exists", uri=existing["uri"], reason=reason)
                             if row.get("request",{}).get("selected_exact"):row["audio"]={"sha256":existing.get("sha256","")}
                         else:

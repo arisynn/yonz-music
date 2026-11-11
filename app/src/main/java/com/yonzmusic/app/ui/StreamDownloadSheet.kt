@@ -24,6 +24,7 @@ import com.yonzmusic.app.search.OnlineSong
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun StreamDownloadSheet(song:OnlineSong,vm:MusicViewModel,close:()->Unit,queued:()->Unit) {
     val context=LocalContext.current;val app=context.applicationContext as YonzApp
+    val batch by vm.pendingBatchDownload.collectAsStateWithLifecycle()
     val preferences by vm.preferences.collectAsStateWithLifecycle()
     val destination by vm.outputDestination.collectAsStateWithLifecycle()
     var authorized by remember(song.id){mutableStateOf(false)}
@@ -38,7 +39,7 @@ import com.yonzmusic.app.search.OnlineSong
     ModalBottomSheet(onDismissRequest=close,modifier=Modifier.statusBarsPadding(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
         DialogSystemBars()
         Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(Design.page),verticalArrangement=Arrangement.spacedBy(Design.md)) {
-            Text("Simpan untuk nanti",style=MaterialTheme.typography.headlineSmall)
+            Text(if(batch.isEmpty())"Simpan untuk nanti" else "Unduh ${batch.size} lagu",style=MaterialTheme.typography.headlineSmall)
             Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.md)) {
                 SourceThumbnail(song.artwork)
                 Column(Modifier.weight(1f)) {
@@ -56,8 +57,8 @@ import com.yonzmusic.app.search.OnlineSong
                 }
             }
             Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically){Checkbox(authorized,{authorized=it});Text("Saya berhak mengunduh audio ini dan sumber mengizinkan.",Modifier.weight(1f),style=MaterialTheme.typography.bodySmall)}
-            Text(if (preferences.hideDownloadsFromGallery) "Format asli · tersembunyi dari Galeri (atur di Pengaturan)" else "Format asli · metadata & sampul",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-            Button({vm.onlinePlaylist(playlist);app.acquisition.enqueueSelected(song,destination,playlist,vm::notify);close();queued()},enabled=authorized && destination.isNotBlank(),modifier=Modifier.fillMaxWidth()){Text("Tambah ke unduhan")}
+            Text(if (preferences.hideDownloadsFromGallery) "Opus (.opus) · tersembunyi dari Galeri (atur di Pengaturan)" else "Opus (.opus) · metadata & sampul",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            Button({vm.onlinePlaylist(playlist);(batch.ifEmpty {listOf(song)}).distinctBy {it.id}.forEach {app.acquisition.enqueueSelected(it,destination,if(batch.isEmpty())playlist else false,vm::notify)};vm.pendingBatchDownload.value=emptyList();close();queued()},enabled=authorized && destination.isNotBlank(),modifier=Modifier.fillMaxWidth()){Text("Tambah ke unduhan")}
         }
     }
 }

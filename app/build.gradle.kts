@@ -13,14 +13,14 @@ val ownerSigning = Properties().apply {
 }
 android {
     namespace = "com.yonzmusic.app"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "28.2.13676358"
     defaultConfig {
         applicationId = "com.yonzmusic.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(17)
-        versionName = "2.0.0"
+        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(18)
+        versionName = "2.0.0-preview.2"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,7 +41,7 @@ android {
         create("preview") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".dev"
-            versionNameSuffix = "-preview.1"
+            versionNameSuffix = ""
             matchingFallbacks += listOf("debug")
             resValue("string","app_name","Yono Music Preview")
         }
@@ -107,9 +107,11 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.4")
     implementation("androidx.work:work-runtime-ktx:2.10.1")
     androidTestImplementation("androidx.room:room-testing:2.7.1")
-    implementation("androidx.media3:media3-exoplayer:1.6.1")
-    implementation("androidx.media3:media3-database:1.6.1")
-    implementation("androidx.media3:media3-session:1.6.1")
+    implementation("androidx.media3:media3-exoplayer:1.11.1")
+    implementation("androidx.media3:media3-database:1.11.1")
+    implementation("androidx.media3:media3-session:1.11.1")
+    implementation("androidx.media3:media3-muxer:1.11.1")
+    implementation("androidx.media3:media3-inspector:1.11.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")

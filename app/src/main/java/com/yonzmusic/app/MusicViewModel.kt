@@ -52,8 +52,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun playOnline(song:com.yonzmusic.app.search.OnlineSong,next:Boolean?=null) {
         streamPlayJob?.cancel()
         streamPlayJob=action {
+            val resolved=if(song.id.startsWith("mb:"))withContext(Dispatchers.IO){app.discovery.audio(song)}else song
             val local=withContext(Dispatchers.IO) {
-                val candidate=dao.allTracks().firstOrNull {it.active && it.available && it.sourceIdentity=="youtube:${song.videoId}" && it.sha256.isNotBlank()}
+                val candidate=dao.allTracks().firstOrNull {it.active && it.available && it.sourceIdentity=="youtube:${resolved.videoId}" && it.sha256.isNotBlank()}
                 candidate?.takeIf {t->runCatching {
                     val digest=java.security.MessageDigest.getInstance("SHA-256")
                     app.contentResolver.openInputStream(Uri.parse(t.uri))!!.use {input->val b=ByteArray(65536);while(true){currentCoroutineContext().ensureActive();val n=input.read(b);if(n<0)break;digest.update(b,0,n)}}
@@ -72,6 +73,20 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val recommendations=MutableStateFlow<List<com.yonzmusic.app.search.OnlineSong>>(emptyList())
     val discoveryLoading=MutableStateFlow(false)
     val discoveryError=MutableStateFlow("")
+    suspend fun catalogSearch(query:String)=app.catalog.search(query).songs
+    val discovery=app.discovery
+    val savedCatalog=discovery.saved.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptyList())
+    fun saveCatalog(item:com.yonzmusic.app.search.CatalogItem){action {discovery.save(item);notify("Disimpan ke Koleksi. Audio belum diunduh.")}}
+    fun removeCatalog(item:com.yonzmusic.app.search.CatalogItem){action {discovery.remove(item)}}
+    fun saveRadioFor(song:com.yonzmusic.app.search.OnlineSong){action {discovery.save(discovery.radio(song));notify("Radio disimpan ke Koleksi.")}}
+    fun playSongs(songs:List<com.yonzmusic.app.search.OnlineSong>,index:Int=0){if(songs.isNotEmpty())playOnlineCollection(OnlineCollection(java.util.UUID.randomUUID().toString(),"Antrean",songs),index)}
+    val pendingBatchDownload=MutableStateFlow<List<com.yonzmusic.app.search.OnlineSong>>(emptyList())
+    fun downloadSongs(songs:List<com.yonzmusic.app.search.OnlineSong>,configure:()->Unit){action {
+        val target=dao.state("download_destination")?.value.orEmpty()
+        if(target.isBlank() || !app.contentResolver.persistedUriPermissions.any {it.uri.toString()==target && it.isReadPermission && it.isWritePermission}){pendingBatchDownload.value=songs.toList();configure();return@action}
+        songs.distinctBy {it.id}.forEach {app.acquisition.enqueueSelected(it,target,false,::notify)}
+        notify("${songs.distinctBy {it.id}.size} lagu ditambahkan ke antrean. Kemajuan tersedia di Unduhan.")
+    }}
     val cacheBytes=app.streamCache.bytes
     private var discoveryJob: Job?=null
     private var discoverySeed=""

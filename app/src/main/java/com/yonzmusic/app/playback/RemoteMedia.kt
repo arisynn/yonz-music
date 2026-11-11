@@ -7,7 +7,7 @@ import androidx.media3.common.MediaMetadata
 import com.yonzmusic.app.search.OnlineSong
 
 fun remoteMediaItem(song:OnlineSong,key:String?=null,next:Boolean=false):MediaItem=MediaItem.Builder().setMediaId(song.id)
-    .setUri("yono-stream://youtube/${song.videoId}")
+    .setUri(if(song.id.startsWith("mb:"))"yono-catalog://recording/${Uri.encode(song.id)}" else "yono-stream://youtube/${song.videoId}")
     .setMediaMetadata(MediaMetadata.Builder().setTitle(song.title).setArtist(if(song.artistVerified)song.credit else song.credit.takeIf {it.isNotBlank()}?.let {"Kanal: $it"}.orEmpty()).setAlbumTitle(song.album)
         .setArtworkUri(song.artwork.takeIf {it.isNotBlank()}?.let(Uri::parse))
         .setExtras(Bundle().apply {putString("yono.queue.key",key?.takeIf {it.matches(Regex("[a-fA-F0-9-]{36}"))} ?: java.util.UUID.randomUUID().toString());putBoolean("yono.next",next);putString("yono.remote",StreamRepository.encode(song).toString())}).build()).build()

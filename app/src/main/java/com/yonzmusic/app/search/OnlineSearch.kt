@@ -38,7 +38,7 @@ class OnlineSearch(private val scope: CoroutineScope, private val backend: Searc
     fun query(value: String, provider: SearchProvider, retry: Boolean = false) {
         val query=SearchContract.query(value);job?.cancel();val serial=++generation
         state.value=OnlineSearchState(query,provider,loading=query.length>=3)
-        if(query.length<3)return
+        if(query.length<2)return
         job=scope.launch {
             delay(if(retry)0 else debounceMs)
             load(query,provider,"",serial,retry)
