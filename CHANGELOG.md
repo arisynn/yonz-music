@@ -1,3 +1,12 @@
+## 2.0.0 — unpublished streaming candidate
+
+- Streaming-first Indonesian Beranda/Cari navigation while retaining local collections and original SAF downloads.
+- Balanced/economy/best original-audio selection, one-item conditional preload, foreground audio priority and bounded private LRU audio cache.
+- Public music catalogue search, related-song radio and optional automatic online queue continuation without login.
+- Online favorites and qualified history with controls, indexed Room3→4 migration and backwards-compatible collection backup2.
+- Shared player favorite/options, quality/cache/autoplay settings and local session diagnostics.
+- Based on official1.5.2, same production package/signing identity; no stable publication until live-source verification.
+
 # 1.5.0-preview.4 — 2026-10-28
 
 ## 1.5.2 · 2026-10-29

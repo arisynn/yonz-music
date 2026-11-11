@@ -49,6 +49,11 @@ data class ImportDetail(val importId: Long, val position: Int, val input: String
 
 @Dao
 interface MusicDao {
+    @Query("SELECT * FROM online_activity ORDER BY lastPlayed DESC, videoId") fun onlineActivity(): Flow<List<OnlineActivity>>
+    @Query("SELECT * FROM online_activity WHERE videoId = :id") suspend fun onlineActivity(id: String): OnlineActivity?
+    @Upsert suspend fun onlineActivity(row: OnlineActivity)
+    @Query("DELETE FROM online_activity WHERE favorite = 0 AND videoId NOT IN (SELECT videoId FROM online_activity WHERE lastPlayed > 0 ORDER BY lastPlayed DESC LIMIT 1000)") suspend fun trimOnlineActivity()
+    @Query("UPDATE online_activity SET lastPlayed = 0, playCount = 0, listenedMs = 0, position = 0") suspend fun clearOnlineHistory()
     @Query("SELECT * FROM tracks WHERE active = 1 ORDER BY title COLLATE NOCASE") fun tracks(): Flow<List<Track>>
     @Query("SELECT * FROM tracks ORDER BY title COLLATE NOCASE") fun collectionTracks(): Flow<List<Track>>
     @Query("SELECT * FROM tracks") suspend fun allTracks(): List<Track>
@@ -136,11 +141,22 @@ data class DownloadJob(@PrimaryKey val id: String, val batchId: String, val ordi
 data class ListenEvent(@PrimaryKey(autoGenerate = true) val id: Long = 0, val trackId: String, val startedAt: Long, val listenedMs: Long)
 data class ListenStats(val trackId: String, val playCount: Int, val lastPlayed: Long)
 
+@Entity(tableName = "online_activity", indices = [Index("favorite"), Index("lastPlayed")])
+data class OnlineActivity(@PrimaryKey val videoId: String, val metadata: String, val favorite: Boolean = false,
+    val lastPlayed: Long = 0, val playCount: Long = 0, val listenedMs: Long = 0, val position: Long = 0)
+
 @Database(entities = [Track::class, Favorite::class, History::class, Playlist::class, PlaylistEntry::class,
-    ImportLog::class, ImportDetail::class, MusicSource::class, TrackLocation::class, AppState::class, DownloadJob::class, ListenEvent::class], version = 3, exportSchema = true)
+    ImportLog::class, ImportDetail::class, MusicSource::class, TrackLocation::class, AppState::class, DownloadJob::class, ListenEvent::class, OnlineActivity::class], version = 4, exportSchema = true)
 abstract class MusicDatabase : RoomDatabase() {
     abstract fun music(): MusicDao
     companion object {
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS online_activity (videoId TEXT NOT NULL PRIMARY KEY, metadata TEXT NOT NULL, favorite INTEGER NOT NULL, lastPlayed INTEGER NOT NULL, playCount INTEGER NOT NULL, listenedMs INTEGER NOT NULL, position INTEGER NOT NULL)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_online_activity_favorite ON online_activity(favorite)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_online_activity_lastPlayed ON online_activity(lastPlayed)")
+            }
+        }
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE tracks ADD COLUMN sha256 TEXT NOT NULL DEFAULT ''")

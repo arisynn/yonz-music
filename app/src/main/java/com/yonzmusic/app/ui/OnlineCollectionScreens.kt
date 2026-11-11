@@ -20,7 +20,7 @@ import com.yonzmusic.app.data.OnlineCollection
 import com.yonzmusic.app.search.OnlineSong
 
 @Composable fun CreateCollectionDialog(close:()->Unit,save:(String,Boolean)->Unit) {
-    var name by rememberSaveable {mutableStateOf("")};var online by rememberSaveable {mutableStateOf(false)}
+    var name by rememberSaveable {mutableStateOf("")};var online by rememberSaveable {mutableStateOf(true)}
     AlertDialog(modifier=Modifier.imePadding(),properties=DialogProperties(decorFitsSystemWindows=false),onDismissRequest=close,title={Text("Buat daftar putar")},text={Column(Modifier.verticalScroll(rememberScrollState())) {
         OutlinedTextField(name,{name=it.take(100)},label={Text("Nama daftar putar")},singleLine=true,modifier=Modifier.fillMaxWidth())
         Row(verticalAlignment=Alignment.CenterVertically,modifier=Modifier.fillMaxWidth().clickable{online=!online}) {Checkbox(online,{online=it});Text("Daftar putar daring")}

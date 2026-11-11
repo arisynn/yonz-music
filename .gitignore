@@ -13,3 +13,6 @@ signing.properties
 *.apk
 *.aab
 __pycache__/
+
+/signing-private/
+/artifacts/

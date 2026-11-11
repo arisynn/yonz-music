@@ -1,0 +1,13 @@
+
+com.yonzmusic.app.StreamingV2Test:...
+com.yonzmusic.app.StreamingRuntimeV2Test:.
+com.yonzmusic.app.StreamTransportTest:......
+com.yonzmusic.app.StreamFormatsTest:.
+com.yonzmusic.app.SourceMigrationTest:....
+com.yonzmusic.app.OnlineCollectionsTest:.
+com.yonzmusic.app.OnlineSearchPreviewTest:
+com.yonzmusic.app.OnlineSearchPreviewTest:..
+
+Time: 205,444
+
+OK (19 tests)

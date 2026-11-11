@@ -2117,3 +2117,6 @@ one at http://mozilla.org/MPL/2.0/.
 
 YT-DLP SEARCH PREVIEW
 Read-only metadata search uses the already bundled, pinned yt-dlp library and its guarded HTTPS transport. No iTunes assets, Google Data API key form, or embedded YouTube WebView player remains in this revision. Underlying search currently uses yt-dlp's YouTube search extractor; removing the API integration does not remove that source. Source terms and content rights remain separate constraints. No login/cookie import, DRM/access restriction bypass, or remote runtime/plugin installation is added.
+
+
+Yono2.0 streaming candidate: music catalogue search/related lists use the already bundled ytmusicapi1.12.3; yt-dlp remains the exact-source audio resolver and fallback search. Media3 database/cache modules are1.6.1, Apache-2.0, with upstream sources at https://github.com/androidx/media/tree/1.6.1. Existing license texts and dependency locks continue to apply.

@@ -66,6 +66,42 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     val onlineCollections=app.onlineCollections.flow.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptyList())
+    val onlineActivity=dao.onlineActivity().stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptyList())
+    val onlineFavorites=onlineActivity.map {rows->rows.filter {it.favorite}.mapNotNull {it.song()}}.flowOn(Dispatchers.Default).stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptyList())
+    val onlineHistory=onlineActivity.map {rows->rows.filter {it.lastPlayed>0}.mapNotNull {it.song()}}.flowOn(Dispatchers.Default).stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptyList())
+    val recommendations=MutableStateFlow<List<com.yonzmusic.app.search.OnlineSong>>(emptyList())
+    val discoveryLoading=MutableStateFlow(false)
+    val discoveryError=MutableStateFlow("")
+    val cacheBytes=app.streamCache.bytes
+    private var discoveryJob: Job?=null
+    private var discoverySeed=""
+    private var discoveryTime=0L
+    fun discover(seed: String, force: Boolean=false) {
+        if(seed.isBlank()) {cancelDiscovery();recommendations.value=emptyList();discoveryError.value="";discoverySeed="";return}
+        if(!force && seed==discoverySeed && recommendations.value.isNotEmpty() && android.os.SystemClock.elapsedRealtime()-discoveryTime<300000)return
+        discoveryJob?.cancel();discoverySeed=seed;discoveryLoading.value=true;discoveryError.value=""
+        discoveryJob=viewModelScope.launch {
+            try {recommendations.value=app.catalog.related(seed);discoveryTime=android.os.SystemClock.elapsedRealtime()}
+            catch(e:TimeoutCancellationException) {discoveryError.value="Rekomendasi terlalu lama merespons. Coba lagi."}
+            catch(e:CancellationException) {throw e}
+            catch(_:Exception) {discoveryError.value="Rekomendasi belum tersedia. Koleksimu tetap bisa diputar."}
+            finally {if(discoveryJob==currentCoroutineContext()[Job])discoveryLoading.value=false}
+        }
+    }
+    fun cancelDiscovery() {discoveryJob?.cancel();discoveryJob=null;discoveryLoading.value=false}
+    fun favoriteOnline(song: com.yonzmusic.app.search.OnlineSong) {action {app.onlineActivity.favorite(song)}}
+    fun radio(song: com.yonzmusic.app.search.OnlineSong) {
+        streamPlayJob?.cancel();streamPlayJob=action {
+            app.streams.register(song);withTimeout(6000) {playback.state.first {it.ready}};playback.radio(song)
+        }
+    }
+    fun streamQuality(value: String) {action {app.preferences.streamQuality(value)}}
+    fun streamCacheMb(value: Int) {action {app.preferences.streamCacheMb(value);withContext(Dispatchers.IO) {app.streamCache.configure(value);if(value==0)app.streamCache.clear();app.streamCache.refreshSize()}}}
+    fun autoplay(value: Boolean) {action {app.preferences.autoplay(value)}}
+    fun onlineHistory(enabled: Boolean) {app.onlineActivity.invalidateHistory();action {app.preferences.onlineHistory(enabled);if(!enabled) {cancelDiscovery();recommendations.value=emptyList()}}}
+    fun clearOnlineHistory() {app.onlineActivity.invalidateHistory();action {app.onlineActivity.clearHistory();cancelDiscovery();recommendations.value=emptyList();discoverySeed="";notify("Riwayat dengar daring dihapus.")}}
+    fun clearStreamCache() {action {withContext(Dispatchers.IO) {app.streamCache.clear()};notify("Cache audio dibersihkan.")}}
+    fun refreshCacheSize() {action {withContext(Dispatchers.IO) {app.streamCache.refreshSize()}}}
     val onlinePlaylistPreview=MutableStateFlow<com.yonzmusic.app.search.OnlinePlaylistPreview?>(null)
     val onlinePlaylistLoading=MutableStateFlow(false)
     val onlinePlaylistError=MutableStateFlow("")
@@ -103,7 +139,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun clearSearchHistory(enabled: Boolean=searchSettings.remembersHistory()) {searchSettings.clearHistory(enabled);recentSearch.value=emptyList()}
     val searchQuery=MutableStateFlow("")
-    val searchOnline=MutableStateFlow(false)
+    val searchOnline=MutableStateFlow(true)
     val searchProvider=MutableStateFlow(com.yonzmusic.app.search.SearchProvider.ENGINE)
     val pendingDownloadInput=MutableStateFlow("")
     val messages = MutableSharedFlow<String>(extraBufferCapacity = 8)

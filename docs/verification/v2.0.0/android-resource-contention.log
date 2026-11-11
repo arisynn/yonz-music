@@ -1,0 +1,77 @@
+
+com.yonzmusic.app.StreamingRuntimeV2Test:
+Error in favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer(com.yonzmusic.app.StreamingRuntimeV2Test):
+java.lang.AssertionError: V2 runtime stage timed out: autoplay appends deduplicated related songs
+	at com.yonzmusic.app.StreamingRuntimeV2Test$favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer$1.invokeSuspend$await(StreamingRuntimeV2Test.kt:33)
+	at com.yonzmusic.app.StreamingRuntimeV2Test$favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer$1.access$invokeSuspend$await(Unknown Source:0)
+	at com.yonzmusic.app.StreamingRuntimeV2Test$favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer$1$await$1.invokeSuspend(Unknown Source:13)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:35)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:98)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingRuntimeV2Test.favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer(StreamingRuntimeV2Test.kt:27)
+	... 32 trimmed
+Caused by: kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 90000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:764)
+
+com.yonzmusic.app.StreamPreloadTest:
+Error in nextAudioLoadsBeforeTransitionWithoutChangingLibrary(com.yonzmusic.app.StreamPreloadTest):
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 60000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:764)
+
+
+Time: 265,451
+There were 2 failures:
+1) favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer(com.yonzmusic.app.StreamingRuntimeV2Test)
+java.lang.AssertionError: V2 runtime stage timed out: autoplay appends deduplicated related songs
+	at com.yonzmusic.app.StreamingRuntimeV2Test$favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer$1.invokeSuspend$await(StreamingRuntimeV2Test.kt:33)
+	at com.yonzmusic.app.StreamingRuntimeV2Test$favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer$1.access$invokeSuspend$await(Unknown Source:0)
+	at com.yonzmusic.app.StreamingRuntimeV2Test$favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer$1$await$1.invokeSuspend(Unknown Source:13)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:35)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:101)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:98)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.StreamingRuntimeV2Test.favoritesQualifiedHistoryAutoplayPauseAndExplicitRadioShareOnePlayer(StreamingRuntimeV2Test.kt:27)
+	... 32 trimmed
+Caused by: kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 90000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:764)
+2) nextAudioLoadsBeforeTransitionWithoutChangingLibrary(com.yonzmusic.app.StreamPreloadTest)
+kotlinx.coroutines.TimeoutCancellationException: Timed out waiting for 60000 ms
+	at kotlinx.coroutines.TimeoutKt.TimeoutCancellationException(Timeout.kt:189)
+	at kotlinx.coroutines.TimeoutCoroutine.run(Timeout.kt:157)
+	at kotlinx.coroutines.EventLoopImplBase$DelayedRunnableTask.run(EventLoop.common.kt:505)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.DefaultExecutor.run(DefaultExecutor.kt:105)
+	at java.lang.Thread.run(Thread.java:764)
+
+FAILURES!!!
+Tests run: 2,  Failures: 2

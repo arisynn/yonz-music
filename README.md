@@ -2,6 +2,10 @@
 
 Your Music. Your Space.
 
+**2.0.0 candidate (belum dirilis stable):** pengalaman streaming utama dengan Beranda minimalis, pencarian musik daring, favorit dan riwayat online, radio/autoplay, kualitas Seimbang, serta cache privat maksimal64MiB. Musik lokal dan unduhan tetap tersedia. [Perilaku dan batasan](docs/STREAMING_2_0.md) · [Build dan pengujian](BUILD_INSTRUCTIONS.md).
+
+Rilis official publik yang menjadi basis tetap1.5.2 sampai kandidat ini lolos verifikasi sumber langsung dan rilis baru diterbitkan.
+
 **1.5.2:** antarmuka berbahasa Indonesia: Beranda / Pustaka / Cari / Daftar putar, pengaturan, pemutar, pencarian, impor, unduhan, aksesibilitas, serta pembaruan. Kode status/tema/pengurutan dan metadata musik lama tetap utuh; pesan lama diterjemahkan saat ditampilkan. Komponen Material/Media3 memakai sumber daya Indonesia. [Cakupan bahasa](docs/BAHASA_INDONESIA.md).
 
 **1.5.1:** unduhan disembunyikan dari Galeri secara default menggunakan `.nomedia` hanya di folder tujuan yang dipilih. Bisa dimatikan di Settings; seluruh isi/subfolder tujuan terpengaruh, termasuk pemutar lain yang memakai indeks Android. JSON metadata baru disimpan rapi di `.yono/` dan sampul tetap `.cover/`. [Rincian tata letak dan batasannya](docs/DOWNLOAD_FOLDER_LAYOUT.md). JSON lama tetap dibaca. Audio, ID koleksi dan format aslinya tidak diubah. Galeri HyperOS mungkin perlu memperbarui indeks.

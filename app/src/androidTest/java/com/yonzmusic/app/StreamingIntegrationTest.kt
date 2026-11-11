@@ -39,7 +39,7 @@ class StreamingIntegrationTest {
         val settings=SearchSettings(app);val oldHistory=settings.history();val oldHistoryEnabled=settings.remembersHistory()
         val builtins=PythonRuntime.module(app,"builtins");val globals=builtins.callAttr("dict")
         builtins.callAttr("exec","""
-import yono_stream as st, yono_search as ys
+import yono_stream as st, yono_catalog as ys
 old_inspect,old_search=st.inspect_video,ys.run
 def fake_inspect(ident,*args,**kwargs):
     return {'url':'https://r1.googlevideo.com/videoplayback?fixture=original','headers':{'User-Agent':'Yono-QA'},'song':{'duration':20}}
@@ -109,7 +109,7 @@ st.inspect_video,ys.run=fake_inspect,fake_search
                     return (if(node.text?.toString()?.contains(value)==true)listOf(node)else emptyList())+(0 until node.childCount).flatMap {texts(node.getChild(it),value,depth+1)}
                 }
                 inst.waitForIdleSync()
-                val nodes=texts(inst.uiAutomation.rootInActiveWindow,"Search")
+                val nodes=texts(inst.uiAutomation.rootInActiveWindow,"Cari")
                 assertTrue("Search navigation is visible",nodes.isNotEmpty());tap(nodes.last())
                 delay(1000)
                 fun hasInput(node:android.view.accessibility.AccessibilityNodeInfo?):Boolean {
@@ -133,7 +133,7 @@ st.inspect_video,ys.run=fake_inspect,fake_search
                 assertNotNull("Minimal result exposes its secondary actions",more);tap(more!!);delay(1500)
                 assertNotNull("Queue actions remain available in More",described(inst.uiAutomation.rootInActiveWindow,"Tambah antrean"))
                 screenshot("stream-options-light.png")
-                var save=described(inst.uiAutomation.rootInActiveWindow,"Simpan offline")
+                var save=described(inst.uiAutomation.rootInActiveWindow,"Simpan untuk luring")
                 while(save!=null && !save.isClickable)save=save.parent
                 assertNotNull("More exposes clickable download",save);tap(save!!)
                 withTimeout(10000){while(scheduled.isEmpty())delay(100)}
@@ -155,7 +155,9 @@ st.inspect_video,ys.run=fake_inspect,fake_search
                 val node=texts(root,"Original streaming fi").maxByOrNull {n->val r=android.graphics.Rect();n.getBoundsInScreen(r);r.top}
                 assertNotNull("Remote mini-player visible",node);tap(node!!)
                 delay(2000)
-                var download=described(inst.uiAutomation.rootInActiveWindow,"Simpan offline")
+                val playerOptions=described(inst.uiAutomation.rootInActiveWindow,"Opsi lagu")
+                assertNotNull(playerOptions);tap(playerOptions!!);delay(1000)
+                var download=described(inst.uiAutomation.rootInActiveWindow,"Simpan untuk luring")
                 while(download!=null && !download.isClickable)download=download.parent
                 assertNotNull("Shared Now Playing exposes download action",download)
                 inst.waitForIdleSync();delay(1000);screenshot("stream-now-playing-light.png")

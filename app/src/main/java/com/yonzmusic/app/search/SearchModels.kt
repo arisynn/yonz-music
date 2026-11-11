@@ -16,17 +16,18 @@ class SearchFailure(val userMessage: String): Exception(userMessage)
 /** Remote metadata never becomes a local track or evidence of a licensed download. */
 object SearchContract {
     val sourceHosts=setOf("www.youtube.com","youtube.com","music.youtube.com","youtu.be")
-    val artHosts=setOf("i.ytimg.com","img.youtube.com")
+    val artHosts=setOf("i.ytimg.com","img.youtube.com","lh3.googleusercontent.com")
     fun https(value: String,hosts: Set<String>): Boolean=runCatching {
         val u=URI(value);value.length<=4096 && u.scheme=="https" && u.host?.lowercase() in hosts && u.userInfo==null && u.port in setOf(-1,443) && u.fragment==null
     }.getOrDefault(false)
     fun text(value:String,limit:Int=250)=value.filter {!it.isISOControl()}.trim().take(limit)
     fun query(value:String)=text(value.replace(Regex("\\s+")," "),200)
-    fun engine(json:String): SearchPage {
+    fun engine(json:String, limit: Int = 12): SearchPage {
+        require(limit in 1..20)
         val root=JSONObject(json)
         if(!root.optBoolean("ok"))throw SearchFailure(root.optJSONObject("error")?.optString("message")?.let {text(it)}?.ifBlank {null} ?: "Mesin belum dapat membaca sumber.")
         val rows=root.getJSONArray("songs")
-        val songs=(0 until minOf(rows.length(),12)).mapNotNull {i->
+        val songs=(0 until minOf(rows.length(),limit)).mapNotNull {i->
             val r=rows.optJSONObject(i) ?: return@mapNotNull null
             val id=r.optString("video_id");val title=text(r.optString("title"));val page=r.optString("page")
             if(!id.matches(Regex("[A-Za-z0-9_-]{11}")) || title.isBlank() || page!="https://www.youtube.com/watch?v=$id")return@mapNotNull null

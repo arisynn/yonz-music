@@ -31,18 +31,22 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         @Keep fun isCancelled()=flag.get() || thread.isInterrupted
         @Keep fun onEvent(value:String) {}
     }
-    data class Resolved(val url:String,val headers:Map<String,String>,val duration:Long,val formatId:String="",val extension:String="",val codec:String="")
+    data class Resolved(val url:String,val headers:Map<String,String>,val duration:Long,val formatId:String="",val extension:String="",val codec:String="",val bitrate:Long=0,val revision:String="")
+    @Volatile var quality: String = "balanced"
+    private val sessionRevision = java.util.UUID.randomUUID().toString()
     private val cache=StreamResolutionCache<Resolved>({android.os.SystemClock.elapsedRealtime()})
-    override fun invalidate(id:String){cache.invalidate(id)}
+    override fun invalidate(id:String){listOf("economy","balanced","best").forEach {cache.invalidate("$id:$it")}}
     /** Called only by ExoPlayer loader threads. Never stores the signed URL in Room/preferences/logs. */
     override fun resolve(id:String,cancelled:AtomicBoolean,formatId:String?,timeoutMillis:Long):Resolved {
         require(valid(id))
+        val started=android.os.SystemClock.elapsedRealtime()
+        val selectedQuality=quality
         val deadline=android.os.SystemClock.elapsedRealtime()+timeoutMillis.coerceIn(1,22000)
         fun active() {
             if(cancelled.get() || Thread.currentThread().isInterrupted)throw StreamFailure(StreamIssue.CANCELLED)
             if(android.os.SystemClock.elapsedRealtime()>=deadline)throw StreamFailure(StreamIssue.TIMEOUT)
         }
-        return cache.resolve(id,{formatId==null || it.formatId==formatId},::active,
+        return cache.resolve("$id:$selectedQuality",{formatId==null || it.formatId==formatId},::active,
             {StreamRange.cacheMillis(it.url,System.currentTimeMillis())}) {
         val remaining=deadline-android.os.SystemClock.elapsedRealtime()
         if(remaining<5000)throw StreamFailure(StreamIssue.TIMEOUT)
@@ -50,11 +54,12 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
             .put("network",AndroidNetworkContext.options(app,"https://www.youtube.com"))
         val qjs=File(app.applicationInfo.nativeLibraryDir,"libqjs.so")
         if(qjs.isFile)config.put("runtime",JSONObject().put("quickjs",JSONObject().put("path",qjs.canonicalPath)))
-        val raw=PythonRuntime.module(app,"yono_stream").callAttr("execute",JSONObject().put("video_id",id).apply {if(formatId!=null)put("format_id",formatId)}.toString(),config.toString(),Cancellation(cancelled,Thread.currentThread())).toString()
+        val raw=PythonRuntime.module(app,"yono_stream").callAttr("execute",JSONObject().put("video_id",id).put("quality",selectedQuality).apply {if(formatId!=null)put("format_id",formatId)}.toString(),config.toString(),Cancellation(cancelled,Thread.currentThread())).toString()
         val j=JSONObject(raw);if(!j.optBoolean("ok"))throw StreamFailure(runCatching {StreamIssue.valueOf(j.optString("code","SOURCE"))}.getOrDefault(StreamIssue.SOURCE))
         val url=j.getString("url");runCatching {StreamPolicy.url(url)}.getOrElse {throw StreamFailure(StreamIssue.UNSAFE)}
         val headers=mutableMapOf<String,String>();j.optJSONObject("headers")?.let {h->h.keys().forEach {k->val v=h.optString(k);if(k.lowercase() in setOf("user-agent","accept","accept-language") && v.length<1500 && !v.contains('\r') && !v.contains('\n'))headers[k]=v}}
-        val result=Resolved(url,headers,((j.optJSONObject("song")?.optDouble("duration",0.0) ?: 0.0)*1000).toLong().coerceIn(0,7*86400000L),j.optString("format_id").take(100),j.optString("ext").take(20),j.optString("acodec").take(100))
+        val result=Resolved(url,headers,((j.optJSONObject("song")?.optDouble("duration",0.0) ?: 0.0)*1000).toLong().coerceIn(0,7*86400000L),j.optString("format_id").take(100),j.optString("ext").take(20),j.optString("acodec").take(100),j.optLong("bitrate").coerceIn(0,10000),j.optString("revision").takeIf {it.matches(Regex("[a-f0-9]{64}"))} ?: "$sessionRevision:${java.util.UUID.randomUUID()}")
+        StreamTimings.record("resolve",android.os.SystemClock.elapsedRealtime()-started)
         result
         }
     }

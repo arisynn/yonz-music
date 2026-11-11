@@ -1,0 +1,18 @@
+{
+  "kind": "host-metadata-only",
+  "search": {
+    "ok": false,
+    "elapsedMs": 5548,
+    "code": "CATALOGUE_NETWORK"
+  },
+  "resolutions": [
+    {
+      "ok": false,
+      "elapsedMs": 134,
+      "code": "NETWORK",
+      "bitrate": 0
+    }
+  ],
+  "knownPublicVideoProbe": true,
+  "decodedPlaybackTested": false
+}

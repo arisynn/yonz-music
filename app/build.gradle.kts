@@ -19,8 +19,8 @@ android {
         applicationId = "com.yonzmusic.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(16)
-        versionName = "1.5.2"
+        versionCode = providers.gradleProperty("testVersionCode").map(String::toInt).getOrElse(17)
+        versionName = "2.0.0"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -41,7 +41,7 @@ android {
         create("preview") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".dev"
-            versionNameSuffix = "-preview.5"
+            versionNameSuffix = "-preview.1"
             matchingFallbacks += listOf("debug")
             resValue("string","app_name","Yono Music Preview")
         }
@@ -52,7 +52,7 @@ android {
             matchingFallbacks += listOf("debug")
         }
         release {
-            buildConfigField("boolean","ONLINE_SEARCH_PREVIEW",providers.gradleProperty("onlineSearchEnabled").orElse("false").get().toBoolean().toString())
+            buildConfigField("boolean","ONLINE_SEARCH_PREVIEW",providers.gradleProperty("onlineSearchEnabled").orElse("true").get().toBoolean().toString())
             signingConfig = signingConfigs.findByName("ownerRelease")
             isMinifyEnabled = true
             isShrinkResources = true
@@ -108,6 +108,7 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.10.1")
     androidTestImplementation("androidx.room:room-testing:2.7.1")
     implementation("androidx.media3:media3-exoplayer:1.6.1")
+    implementation("androidx.media3:media3-database:1.6.1")
     implementation("androidx.media3:media3-session:1.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     testImplementation("junit:junit:4.13.2")

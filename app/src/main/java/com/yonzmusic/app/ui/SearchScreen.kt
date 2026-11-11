@@ -140,7 +140,7 @@ import com.yonzmusic.app.ui.icons.SkipNext
     var historyEnabled by remember {mutableStateOf(vm.searchSettings.remembersHistory())}
     AlertDialog(onDismissRequest=close,title={Text("Pengaturan pencarian")},text={
         Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
-            Text("Pencarian menggunakan mesin yt-dlp tertanam tanpa kunci API Google. Hasil bergantung pada akses sumber.")
+            Text("Cari katalog musik publik tanpa akun. Hasil bergantung pada ketersediaan sumber.")
             Row(verticalAlignment=Alignment.CenterVertically) {Text("Simpan riwayat di perangkat",Modifier.weight(1f));Switch(historyEnabled,{historyEnabled=it})}
             TextButton({vm.clearSearchHistory(historyEnabled)}){Text("Hapus riwayat")}
         }
@@ -148,8 +148,11 @@ import com.yonzmusic.app.ui.icons.SkipNext
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable private fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit,onSave:(OnlineSong)->Unit,close:()->Unit) {
+@Composable fun EngineResultSheet(song:OnlineSong,vm:MusicViewModel,onDownload:(OnlineSong)->Unit,onDownloadSettings:(OnlineSong)->Unit,onSave:(OnlineSong)->Unit,close:()->Unit) {
     val context=LocalContext.current
+    val favorites by vm.onlineFavorites.collectAsStateWithLifecycle()
+    val preferences by vm.preferences.collectAsStateWithLifecycle()
+    val liked=favorites.any {it.id==song.id}
     ModalBottomSheet(onDismissRequest=close,modifier=Modifier.statusBarsPadding(),sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
         DialogSystemBars()
         Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(Design.page),verticalArrangement=Arrangement.spacedBy(Design.md)) {
@@ -166,6 +169,12 @@ import com.yonzmusic.app.ui.icons.SkipNext
                 OnlineResultAction("Antrean","Tambah antrean",Icons.Rounded.QueueMusic,Modifier.weight(1f)){vm.playOnline(song,false);close()}
                 OnlineResultAction("Unduh","Simpan untuk luring",Icons.Rounded.Download,Modifier.weight(1f)){onDownload(song);close()}
             }
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
+                TextButton({vm.favoriteOnline(song);close()},Modifier.weight(1f)){Icon(if(liked)Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,null);Spacer(Modifier.width(Design.xs));Text(if(liked)"Disukai" else "Favorit")}
+                TextButton({vm.radio(song);close()},Modifier.weight(1f)){Text("Radio lagu")}
+            }
+            Text("Kualitas audio",style=MaterialTheme.typography.labelMedium)
+            QualityChoices(preferences.streamQuality,vm::streamQuality)
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
             TextButton({
                 if(SearchContract.https(song.page,SearchContract.sourceHosts))runCatching {

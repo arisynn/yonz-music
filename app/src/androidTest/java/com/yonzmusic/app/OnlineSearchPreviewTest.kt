@@ -19,22 +19,20 @@ class OnlineSearchPreviewTest {
     private val app get()=ApplicationProvider.getApplicationContext<YonzApp>()
     private val inst get()=InstrumentationRegistry.getInstrumentation()
     private val setup="""
-import yono_search as ys
-ys._qa_original_run=ys.run
-class SearchFixture:
-    def __init__(self,c):self.control=c
-    def __enter__(self):return self
-    def __exit__(self,*args):pass
-    def extract_info(self,target,download=False):
-        assert download is False
-        if 'slow fixture' in target:
-            for _ in range(200): self.control.wait(.05)
-        return {'entries':[{'id':'aqz-KE-bpKQ','title':'Original fixture audio','artists':['Karisyono QA'],'duration':20,'channel':'Fixture channel'}]}
+import yono_catalog as yc
+yc._qa_original_run=yc.run
+class CatalogFixture:
+    def __init__(self,control):self.control=control
+    def close(self):pass
+    def call(self,method,query,**kwargs):
+        if 'slow fixture' in query:
+            for _ in range(200):self.control.wait(.05)
+        return [{'videoId':'aqz-KE-bpKQ','title':'Original fixture audio','artists':[{'name':'Karisyono QA'}],'duration_seconds':20}]
 def fixture_run(payload,control):
-    return ys._qa_original_run(payload,control,lambda c,**opts:SearchFixture(c))
-ys.run=fixture_run
+    return yc._qa_original_run(payload,control,CatalogFixture)
+yc.run=fixture_run
 """.trimIndent()
-    @Test fun actualPythonBridgeUsesFlatReadOnlySearchAndCancellation(): Unit=runBlocking {
+    @Test fun actualPythonCatalogBridgeUsesReadOnlySearchAndCancellation(): Unit=runBlocking {
         val builtins=PythonRuntime.module(app,"builtins");val globals=builtins.callAttr("dict");builtins.callAttr("exec",setup,globals)
         val count=app.repository.dao.allTracks().size
         try {
@@ -46,7 +44,7 @@ ys.run=fixture_run
             delay(100);old.cancelAndJoin()
             val latest=withTimeout(5000){backend.search(SearchProvider.ENGINE,"Original fixture audio")}
             assertEquals(1,latest.songs.size);assertEquals(count,app.repository.dao.allTracks().size)
-        }finally {builtins.callAttr("exec","ys.run=ys._qa_original_run\ndel ys._qa_original_run",globals)}
+        }finally {builtins.callAttr("exec","yc.run=yc._qa_original_run\ndel yc._qa_original_run",globals)}
     }
     @Test fun optionalHistoryAndObsoleteKeyRemovalKeepCollections(): Unit=runBlocking {
         val count=app.repository.dao.allTracks().size

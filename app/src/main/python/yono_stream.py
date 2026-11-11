@@ -2,21 +2,32 @@
 import json
 import math
 import re
+import hashlib
 import socket
 import urllib.error
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 from yono_core.control import Control, Stopped
 from yono_core.network import youtube_dl
 from yono_core.model import EngineError, Song, thumbnail
 
 
-def inspect_video(ident, control, runtime=None, factory=youtube_dl, format_id=None):
+def quality_selector(quality):
+    if quality not in {'economy', 'balanced', 'best'}:
+        raise EngineError('INVALID_FORMAT', 'Kualitas audio tidak valid.')
+    base = 'bestaudio[vcodec=none][protocol=https]'
+    if quality == 'best':
+        return base
+    ceiling = 80 if quality == 'economy' else 144
+    return f'{base}[abr<={ceiling}]/{base.replace("bestaudio", "worstaudio")}'
+
+
+def inspect_video(ident, control, runtime=None, factory=youtube_dl, format_id=None, quality='best'):
     if not isinstance(ident,str) or not re.fullmatch(r'[A-Za-z0-9_-]{11}',ident):
         raise EngineError('INVALID_SOURCE','Identitas sumber tidak valid.')
     if format_id is not None and (not isinstance(format_id,str) or not re.fullmatch(r'[A-Za-z0-9_.-]{1,100}',format_id)):
         raise EngineError('INVALID_FORMAT','Identitas format tidak valid.')
     with factory(control,runtime) as dl:
-        dl.params.update(format=(format_id or 'bestaudio')+'[vcodec=none][protocol=https]',skip_download=True)
+        dl.params.update(format=(format_id+'[vcodec=none][protocol=https]' if format_id is not None else quality_selector(quality)),skip_download=True)
         data=dl.extract_info('https://www.youtube.com/watch?v='+ident,download=False)
     control.check()
     if not isinstance(data,dict) or data.get('id')!=ident or data.get('is_live') or data.get('has_drm') or data.get('availability') in {'private','premium_only','subscriber_only','needs_auth'}:
@@ -35,7 +46,15 @@ def inspect_video(ident, control, runtime=None, factory=youtube_dl, format_id=No
     song=Song(data.get('track') or data.get('title') or '',artists,duration,album=data.get('album') or '',youtube_id=ident,
               artwork_url=thumbnail(data.get('thumbnails')),source_url='https://www.youtube.com/watch?v='+ident)
     headers={k:v for k,v in (data.get('http_headers') or {}).items() if k.lower() in {'user-agent','accept','accept-language'} and isinstance(v,str) and len(v)<1500 and '\r' not in v and '\n' not in v}
-    return {'url':url,'headers':headers,'song':song.to_dict(),'ext':data.get('ext',''),'format_id':str(data.get('format_id',''))[:100],'acodec':str(data.get('acodec',''))[:100]}
+    # CDN lmt + exact length identify immutable source bytes across expiring URLs.
+    # Without both, Kotlin restricts reuse to this single resolved reference.
+    params=parse_qs(u.query)
+    length=str(data.get('filesize') or params.get('clen',[''])[0])
+    modified=params.get('lmt',[''])[0]
+    revision=hashlib.sha256(f'{ident}:{data.get("format_id", "")}:{length}:{modified}'.encode()).hexdigest() if length.isdigit() and modified.isdigit() else ''
+    bitrate=data.get('abr')
+    bitrate=int(bitrate) if isinstance(bitrate,(int,float)) and math.isfinite(bitrate) and 0 < bitrate < 10000 else 0
+    return {'url':url,'headers':headers,'song':song.to_dict(),'ext':data.get('ext',''),'format_id':str(data.get('format_id',''))[:100],'acodec':str(data.get('acodec',''))[:100], 'bitrate':bitrate, 'revision':revision}
 
 
 def failure_code(error):
@@ -68,6 +87,7 @@ def execute(payload_json,config_json,callback):
         token=Control(config['job_id'],callback,min(25,max(5,int(config.get('timeout_seconds',22)))))
         token.network_options=config.get('network') or {}
         options={'format_id':payload['format_id']} if payload.get('format_id') is not None else {}
+        options['quality']=payload.get('quality','balanced')
         result=inspect_video(payload.get('video_id'),token,config.get('runtime'),**options)
         return json.dumps({'ok':True,**result},ensure_ascii=False,allow_nan=False)
     except Stopped as error:

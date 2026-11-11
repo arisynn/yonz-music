@@ -86,6 +86,12 @@ import org.json.JSONArray
         val sleepEnd by vm.sleepEnd.collectAsStateWithLifecycle()
         val playerTracks=remember(collectionTracks,playback.remoteTracks){collectionTracks+playback.remoteTracks}
         val current = remember(playerTracks, playback.id) { playerTracks.find { it.id == playback.id } }
+        val onlineFavorites by vm.onlineFavorites.collectAsStateWithLifecycle()
+        var playerSongOptions by remember {mutableStateOf<com.yonzmusic.app.search.OnlineSong?>(null)}
+        fun songFor(track: Track): com.yonzmusic.app.search.OnlineSong {
+            val id=track.id.removePrefix("engine:")
+            return com.yonzmusic.app.search.OnlineSong(track.id,com.yonzmusic.app.search.SearchProvider.ENGINE,track.title,track.artist.removePrefix("Kanal: "),track.album,track.duration,track.artUri,"https://www.youtube.com/watch?v=$id",id,!track.artist.startsWith("Kanal: "))
+        }
         var streamDownload by remember {mutableStateOf<com.yonzmusic.app.search.OnlineSong?>(null)}
         fun downloadRemote(track:com.yonzmusic.app.data.Track) {
             playback.remoteTracks.firstOrNull {it.id==track.id}?.let {t->
@@ -111,7 +117,7 @@ import org.json.JSONArray
         var infoId by remember { mutableStateOf<String?>(null) }
         var historyReport by remember { mutableStateOf<ImportLog?>(null) }
         var exportTracks by remember { mutableStateOf<List<Track>>(emptyList()) }
-        val primaryDestinations = listOf("home", "library", "search", "playlists")
+        val primaryDestinations = listOf("home", "search", "library", "playlists")
         fun navigate(route: String) { if (destination in primaryDestinations) parent = destination; destination = route }
         fun detail(kind: String, key: String, title: String, id: Long = 0) {
             if (destination in primaryDestinations) parent = destination
@@ -145,7 +151,7 @@ import org.json.JSONArray
         LaunchedEffect(vm) { vm.messages.collect { snackbar.showSnackbar(Bahasa.pesan(it)) } }
         LaunchedEffect(playback.error) { playback.error?.let { snackbar.showSnackbar(Bahasa.pesan(it)) } }
         BackHandler(enabled = destination !in primaryDestinations && !playerOpen && !queueOpen && menuId == null && addIds == null) { back() }
-        val detailTracks = remember(tracks, collectionTracks, favorites, entries, history, detailKind, detailKey, selectedPlaylist) {
+        val detailTracks = remember(tracks, collectionTracks, favorites, entries, history, detailKind, detailKey, selectedPlaylist, mixes) {
             when (detailKind) {
                 "favorites" -> collectionTracks.filter { it.id in favorites }
                 "history" -> history.mapNotNull { h -> tracks.find { it.id == h.trackId } }
@@ -153,6 +159,7 @@ import org.json.JSONArray
                 "album" -> tracks.filter { albumKey(it) == detailKey }
                 "artist" -> tracks.filter { it.artist == detailKey }
                 "folder" -> tracks.filter { it.folder == detailKey }
+                "mix" -> mixes.firstOrNull {it.key==detailKey}?.tracks ?: emptyList()
                 else -> tracks
             }
         }
@@ -172,7 +179,7 @@ import org.json.JSONArray
                     actions = {
                         if (destination in primaryDestinations) {
                             if(downloading) ActionIcon(Icons.Rounded.PlaylistPlay,"Daftar unduhan aktif",{downloadsOpen=true})
-                            ActionIcon(Icons.Rounded.LibraryAdd, "Impor musik", { vm.resetImport(); navigate("import") })
+                            if(destination=="library" || destination=="playlists")ActionIcon(Icons.Rounded.LibraryAdd, "Impor musik", { vm.resetImport(); navigate("import") })
                             ActionIcon(Icons.Rounded.Tune, "Pengaturan", { navigate("settings") })
                         }
                     },
@@ -183,8 +190,8 @@ import org.json.JSONArray
                 if(!(destination=="search" && WindowInsets.ime.getBottom(LocalDensity.current)>0)) Column(Modifier.background(colors.background).navigationBarsPadding()) {
                     if (current != null && playback.queue.isNotEmpty()) MiniPlayer(current, playback.playing || playback.requested, preferences.glass, vm.playback, { playerOpen = true })
                     if (destination in primaryDestinations || destination == "detail") NavigationBar(containerColor = colors.background, tonalElevation = 0.dp, windowInsets = WindowInsets(0)) {
-                        val labels = listOf("Beranda", "Pustaka", "Cari", "Daftar putar")
-                        val icons = listOf(Icons.Rounded.Home, Icons.Rounded.LibraryMusic, Icons.Rounded.Search, Icons.Rounded.QueueMusic)
+                        val labels = listOf("Beranda", "Cari", "Pustaka", "Daftar putar")
+                        val icons = listOf(Icons.Rounded.Home, Icons.Rounded.Search, Icons.Rounded.LibraryMusic, Icons.Rounded.QueueMusic)
                         primaryDestinations.forEachIndexed { i, route ->
                             NavigationBarItem(selected = destination == route || (destination == "detail" && parent == route), onClick = { destination = route; parent = route }, icon = { Icon(icons[i], null) }, label = { Text(labels[i], maxLines = 2, overflow = TextOverflow.Ellipsis) }, colors = NavigationBarItemDefaults.colors(indicatorColor = colors.primaryContainer))
                         }
@@ -196,13 +203,13 @@ import org.json.JSONArray
             val modifier = Modifier.padding(padding).consumeWindowInsets(padding).fillMaxSize()
             Box(modifier) {
                 Crossfade(destination,modifier=Modifier.fillMaxSize(),animationSpec=tween(if(LocalReducedMotion.current)0 else 160),label="page") { route -> when (route) {
-                    "home" -> HomeScreen(tracks, favorites, history, current, playback.id, { vm.play(it.first, it.second) }, { menuId = it.id }, { detail("favorites", "", "Favorit") }, { detail("history", "", "Terakhir diputar") }, { k, t -> detail("album", k, t) }, { vm.resetImport(); navigate("import") }, { destination = "library" }, { playerOpen = true },scrollState=homeScroll,mixes=mixes)
-                    "library" -> LibraryScreen(tracks, favorites, playback.id, preferences.sort, scanning, { vm.resetImport(); navigate("import") }, vm::scan, vm::sort, { t, id -> vm.play(t, id) }, { menuId = it.id }, { kind, key, title -> detail(kind, key, title) })
+                    "home" -> StreamingHome(vm,current,{playerOpen=true},{vm.searchOnline.value=true;destination="search"},{detail("favorites","","Favorit")},{detail("history","","Terakhir diputar")},{destination="library"},{p->detail("online",p.id,p.name)},{song->vm.downloadOnline(song){streamDownload=song}},{song->streamDownload=song},homeScroll)
+                    "library" -> LibraryScreen(tracks, favorites, playback.id, preferences.sort, scanning, { vm.resetImport(); navigate("import") }, vm::scan, vm::sort, { t, id -> vm.play(t, id) }, { menuId = it.id }, { kind, key, title -> detail(kind, key, title) },mixes=mixes)
                     "search" -> SearchScreen(vm,tracks, playlists, favorites, playback.id, { t, id -> vm.play(t, id) }, { menuId = it.id }, { p -> detail("playlist", "", p.name, p.id) },{song->
                         vm.downloadOnline(song){streamDownload=song}
                     },{song->streamDownload=song})
-                    "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorit") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") }, onlineCollections, {p->detail("online",p.id,p.name)},{onlineLink=true})
-                    "detail" -> if(detailKind=="online")OnlineCollectionDetail(vm,onlineCollections.find{it.id==detailKey},playback.id,{vm.searchOnline.value=true;destination="search"},{song->vm.downloadOnline(song){streamDownload=song}},{destination="playlists"}) else DetailScreen(detailTracks, favorites, playback.id, detailKind == "playlist", { t, id -> vm.play(t, id) }, { menuId = it.id }, { nameAction = "rename" }, { deleteId = selectedPlaylist }, { exportTracks = detailTracks; export.launch((playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle).take(60) + ".m3u8") }, { from, to -> vm.move(selectedPlaylist, from, to) }, { addIds = emptyList() })
+                    "playlists" -> PlaylistsScreen(playlists, tracks, entries, favorites.size+onlineFavorites.size, { nameAction = "create" }, { detail("favorites", "", "Favorit") }, { p -> detail("playlist", "", p.name, p.id) }, { vm.resetImport(); navigate("import") }, onlineCollections, {p->detail("online",p.id,p.name)},{onlineLink=true})
+                    "detail" -> if(detailKind in setOf("favorites","history"))ActivityScreen(vm,detailKind=="history",detailTracks,favorites,playback.id,{t,id->vm.play(t,id)},{menuId=it.id},{song->vm.downloadOnline(song){streamDownload=song}},{song->streamDownload=song}) else if(detailKind=="online")OnlineCollectionDetail(vm,onlineCollections.find{it.id==detailKey},playback.id,{vm.searchOnline.value=true;destination="search"},{song->vm.downloadOnline(song){streamDownload=song}},{destination="playlists"}) else DetailScreen(detailTracks, favorites, playback.id, detailKind == "playlist", { t, id -> vm.play(t, id) }, { menuId = it.id }, { nameAction = "rename" }, { deleteId = selectedPlaylist }, { exportTracks = detailTracks; export.launch((playlists.find { it.id == selectedPlaylist }?.name ?: detailTitle).take(60) + ".m3u8") }, { from, to -> vm.move(selectedPlaylist, from, to) }, { addIds = emptyList() })
                     "settings" -> SettingsScreen(preferences, tracks, scanning, sleepEnd, vm::theme, vm::motion, vm::glass, vm::scan, { minutes -> vm.playback.timer(minutes) }, {
                         val sessionId = vm.playback.audioSessionId()
                         if (sessionId <= 0) vm.notify("Putar lagu terlebih dahulu sebelum membuka efek audio sistem.") else {
@@ -211,7 +218,7 @@ import org.json.JSONArray
                         }
                     }, { vm.resetImport(); navigate("import") }, {
                         context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
-                    },smartMix=vm::smartMix,hideDownloads=vm::hideDownloadsFromGallery,galleryNotice=galleryNotice)
+                    },smartMix=vm::smartMix,hideDownloads=vm::hideDownloadsFromGallery,galleryNotice=galleryNotice,vm=vm)
                     "import" -> ImportScreen(vm, imports, { files.launch(Intent(Intent.ACTION_OPEN_DOCUMENT).setType("audio/*").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)) }, { folder.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)) }, { list.launch(arrayOf("text/*", "application/json", "audio/x-mpegurl", "application/vnd.apple.mpegurl", "application/octet-stream")) }, { destination = "playlists"; parent = "playlists" }, { historyReport = it })
                 } }
                 if (scanning && destination != "library" && destination != "settings") LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))
@@ -219,7 +226,7 @@ import org.json.JSONArray
         }
         if (migrationNotice) AlertDialog(onDismissRequest = { vm.dismissMigration() }, title = { Text("Pilih sumber musikmu") }, text = { Text("Yono Music hanya menampilkan berkas dan folder yang kamu pilih. Daftar putar, favorit, riwayat, dan audio asli tetap disimpan. Pilih sumber melalui Impor untuk menghubungkan kembali koleksimu. Rekaman yang belum pasti tetap tidak tersedia.") }, confirmButton = { TextButton({ vm.dismissMigration(); vm.resetImport(); navigate("import") }) { Text("Pilih sumber") } }, dismissButton = { TextButton({ vm.dismissMigration() }) { Text("Nanti") } })
         if (playerOpen && current != null) Dialog(onDismissRequest = { playerOpen = false }, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
-            PlayerReveal { PlayerScreen(current, playback, vm.playback, current.id in favorites, preferences, sleepEnd, { playerOpen = false }, { if(current.source=="stream")downloadRemote(current)else vm.favorite(current.id) }, { queueOpen = true }, { if(current.source=="stream")downloadRemote(current)else menuId = current.id }) }
+            PlayerReveal { PlayerScreen(current, playback, vm.playback, if(current.source=="stream")onlineFavorites.any {it.id==current.id} else current.id in favorites, preferences, sleepEnd, { playerOpen = false }, { if(current.source=="stream")vm.favoriteOnline(songFor(current))else vm.favorite(current.id) }, { queueOpen = true }, { if(current.source=="stream")playerSongOptions=songFor(current)else menuId = current.id }) }
         }
         if (queueOpen) QueueSheet(playerTracks, playback, vm.playback, { queueOpen = false })
         val menuTrack = collectionTracks.find { it.id == menuId }
@@ -237,6 +244,7 @@ import org.json.JSONArray
                 MenuAction(Icons.Rounded.Info, "Rincian lagu") { infoId = menuTrack.id; menuId = null }
             }
         }
+        playerSongOptions?.let {song->OnlineSongActions(vm,song,{vm.downloadOnline(it){streamDownload=it}},{streamDownload=it}){playerSongOptions=null}}
         streamDownload?.let {song->StreamDownloadSheet(song,vm,{streamDownload=null},{downloadsOpen=true})}
         if(downloadsOpen)DownloadSheet(vm){downloadsOpen=false}
         collectionTracks.find { it.id==metadataId }?.let { track -> MetadataEditor(track,{metadataId=null},{title,artists,album,image -> vm.editMetadata(track.id,title,artists,album,image);metadataId=null},{manifestId=track.id;manifestExport.launch(track.fileName.ifBlank { "music" }+".yono.json")},{manifestId=track.id;metadataId=null;manifestImport.launch(arrayOf("application/json","text/*","application/octet-stream"))}) }

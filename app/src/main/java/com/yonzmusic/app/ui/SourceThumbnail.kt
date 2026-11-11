@@ -14,13 +14,18 @@ import androidx.compose.ui.unit.dp
 import com.yonzmusic.app.network.SafeHttp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CancellationException
+import com.yonzmusic.app.playback.StreamWork
 
 private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fun sizeOf(key:String,value:Bitmap)=value.allocationByteCount}
+private val thumbnailWorkers=Dispatchers.IO.limitedParallelism(2)
 /** Only shown after explicit source review. No tracking pixels, arbitrary hosts, or persistent failure cache. */
-@Composable fun SourceThumbnail(url:String) {
+@Composable fun SourceThumbnail(url:String, modifier: Modifier = Modifier.size(44.dp)) {
     val allowed=setOf("i.ytimg.com","img.youtube.com","i.scdn.co","lh3.googleusercontent.com")+com.yonzmusic.app.search.SearchContract.artHosts
     val image by produceState<Bitmap?>(sourceImages.get(url),url) {
-        if(value==null && url.isNotBlank())value=withContext(Dispatchers.IO) { runCatching {
+        if(value==null && url.isNotBlank())value=withContext(thumbnailWorkers) {
+            StreamWork.awaitAudio()
+            try {
             val response=SafeHttp.get(url,allowed,limit=2*1024*1024)
             require(response.status==200)
             val data=response.bytes
@@ -29,8 +34,9 @@ private val sourceImages=object:LruCache<String,Bitmap>(4*1024*1024){override fu
             require(bounds.outWidth>0 && bounds.outHeight>0 && bounds.outWidth.toLong()*bounds.outHeight<=40_000_000)
             var sample=1;while(maxOf(bounds.outWidth,bounds.outHeight)/sample>256)sample*=2
             BitmapFactory.decodeByteArray(data,0,data.size,BitmapFactory.Options().apply {inSampleSize=sample})?.also {sourceImages.put(url,it)}
-        }.getOrNull() }
+            } catch(e:CancellationException) {throw e} catch(_:Exception) {null}
+        }
     }
-    if(image!=null)Image(image!!.asImageBitmap(),null,Modifier.size(44.dp).clip(Design.small),contentScale=ContentScale.Crop)
-    else DefaultArt(Modifier.size(44.dp).clip(Design.small))
+    if(image!=null)Image(image!!.asImageBitmap(),null,modifier.clip(Design.small),contentScale=ContentScale.Crop)
+    else DefaultArt(modifier.clip(Design.small))
 }

@@ -29,3 +29,6 @@ YT-DLP SEARCH PREVIEW
 Read-only metadata search uses the already bundled, pinned yt-dlp library and its guarded HTTPS transport. No iTunes assets, Google Data API key form, or embedded YouTube WebView player remains in this revision. Underlying search currently uses yt-dlp's YouTube search extractor; removing the API integration does not remove that source. Source terms and content rights remain separate constraints. No login/cookie import, DRM/access restriction bypass, or remote runtime/plugin installation is added.
 
 Guava is explicitly pinned to33.7.2-android for GHSA-xxph-c9ww-hj94 / CVE-2026-102554. The app does not use native Java ObjectInputStream deserialization for imported/network data; the dependency is updated regardless. See the actual release QA OSV inventory/results, not a blanket security certification.
+
+
+Yono2.0 streaming candidate: music catalogue search/related lists use the already bundled ytmusicapi1.12.3; yt-dlp remains the exact-source audio resolver and fallback search. Media3 database/cache modules are1.6.1, Apache-2.0, with upstream sources at https://github.com/androidx/media/tree/1.6.1. Existing license texts and dependency locks continue to apply.

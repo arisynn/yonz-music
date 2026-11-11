@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.yonzmusic.upgrade">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
+    <application android:label="Private Yono upgrade QA" />
+    <instrumentation android:name="com.yonzmusic.upgrade.UpgradeProbe" android:targetPackage="com.yonzmusic.app" />
+</manifest>

@@ -80,7 +80,8 @@ import kotlinx.coroutines.withContext
 @Composable fun LibraryScreen(
     tracks: List<Track>, favorites: Set<String>, activeId: String?, sort: String, scanning: Boolean,
     onImport: () -> Unit, onScan: () -> Unit, onSort: (String) -> Unit,
-    onPlay: (List<Track>, String) -> Unit, onMenu: (Track) -> Unit, onGroup: (String, String, String) -> Unit
+    onPlay: (List<Track>, String) -> Unit, onMenu: (Track) -> Unit, onGroup: (String, String, String) -> Unit,
+    mixes: List<SmartMix.Mix> = emptyList()
 ) {
     var tab by rememberSaveable { mutableStateOf("Songs") }
     var sortOpen by remember { mutableStateOf(false) }
@@ -89,6 +90,10 @@ import kotlinx.coroutines.withContext
         when (tab) { "Albums" -> tracks.filter { MetadataPolicy.known(it.album).isNotBlank() }.groupBy(::albumKey); "Artists" -> tracks.groupBy { it.artist }; "Folders" -> tracks.filter { it.available }.groupBy { it.folder }; else -> emptyMap() }.entries.sortedBy { it.value.firstOrNull()?.let { t -> if (tab == "Albums") t.album.lowercase() else it.key.lowercase() } }
     }
     LazyColumn(contentPadding = PaddingValues(bottom = Design.page)) {
+        if(mixes.isNotEmpty()) {
+            item {SectionTitle("Campuran pintar","Dari waktu dengar musik lokal")}
+            items(mixes,key={"mix:"+it.key}) {mix->ListItem(headlineContent={Text(mix.title)},supportingContent={Text("${mix.tracks.size} lagu")},leadingContent={Artwork(mix.tracks.firstOrNull(),Modifier.size(48.dp))},modifier=Modifier.clickable {onGroup("mix",mix.key,mix.title)})}
+        }
         item {
             Row(Modifier.fillMaxWidth().padding(start = Design.page, end = Design.md), verticalAlignment = Alignment.CenterVertically) {
                 Text("${tracks.count { it.available }} lagu · tersimpan di perangkat", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))

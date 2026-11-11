@@ -96,7 +96,7 @@ import kotlinx.coroutines.delay
                             Text(Bahasa.artis(track.artist), style = MaterialTheme.typography.bodyLarge, color = c.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         }
                         val scale by animateFloatAsState(if (favorite) 1.08f else 1f, if (preferences.reduceMotion) snap() else tween(Design.motion), label = "favorite")
-                        ActionIcon(if(track.source=="stream")Icons.Rounded.Download else if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, if(track.source=="stream")"Simpan untuk luring"else if (favorite) "Hapus dari favorit" else "Jadikan favorit", toggleFavorite, Modifier.graphicsLayer { scaleX = scale; scaleY = scale }, if (favorite) c.primary else c.onSurfaceVariant)
+                        ActionIcon(if (favorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder, if (favorite) "Hapus dari favorit" else "Jadikan favorit", toggleFavorite, Modifier.graphicsLayer { scaleX = scale; scaleY = scale }, if (favorite) c.primary else c.onSurfaceVariant)
                     }
                     Spacer(Modifier.height(if (compact) Design.sm else Design.md))
                     if(state.buffering) {Text("Menyiapkan audio…",style=MaterialTheme.typography.labelSmall,color=c.primary);LinearProgressIndicator(Modifier.fillMaxWidth())}
@@ -116,6 +116,8 @@ import kotlinx.coroutines.delay
                         ActionIcon(Icons.Rounded.QueueMusic, "Buka antrean pemutaran", queue)
                     }
                     if (state.error != null) Text(Bahasa.pesan(state.error), style = MaterialTheme.typography.bodySmall, color = c.error, modifier = Modifier.padding(vertical = Design.sm))
+                    if (state.radioNotice.isNotBlank()) Text(state.radioNotice, style=MaterialTheme.typography.bodySmall,color=c.onSurfaceVariant,modifier=Modifier.padding(vertical=Design.sm))
+                    if(track.source=="stream") TextButton(options) {Text("${when(preferences.streamQuality){"economy"->"Hemat";"best"->"Terbaik";else->"Seimbang"}} · Opsi streaming")}
                     if (sleepEnd > 0) SleepRemaining(sleepEnd, Modifier.align(Alignment.CenterHorizontally))
                     if (!compact) Text(if(track.source=="stream")"PUTAR DARING · YONO MUSIC"else "MUSIK LOKAL · RUANGMU", style = MaterialTheme.typography.labelSmall, color = c.onSurfaceVariant, modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = Design.gap))
                 }

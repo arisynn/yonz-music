@@ -63,10 +63,10 @@ def run(payload, control, factory=youtube_dl):
     ident = video_id(query)
     if "://" in query and not ident:
         return {"ok": False, "error": {"code": "INVALID_LINK", "message": "Tempel tautan video publik yang valid, atau ketik judul dan artis."}}
-    target = f"ytsearch5:{ident}" if ident else f"ytsearch{(page+1)*PAGE+1}:{query}"
+    target = f"https://www.youtube.com/watch?v={ident}" if ident else f"ytsearch{(page+1)*PAGE+1}:{query}"
     with factory(control, flat=True) as dl:
         result = dl.extract_info(target, download=False)
-        raw = result.get("entries", [])
+        raw = [result] if ident and result.get('id') else result.get("entries", [])
         rows, seen, has_more = [], set(), False
         for i, row in enumerate(raw):
             control.check()

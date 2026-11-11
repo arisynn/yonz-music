@@ -48,6 +48,7 @@ class StreamDataSource(private val streams:StreamResolver,
         }
     }
     override fun open(spec:DataSpec):Long {
+        val started=android.os.SystemClock.elapsedRealtime()
         transferInitializing(spec);original=spec.uri;stopped.set(false);remaining=-1;delivered=0;headers=emptyMap()
         val deadline=android.os.SystemClock.elapsedRealtime()+45000
         try {
@@ -107,7 +108,7 @@ class StreamDataSource(private val streams:StreamResolver,
                     }
                     remaining=when {spec.length<0->available;available<0->spec.length;else->minOf(available,spec.length)}
                     headers=mapOf("Content-Type" to listOf(mime))
-                    active(deadline);opened=true;transferStarted(spec);return remaining
+                    active(deadline);opened=true;transferStarted(spec);StreamTimings.record("cdn_open",android.os.SystemClock.elapsedRealtime()-started);return remaining
                 }
             }
             throw StreamFailure(StreamIssue.SOURCE)

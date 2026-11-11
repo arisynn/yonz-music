@@ -45,6 +45,9 @@ public final class QaFixtureProvider extends ContentProvider {
         cursor.addRow(row);return cursor;
     }
     @Override public ParcelFileDescriptor openFile(Uri uri,String requestedMode) throws FileNotFoundException {
+        if("root/backup".equals(uri.getLastPathSegment())) {
+            return ParcelFileDescriptor.open(new File(getContext().getCacheDir(),"owned-backup.json"),ParcelFileDescriptor.parseMode(requestedMode));
+        }
         if("permission".equals(mode))throw new SecurityException("Fixture permission revoked");
         if(!"online".equals(mode))throw new FileNotFoundException("Fixture offline");
         if(!"root/audio".equals(uri.getLastPathSegment())||!"r".equals(requestedMode))throw new FileNotFoundException();

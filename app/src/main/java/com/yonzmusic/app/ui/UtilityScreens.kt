@@ -31,7 +31,7 @@ import java.util.Date
 
 @Composable fun SettingsScreen(preferences: UserPreferences, tracks: List<Track>, scanning: Boolean, sleepEnd: Long,
     theme: (String) -> Unit, motion: (Boolean) -> Unit, glass: (Boolean) -> Unit, scan: () -> Unit, timer: (Int) -> Unit,
-    equalizer: () -> Unit, onImport: () -> Unit, appSettings: () -> Unit, smartMix: (Boolean) -> Unit = {}, hideDownloads: (Boolean) -> Unit = {}, galleryNotice: String = ""
+    equalizer: () -> Unit, onImport: () -> Unit, appSettings: () -> Unit, smartMix: (Boolean) -> Unit = {}, hideDownloads: (Boolean) -> Unit = {}, galleryNotice: String = "", vm: MusicViewModel? = null
 ) {
     val c = MaterialTheme.colorScheme
     var licenses by remember { mutableStateOf(false) }
@@ -39,6 +39,7 @@ import java.util.Date
     val licenseText by produceState("") { value = withContext(Dispatchers.IO) { context.resources.openRawResource(R.raw.third_party_notices).bufferedReader().use { it.readText() } } }
     val duplicates = remember(tracks) { tracks.filter { it.available && it.artist != "Unknown artist" }.groupBy { Triple(MusicListParser.titleKey(it.title), MusicListParser.artistKey(it.artist), it.duration / 1000) }.values.count { it.size > 1 } }
     LazyColumn(contentPadding = PaddingValues(bottom = Design.section)) {
+        if(vm!=null)item {StreamingSettings(vm)}
         item { SectionTitle("Sesuaikan dengan seleramu", "Tampilan") }
         item {
             Surface(Modifier.padding(horizontal = Design.page), color = c.surface, shape = Design.card) {
@@ -85,7 +86,7 @@ import java.util.Date
     }
     if (licenses) AlertDialog(onDismissRequest = { licenses = false }, title = { Text("Lisensi sumber terbuka") }, text = { Text(licenseText, Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()), style = MaterialTheme.typography.bodySmall) }, confirmButton = { TextButton({ licenses = false }) { Text("Selesai") } })
 }
-@Composable private fun ToggleSetting(title: String, description: String, checked: Boolean, change: (Boolean) -> Unit) {
+@Composable fun ToggleSetting(title: String, description: String, checked: Boolean, change: (Boolean) -> Unit) {
     Row(Modifier.fillMaxWidth().toggleableSetting(checked, change).padding(horizontal = Design.page, vertical = Design.gap), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.gap)) {
         Column(Modifier.weight(1f)) { Text(title, style = MaterialTheme.typography.titleMedium); Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         Switch(checked, onCheckedChange = null)
