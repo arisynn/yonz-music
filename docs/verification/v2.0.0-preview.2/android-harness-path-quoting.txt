@@ -1,0 +1,37 @@
+
+com.yonzmusic.app.DiscoveryPreview2Test:..
+Error in realAndroidOpusRemuxTagsSeekAndOfflinePlayback(com.yonzmusic.app.DiscoveryPreview2Test):
+com.chaquo.python.PyException: MutagenError: [Errno 2] No such file or directory: '\\/data\\/user\\/0\\/com.yonzmusic.app.dev\\/cache\\/preview2-opus-175252539220\\/audio-remux.opus'
+	at <python>.mutagen._util._openfile(_util.py:272)
+	at <python>.contextlib.__enter__(contextlib.py:137)
+	at <python>.mutagen._util.wrapper_func(_util.py:162)
+	at <python>.yono_core.media.tag(media.py:85)
+	at <python>..<module>(<string>:5)
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.DiscoveryPreview2Test.realAndroidOpusRemuxTagsSeekAndOfflinePlayback(DiscoveryPreview2Test.kt:45)
+
+
+Time: 10,607
+There was 1 failure:
+1) realAndroidOpusRemuxTagsSeekAndOfflinePlayback(com.yonzmusic.app.DiscoveryPreview2Test)
+com.chaquo.python.PyException: MutagenError: [Errno 2] No such file or directory: '\\/data\\/user\\/0\\/com.yonzmusic.app.dev\\/cache\\/preview2-opus-175252539220\\/audio-remux.opus'
+	at <python>.mutagen._util._openfile(_util.py:272)
+	at <python>.contextlib.__enter__(contextlib.py:137)
+	at <python>.mutagen._util.wrapper_func(_util.py:162)
+	at <python>.yono_core.media.tag(media.py:85)
+	at <python>..<module>(<string>:5)
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.DiscoveryPreview2Test.realAndroidOpusRemuxTagsSeekAndOfflinePlayback(DiscoveryPreview2Test.kt:45)
+
+FAILURES!!!
+Tests run: 3,  Failures: 1
+
+

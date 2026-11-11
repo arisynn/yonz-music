@@ -1,0 +1,9 @@
+test_chart_uses_real_playlist_and_does_not_invent_artist_rank (test_discovery_preview2.DiscoveryPreview2Test.test_chart_uses_real_playlist_and_does_not_invent_artist_rank) ... ok
+test_incomplete_playlist_is_reported_instead_of_silently_truncated (test_discovery_preview2.DiscoveryPreview2Test.test_incomplete_playlist_is_reported_instead_of_silently_truncated) ... ok
+test_live_metadata_cannot_replace_studio_recording_and_ambiguous_matches_stay_original (test_discovery_preview2.DiscoveryPreview2Test.test_live_metadata_cannot_replace_studio_recording_and_ambiguous_matches_stay_original) ... ok
+test_real_opus_remux_tags_and_aac_rejection (test_discovery_preview2.DiscoveryPreview2Test.test_real_opus_remux_tags_and_aac_rejection) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 1.517s
+
+OK

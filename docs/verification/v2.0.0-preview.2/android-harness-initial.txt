@@ -1,0 +1,58 @@
+
+com.yonzmusic.app.DiscoveryPreview2Test:
+Error in catalogueIdentityAndSourceMappingSurviveWithoutNetwork(com.yonzmusic.app.DiscoveryPreview2Test):
+java.lang.IllegalArgumentException
+	at com.google.common.base.Preconditions.checkArgument(Preconditions.java:128)
+	at androidx.media3.datasource.ByteArrayDataSource.<init>(ByteArrayDataSource.java:63)
+	at com.yonzmusic.app.DiscoveryPreview2Test$catalogueIdentityAndSourceMappingSurviveWithoutNetwork$1$network$1.<init>(DiscoveryPreview2Test.kt:99)
+	at com.yonzmusic.app.DiscoveryPreview2Test$catalogueIdentityAndSourceMappingSurviveWithoutNetwork$1.invokeSuspend(DiscoveryPreview2Test.kt:99)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.DiscoveryPreview2Test.catalogueIdentityAndSourceMappingSurviveWithoutNetwork(DiscoveryPreview2Test.kt:82)
+.
+Error in realAndroidOpusRemuxTagsSeekAndOfflinePlayback(com.yonzmusic.app.DiscoveryPreview2Test):
+com.chaquo.python.PyException: SystemError: frame does not exist
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.DiscoveryPreview2Test.realAndroidOpusRemuxTagsSeekAndOfflinePlayback(DiscoveryPreview2Test.kt:45)
+
+
+Time: 9,934
+There were 2 failures:
+1) catalogueIdentityAndSourceMappingSurviveWithoutNetwork(com.yonzmusic.app.DiscoveryPreview2Test)
+java.lang.IllegalArgumentException
+	at com.google.common.base.Preconditions.checkArgument(Preconditions.java:128)
+	at androidx.media3.datasource.ByteArrayDataSource.<init>(ByteArrayDataSource.java:63)
+	at com.yonzmusic.app.DiscoveryPreview2Test$catalogueIdentityAndSourceMappingSurviveWithoutNetwork$1$network$1.<init>(DiscoveryPreview2Test.kt:99)
+	at com.yonzmusic.app.DiscoveryPreview2Test$catalogueIdentityAndSourceMappingSurviveWithoutNetwork$1.invokeSuspend(DiscoveryPreview2Test.kt:99)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:263)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:94)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:70)
+	at kotlinx.coroutines.BuildersKt.runBlocking(Unknown Source:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:48)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(Unknown Source:1)
+	at com.yonzmusic.app.DiscoveryPreview2Test.catalogueIdentityAndSourceMappingSurviveWithoutNetwork(DiscoveryPreview2Test.kt:82)
+2) realAndroidOpusRemuxTagsSeekAndOfflinePlayback(com.yonzmusic.app.DiscoveryPreview2Test)
+com.chaquo.python.PyException: SystemError: frame does not exist
+	at <python>.chaquopy_java.call(chaquopy_java.pyx:352)
+	at <python>.chaquopy_java.Java_com_chaquo_python_PyObject_callAttrThrowsNative(chaquopy_java.pyx:324)
+	at com.chaquo.python.PyObject.callAttrThrowsNative(Native Method)
+	at com.chaquo.python.PyObject.callAttrThrows(PyObject.java:232)
+	at com.chaquo.python.PyObject.callAttr(PyObject.java:221)
+	at com.yonzmusic.app.DiscoveryPreview2Test.realAndroidOpusRemuxTagsSeekAndOfflinePlayback(DiscoveryPreview2Test.kt:45)
+
+FAILURES!!!
+Tests run: 3,  Failures: 2
+
+

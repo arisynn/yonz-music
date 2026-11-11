@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "songs": 0,
+  "artists": 0,
+  "source": "",
+  "error": {
+    "code": "CATALOGUE_NETWORK",
+    "message": "Katalog belum dapat dibaca. Coba lagi atau gunakan daftar lokal."
+  }
+}

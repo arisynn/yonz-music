@@ -1,0 +1,16 @@
+{
+  "date": "2026-11-11",
+  "provider": "MusicBrainz",
+  "readOnlyObservation": true,
+  "artist": {
+    "name": "Last Child",
+    "id": "7d00be8d-5f27-440f-883a-9a42db32f8ec"
+  },
+  "recording": {
+    "title": "Diary Depresiku",
+    "artist": "Last Child",
+    "album": "Everything We Are Everything",
+    "lengthMs": 317000
+  },
+  "subsequentAlbumSearch": "HTTP 503 Service Unavailable"
+}
