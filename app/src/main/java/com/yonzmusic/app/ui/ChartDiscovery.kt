@@ -20,10 +20,12 @@ import com.yonzmusic.app.YonzApp
 import com.yonzmusic.app.metadata.*
 import com.yonzmusic.app.search.*
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 
 @Composable fun ChartDiscovery(vm:MusicViewModel,open:(CatalogItem)->Unit,onHistory:()->Unit,onDownload:(OnlineSong)->Unit,onConfigure:(OnlineSong)->Unit,scroll:LazyListState) {
     val app=LocalContext.current.applicationContext as YonzApp
     val uri=LocalUriHandler.current
+    val navigation=rememberCoroutineScope()
     var country by rememberSaveable {mutableStateOf(vm.discovery.country)}
     var category by rememberSaveable {mutableStateOf(ChartCategory.TRENDING)}
     var filter by rememberSaveable {mutableStateOf(OfficialFilter.ALL)}
@@ -44,7 +46,7 @@ import kotlinx.coroutines.CancellationException
     val songs=page.entries.map {e->e.copy(song=metadata[e.song.id]?.let {MetadataPolicy.merge(e.song,it)} ?: e.song)}.filter {filter.accepts(it.song)}
     // Album/playlist navigation has no per-release authorization proof; never pass it as official music.
     val catalogItems=page.items.filter {filter==OfficialFilter.ALL || it.kind=="artist"}
-    fun choose(next:ChartCategory,region:String=country,official:OfficialFilter=OfficialFilter.ALL){category=next;country=region;genre=null;filter=official}
+    fun choose(next:ChartCategory,region:String=country,official:OfficialFilter=OfficialFilter.ALL){category=next;country=region;genre=null;filter=official;navigation.launch {scroll.animateScrollToItem(0)}}
     LazyColumn(state=scroll,contentPadding=PaddingValues(bottom=Design.page),verticalArrangement=Arrangement.spacedBy(Design.sm)) {
         item {SectionTitle("Jelajahi musik","Chart & rilisan dari sumbernya",action={TextButton({regions=true}){Text(MusicCharts.regionName(country)+" ▾")}})}
         item {Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(Design.sm)) {
@@ -90,7 +92,7 @@ import kotlinx.coroutines.CancellationException
             val rank=runCatching {org.json.JSONObject(item.json).optInt("rank").takeIf {it>0}}.getOrNull()
             ListItem(headlineContent={Text(rank?.let {"#$it · ${item.title}"} ?: item.title,maxLines=2,overflow=TextOverflow.Ellipsis)},supportingContent={Text(item.credit.ifBlank {item.provider}+(if(category==ChartCategory.NEW_RELEASES)" · Status resmi belum terverifikasi" else ""))},leadingContent={SourceThumbnail(item.artwork,identity=item.id)},trailingContent={Icon(Icons.Rounded.ChevronRight,null)},modifier=Modifier.clickable {open(item)}.padding(horizontal=Design.sm))
         }
-        items(page.genres.take(count),key={it.second}) {value->ListItem(headlineContent={Text(value.first)},trailingContent={Icon(Icons.Rounded.ChevronRight,null)},modifier=Modifier.clickable {genre=value}.padding(horizontal=Design.sm))}
+        items(page.genres.take(count),key={it.second}) {value->ListItem(headlineContent={Text(value.first)},trailingContent={Icon(Icons.Rounded.ChevronRight,null)},modifier=Modifier.clickable {genre=value;navigation.launch {scroll.animateScrollToItem(0)}}.padding(horizontal=Design.sm))}
         if(maxOf(songs.size,catalogItems.size,page.genres.size)>count)item {TextButton({count+=20},Modifier.padding(horizontal=Design.page)){Text("Lihat lebih banyak")}}
         item {SectionTitle("Temukan berikutnya","Pilih satu bagian untuk memuatnya")}
         item {Column(Modifier.padding(horizontal=Design.page)) {

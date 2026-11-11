@@ -11,7 +11,9 @@ fun remoteMetadata(song:OnlineSong,extras:Bundle?,image:ByteArray?=null)=MediaMe
     .setTitle(song.title).setDisplayTitle(song.title).setArtist(if(song.artistVerified)song.credit else song.credit.takeIf {it.isNotBlank()}?.let {"Kanal: $it"}.orEmpty())
     .setAlbumTitle(song.album).setAlbumArtist(song.albumArtist.takeIf {it.isNotBlank()}).setDurationMs(song.durationMs.takeIf {it>0})
     .setReleaseYear(song.releaseYear.takeIf {it>0}).setGenre(song.genre.takeIf {it.isNotBlank()})
-    .setArtworkUri(song.artworkUri.ifBlank {song.artwork}.takeIf {it.isNotBlank()}?.let(Uri::parse))
+    // Never hand a remote image URL to Media3's independent bitmap loader. Its shared
+    // single-thread executor can queue newer artwork behind an obsolete HTTP request.
+    .setArtworkUri(song.artworkUri.takeIf {it.startsWith("file:") && com.yonzmusic.app.YonzApp.instance.artwork.owns(it)}?.let(Uri::parse))
     .setArtworkData(image,MediaMetadata.PICTURE_TYPE_FRONT_COVER)
     .setExtras(Bundle(extras ?: Bundle()).apply {putString("yono.remote",StreamRepository.encode(song).toString())}).build()
 

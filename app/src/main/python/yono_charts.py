@@ -32,7 +32,7 @@ def run(payload, catalogue):
     category, country = payload.get('category'), payload.get('country', 'ID')
     if category not in CATEGORIES or not re.fullmatch(r'[A-Z]{2}', str(country)):
         raise ValueError('invalid chart selection')
-    result = {'entries': [], 'items': [], 'countries': [], 'source': 'YouTube Music · public web (ytmusicapi)',
+    result = {'entries': [], 'items': [], 'countries': [], 'source': 'YouTube Music · katalog publik',
               'sourceUrl': YOUTUBE, 'sourceUpdated': '', 'status': 'unavailable', 'country': country, 'category': category,
               'message': 'Kategori ini belum tersedia tanpa akun. Buka chart sumber untuk melihat daftar resminya.'}
     if category == 'genre_playlists':

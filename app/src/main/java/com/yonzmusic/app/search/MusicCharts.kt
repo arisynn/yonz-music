@@ -61,7 +61,7 @@ class MusicCharts(private val app:YonzApp) {
             page
         }catch(e:CancellationException){throw e}catch(_:Exception) {
             if(cached!=null)parse(JSONObject(cached.metadata),cached.updated,true,true)
-            else ChartPage(source="YouTube Music · public web",message="Data chart belum dapat diakses. Buka sumber resmi atau coba lagi.")
+            else ChartPage(source="YouTube Music",message="Data chart belum dapat diakses. Buka sumber resmi atau coba lagi.")
         }
     }
     suspend fun genre(params:String):List<CatalogItem> = withContext(Dispatchers.IO) {
@@ -81,7 +81,7 @@ class MusicCharts(private val app:YonzApp) {
             val spotify=category.key.startsWith("spotify_")
             val supported=spotify && country in setOf("ID","ZZ") || category==ChartCategory.SEA_DOMESTIC && country=="ID" || category==ChartCategory.SEA && country in setOf("ID","MY","SG","PH","TH","VN")
             return ChartPage(source=if(spotify)"Spotify Charts" else "Official SEA Charts",sourceUrl=if(spotify)"https://charts.spotify.com/charts/overview/${if(country=="ID")"id" else "global"}" else "https://www.officialseacharts.com/weeklychart",
-                message=if(!supported)"Chart ini tidak tersedia untuk wilayah yang dipilih." else "Belum ada antarmuka data resmi tanpa akun yang terhubung. Lihat ranking, label, pergerakan dan tanggal langsung di situs sumber.",region=country)
+                message=if(!supported)"Chart ini tidak tersedia untuk wilayah yang dipilih." else "Data chart belum tersedia langsung di aplikasi. Lihat ranking, label, pergerakan dan tanggal di situs sumber.",region=country)
         }
         private fun rank(j:JSONObject,key:String)=j.optInt(key).takeIf {it in 1..1000}
         private fun chartDate(value:String)=value.takeIf {it.matches(Regex("\\d{4}-\\d{2}-\\d{2}(?:/\\d{4}-\\d{2}-\\d{2})?")) && it.split('/').all {day->runCatching {java.time.LocalDate.parse(day)}.isSuccess}}.orEmpty()

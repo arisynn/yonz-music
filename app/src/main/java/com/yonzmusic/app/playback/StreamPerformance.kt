@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong
 object StreamPerformance {
     enum class Stage { TAP, AUTO_TRANSITION, RESOLVER_START, RESOLVER_HIT, RESOLVER_LOAD, PYTHON_INIT, PYTHON_IMPORT,
         YTDLP_EXTRACT, CATALOG_MATCH, LOCAL_LOOKUP, DNS, HTTP_CONNECT, HTTP_HEADERS, FIRST_BYTE,
-        OPEN_FIRST_BYTE, STATE_READY, AUDIO_ADVANCING, SEEK_READY, REBUFFER, TRANSFER, CACHE, PRELOAD_CANCEL }
+        OPEN_FIRST_BYTE, STATE_READY, AUDIO_ADVANCING, SEEK_READY, REBUFFER, TRANSFER, CACHE, PRELOAD_CANCEL, UPCOMING_READY }
     enum class Intent { PLAY, NEXT, SEEK, AUTO }
     data class Event(val trace:Long,val stage:Stage,val ms:Long,val bytes:Long=0,val count:Long=0) {
         fun json()=JSONObject().put("schema",1).put("trace",trace).put("event",stage.name.lowercase()).put("ms",ms).put("bytes",bytes).put("count",count).apply {

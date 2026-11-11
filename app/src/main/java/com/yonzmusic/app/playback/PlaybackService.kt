@@ -39,6 +39,7 @@ class PlaybackService : MediaSessionService() {
     private var snapshotJob: Job? = null
     private var sleepJob: Job? = null
     private var warmJob: Job? = null
+    private var warmingSourceId:String?=null
     private var warmIds = emptyList<String>()
     private var preloadEnabled = false
     private var settings = UserPreferences()
@@ -61,7 +62,7 @@ class PlaybackService : MediaSessionService() {
     private var consecutiveErrors = 0
     private var wasShuffling = false
     private var previousQueueKeys = emptySet<String>()
-    /** One actual shuffle/repeat successor, only after foreground loading has settled. */
+    /** Four successors resolved serially; native byte preloading stays on the immediate next item. */
     private fun warmUpcoming() {
         val tailReady=!player.isLoading && player.duration>0 && player.bufferedPosition>=player.duration-100 && player.totalBufferedDuration>=750
         val sufficient=player.totalBufferedDuration>=5000 || tailReady
@@ -71,24 +72,38 @@ class PlaybackService : MediaSessionService() {
             // DefaultLoadControl additionally refuses byte preloading while current loading is active.
             player.setPreloadConfiguration(if(enablePreload)ExoPlayer.PreloadConfiguration(2_000_000L) else ExoPlayer.PreloadConfiguration.DEFAULT)
         }
-        val next=if((app.streamTestDataSource==null || app.streamTestResolver!=null) && enablePreload && !player.isLoading && !StreamWork.urgent && player.hasNextMediaItem())player.getMediaItemAt(player.nextMediaItemIndex).takeIf {it.mediaId.isRemoteId()} else null
-        val keys=next?.let {listOf(it.mediaId,it.mediaMetadata.extras?.getString("yono.queue.key").orEmpty())} ?: emptyList()
+        fun safe()=player.isPlaying && !player.isLoading && !StreamWork.urgent
+        val next=if((app.streamTestDataSource==null || app.streamTestResolver!=null) && enablePreload && safe() && player.mediaItemCount>0) {
+            val repeat=if(player.repeatMode==Player.REPEAT_MODE_ONE)Player.REPEAT_MODE_OFF else player.repeatMode
+            UpcomingTracks.indices(player.currentMediaItemIndex){index->player.currentTimeline.getNextWindowIndex(index,repeat,player.shuffleModeEnabled)}
+                .map(player::getMediaItemAt).filter {it.mediaId.isRemoteId() && it.mediaId!=player.currentMediaItem?.mediaId}.distinctBy {it.mediaId}
+        }else emptyList()
+        val keys=if(next.isEmpty())emptyList() else next.flatMap {listOf(it.mediaId,it.mediaMetadata.extras?.getString("yono.queue.key").orEmpty())}+"quality:${app.streams.quality}"
         if(keys==warmIds)return
-        if(warmIds.firstOrNull()!=player.currentMediaItem?.mediaId || warmJob?.isActive!=true)warmJob?.cancel()
+        // An extraction promoted to current playback may finish; its obsolete window stops afterward.
+        if(warmingSourceId!=player.currentMediaItem?.mediaId || warmJob?.isActive!=true)warmJob?.cancel()
         warmIds=keys
-        if(next==null)return
+        if(next.isEmpty())return
         warmJob=scope.launch {
-            delay(400)
-            if(!player.isPlaying || player.isLoading || StreamWork.urgent)return@launch
+            var complete=false;var prepared=0;val started=android.os.SystemClock.elapsedRealtime()
             try {
-                // An existing canonical mapping is cheap; unresolved catalogue items are matched lazily
-                // by Media3's one-item preload under the same foreground-loading gate.
-                val song=app.streams.lookup(next.mediaId) ?: return@launch
-                val mapped=app.discovery.cachedAudio(song) ?: return@launch
-                runInterruptible(Dispatchers.IO) {StreamWork.forSource(next.mediaId) {
-                    (app.streamTestResolver ?: app.streams).resolve(mapped.videoId,java.util.concurrent.atomic.AtomicBoolean(false),timeoutMillis=8000)
-                }}
-            }catch(e:CancellationException){throw e}catch(_:Exception){ /* Foreground playback remains authoritative. */ }
+                delay(400)
+                for(item in next) {
+                    if(keys!=warmIds || !safe())return@launch
+                    val song=app.streams.lookup(item.mediaId) ?: continue
+                    warmingSourceId=item.mediaId
+                    try {
+                        runInterruptible(Dispatchers.IO) {StreamWork.forSource(item.mediaId) {
+                            val mapped=runBlocking {app.discovery.audio(song)}
+                            (app.streamTestResolver ?: app.streams).resolve(mapped.videoId,java.util.concurrent.atomic.AtomicBoolean(false),timeoutMillis=8000)
+                        }}
+                        prepared++
+                    }catch(e:CancellationException){throw e}catch(_:Exception){ /* Current playback can retry authoritatively. */ }
+                    finally {if(warmingSourceId==item.mediaId)warmingSourceId=null}
+                }
+                complete=true
+                StreamPerformance.mark(player.currentMediaItem?.mediaId,StreamPerformance.Stage.UPCOMING_READY,android.os.SystemClock.elapsedRealtime()-started,count=prepared.toLong())
+            }finally {if(!complete && warmIds==keys)warmIds=emptyList()}
         }
     }
     private fun updateShuffleCycle() {

@@ -47,7 +47,16 @@ class MetadataSyncTest {
         try {
             app.preferences.autoplay(false);app.preferences.onlineHistory(false)
             app.artwork.fetch={url->calls.incrementAndGet();Thread.sleep(if(url.contains("slow"))800 else 120);SafeHttp.Response(200,if(url.contains(ids[1]))blue else red,null,null,"image/png")}
-            app.streamTestDataSource=DataSource.Factory {opened.incrementAndGet();ByteArrayDataSource(wav.array())}
+            app.streamTestDataSource=DataSource.Factory {
+                val delegate=ByteArrayDataSource(wav.array())
+                object:DataSource by delegate {
+                    override fun open(spec:androidx.media3.datasource.DataSpec):Long {
+                        if(spec.uri.toString()=="yono-stream://youtube/${ids[0]}")opened.incrementAndGet()
+                        return delegate.open(spec)
+                    }
+                }
+            }
+            main {assertNull("Media3 must not start its own remote artwork request",remoteMediaItem(songs[0]).mediaMetadata.artworkUri)}
             songs.forEach {app.streams.register(it)}
             main{connection=PlaybackConnection(app);connectionReady=true};await {connection.state.value.ready}
             lateinit var future:com.google.common.util.concurrent.ListenableFuture<MediaController>
@@ -58,7 +67,8 @@ class MetadataSyncTest {
             await {raw.isPlaying && raw.mediaMetadata.artworkData!=null && connection.position()>100}
             var initialPosition=0L;var initialSource:androidx.media3.common.MediaItem.LocalConfiguration?=null;var initialKeys=emptyList<String>()
             main {raw.pause();raw.seekTo(4500);raw.shuffleModeEnabled=true;raw.repeatMode=Player.REPEAT_MODE_ALL}
-            await {raw.playbackState==Player.STATE_READY && raw.currentPosition==4500L}
+            await {raw.playbackState==Player.STATE_READY && raw.currentPosition==4500L && !raw.isLoading}
+            delay(300) // Let the paused seek acknowledgement finish before counting metadata-only opens.
             main {initialPosition=raw.currentPosition;initialSource=raw.currentMediaItem!!.localConfiguration;initialKeys=(0 until raw.mediaItemCount).map {raw.getMediaItemAt(it).mediaMetadata.extras!!.getString("yono.queue.key")!!}}
             val beforeOpen=opened.get();val started=android.os.SystemClock.elapsedRealtime()
             app.metadata.extracted(ids[0],JSONObject().put("title","Extracted A").put("album","Owned album").put("artists",JSONArray()).put("uploader","Generic uploader").put("duration",30).put("artwork_url",songs[0].artwork))
