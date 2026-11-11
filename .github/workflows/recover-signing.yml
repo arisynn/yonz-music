@@ -1,0 +1,120 @@
+name: Pulihkan kunci signing Yono
+on:
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: yono-private-signing-recovery
+  cancel-in-progress: false
+jobs:
+  recover:
+    if: github.repository == 'arisynn/yonz-music' && github.actor == 'arisynn' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      # Tidak checkout source atau menjalankan script dari repository.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Siapkan ZIP AES-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v 7z >/dev/null && ! command -v 7zz >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq 7zip
+          fi
+      - name: Pulihkan dan verifikasi signing lalu enkripsi
+        shell: bash
+        env:
+          SIGNING_B64: ${{ secrets.YONO_RELEASE_KEYSTORE_B64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.YONO_RELEASE_STORE_PASSWORD }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.YONO_RELEASE_KEY_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.YONO_RELEASE_KEY_ALIAS }}
+          BACKUP_PASSWORD: ${{ secrets.YONO_BACKUP_PASSWORD }}
+        run: |
+          set +x
+          set -euo pipefail
+          umask 077
+          python3 - <<'PY'
+          import os, pathlib, base64, hashlib, subprocess, json, shutil
+          def fail(message):
+              raise SystemExit(message)
+          names = ['SIGNING_B64', 'SIGNING_STORE_PASSWORD', 'SIGNING_KEY_PASSWORD', 'SIGNING_KEY_ALIAS', 'BACKUP_PASSWORD']
+          if any(not os.environ.get(n) for n in names):
+              fail('Periksa empat secret signing dan YONO_BACKUP_PASSWORD. Jangan tampilkan nilainya di log.')
+          password = os.environ['BACKUP_PASSWORD']
+          if len(password) < 24 or any(c in password for c in '\r\n\x00'):
+              fail('Password ZIP minimal 24 karakter tanpa baris baru.')
+          private = pathlib.Path(os.environ['RUNNER_TEMP']) / 'yono-recovery-private'
+          output = pathlib.Path(os.environ['RUNNER_TEMP']) / 'yono-recovery-output'
+          private.mkdir(mode=0o700)
+          output.mkdir(mode=0o700)
+          keydir = private / 'signing-private'
+          keydir.mkdir(mode=0o700)
+          key = keydir / 'yono-release.p12'
+          try:
+              raw = base64.b64decode(''.join(os.environ['SIGNING_B64'].split()), validate=True)
+          except Exception:
+              fail('Format backup keystore tidak valid. Tidak ada secret yang diubah.')
+          key.write_bytes(raw)
+          key.chmod(0o600)
+          cert = subprocess.run(['keytool', '-exportcert', '-keystore', str(key), '-alias', os.environ['SIGNING_KEY_ALIAS'], '-storepass:env', 'SIGNING_STORE_PASSWORD'], capture_output=True)
+          if cert.returncode:
+              fail('Keystore tidak dapat dibuka atau alias tidak cocok. Nilai secret tidak dicetak.')
+          fingerprint = hashlib.sha256(cert.stdout).hexdigest()
+          expected = 'ebefa44cc5fba1292fec9fc25bb4840e41e501bb0958a86931c046fd1be523e5'
+          if fingerprint != expected:
+              fail('Sertifikat berbeda dari identitas official Yono; pemulihan dihentikan.')
+          check = subprocess.run(['keytool', '-certreq', '-keystore', str(key), '-alias', os.environ['SIGNING_KEY_ALIAS'], '-storepass:env', 'SIGNING_STORE_PASSWORD', '-keypass:env', 'SIGNING_KEY_PASSWORD', '-file', str(private / 'check.csr')], capture_output=True)
+          if check.returncode:
+              fail('Private key tidak dapat digunakan dengan password key yang tersimpan.')
+          (private / 'check.csr').unlink(missing_ok=True)
+          config = {'storeFile': '../signing-private/yono-release.p12', 'storePassword': os.environ['SIGNING_STORE_PASSWORD'], 'keyPassword': os.environ['SIGNING_KEY_PASSWORD'], 'keyAlias': os.environ['SIGNING_KEY_ALIAS']}
+          # Escape UTF-16 menjaga password persis saat Properties.load(InputStream).
+          def prop(value):
+              data = value.encode('utf-16-be')
+              return ''.join('\\u' + data[i:i+2].hex() for i in range(0, len(data), 2))
+          (private / 'signing.properties').write_text(''.join(k + '=' + prop(v) + '\n' for k,v in config.items()), encoding='ascii')
+          (keydir / 'owner-signing.json').write_text(json.dumps(config, ensure_ascii=True, indent=2) + '\n')
+          (private / 'CERTIFICATE_SHA256.txt').write_text(fingerprint + '\n')
+          (private / 'BACA_DULU.txt').write_text(
+              'BACKUP PRIVAT SIGNING YONO MUSIC\n\n'
+              'Berisi kunci asli dan password signing. Jangan upload ke GitHub/Release.\n'
+              'Simpan dua backup terenkripsi; simpan password ZIP secara terpisah.\n\n'
+              'Untuk proyek Yono saat ini:\n'
+              '1. Tambahkan /signing-private/ dan /signing.properties ke .gitignore.\n'
+              '2. Letakkan signing.properties di root proyek, sejajar settings.gradle.kts.\n'
+              '3. Letakkan folder signing-private di root proyek yang sama.\n'
+              '   storeFile relatif terhadap app/ karena Gradle memakai file(...).\n'
+              '4. Build release. Debug menggunakan kunci berbeda.\n'
+              '5. Jalankan apksigner verify --print-certs pada APK; SHA-256 sertifikat\n'
+              '   harus sama dengan CERTIFICATE_SHA256.txt.\n'
+              'Jangan membagikan file hasil ekstrak atau password.\n')
+          seven = shutil.which('7z') or shutil.which('7zz')
+          if not seven:
+              fail('7-Zip belum tersedia.')
+          archive = output / 'Yono_Music_Signing_Private.zip'
+          files = ['signing-private', 'signing.properties', 'CERTIFICATE_SHA256.txt', 'BACA_DULU.txt']
+          packed = subprocess.run([seven, 'a', '-tzip', '-mem=AES256', '-p' + password, str(archive)] + files, cwd=private, capture_output=True)
+          if packed.returncode:
+              fail('Pembuatan ZIP terenkripsi gagal.')
+          tested = subprocess.run([seven, 't', '-p' + password, str(archive)], capture_output=True)
+          if tested.returncode:
+              fail('Verifikasi ZIP terenkripsi gagal.')
+          print('Private key dan sertifikat terverifikasi; ZIP AES-256 siap.')
+          print('Sertifikat SHA-256: ' + fingerprint)
+          PY
+      - name: Unggah hanya ZIP terenkripsi
+        uses: actions/upload-artifact@v4
+        with:
+          name: Yono-Signing-Backup-Encrypted
+          path: ${{ runner.temp }}/yono-recovery-output/Yono_Music_Signing_Private.zip
+          if-no-files-found: error
+          retention-days: 1
+      - name: Bersihkan file runner
+        if: always()
+        shell: bash
+        run: |
+          set +x
+          rm -rf -- "$RUNNER_TEMP/yono-recovery-private" "$RUNNER_TEMP/yono-recovery-output"
