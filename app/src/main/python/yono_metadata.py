@@ -7,8 +7,8 @@ def content(row):
     title = str(row.get('title') or '').lower()
     kind = next((kind for pattern, kind in (
         (r'\b(karaoke)\b', 'KARAOKE'), (r'\b(nightcore|sped up|speed up|slowed|slow reverb)\b|slow\s*\+\s*reverb', 'ALTERED'),
-        (r'\b(remix|dj mix|dj remix)\b', 'REMIX'), (r'\bcover\b', 'COVER'),
-        (r'\blive\b', 'LIVE'), (r'\binstrumental\b', 'INSTRUMENTAL')) if re.search(pattern, title)), '')
+        (r'\b(remix|dj mix|dj remix)\b', 'REMIX'), (r'[\[(|\-]\s*cover\b|\bcover\s+by\b|\bcover\s*$', 'COVER'),
+        (r'[\[(|\-]\s*live\b|\blive\s+(?:at|from|version|performance|session)\b|\blive\s*$', 'LIVE'), (r'\binstrumental\b', 'INSTRUMENTAL')) if re.search(pattern, title)), '')
     video_type = row.get('musicVideoType') or row.get('videoType')
     official = 'PLATFORM_OFFICIAL' if video_type in {'MUSIC_VIDEO_TYPE_OMV', 'MUSIC_VIDEO_TYPE_ATV'} else 'UNVERIFIED'
     if row.get('was_live') or row.get('live_status') == 'was_live':

@@ -23,6 +23,8 @@ class ChartsMetadataTests(unittest.TestCase):
 
     def test_authorized_live_and_remix_are_classified_separately(self):
         self.assertEqual('LIVE', content({**self.row(), 'was_live': True})['content_kind'])
+        for title in ['Live Forever', 'Cover Me']:
+            self.assertEqual('VIDEO', content({**self.row(), 'title': title})['content_kind'])
         for title, kind in [('Owned Live', 'LIVE'), ('Owned DJ Remix', 'REMIX'), ('Owned nightcore', 'ALTERED'), ('Owned cover', 'COVER')]:
             self.assertEqual(kind, content({**self.row(), 'title': title})['content_kind'])
 
