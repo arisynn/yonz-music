@@ -21,6 +21,8 @@ class CatalogDataSource(private val app:YonzApp,private val upstream:DataSource)
             val id=Uri.decode(dataSpec.uri.encodedPath.orEmpty().removePrefix("/"))
             runBlocking {app.streams.lookup(id)?.let {app.discovery.audio(it)}}?.videoId ?: throw IOException("Rekaman katalog belum ditemukan.")
         } else StreamPolicy.source(dataSpec.uri)
+        if(dataSpec.uri.scheme=="yono-catalog")StreamPerformance.alias(Uri.decode(dataSpec.uri.encodedPath.orEmpty().removePrefix("/")),"engine:$video")
+        val lookupStarted=android.os.SystemClock.elapsedRealtime()
         val local=runBlocking {
             app.repository.dao.allTracks().firstOrNull {it.available && it.active && it.sourceIdentity=="youtube:$video" && it.sha256.matches(Regex("[a-f0-9]{64}"))}
         }?.takeIf {track->runCatching {
@@ -32,6 +34,7 @@ class CatalogDataSource(private val app:YonzApp,private val upstream:DataSource)
             }
             hash.digest().joinToString(""){"%02x".format(it)}==track.sha256
         }.getOrDefault(false)}
+        StreamPerformance.mark("engine:$video",StreamPerformance.Stage.LOCAL_LOOKUP,android.os.SystemClock.elapsedRealtime()-lookupStarted)
         if(local!=null) {
             active=DefaultDataSource.Factory(app).createDataSource().also {source->listeners.forEach(source::addTransferListener)}
             return active.open(dataSpec.buildUpon().setUri(local.uri).build())

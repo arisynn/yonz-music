@@ -12,7 +12,9 @@ object PythonRuntime {
             val started=android.os.SystemClock.elapsedRealtime()
             Python.start(AndroidPlatform(context.applicationContext))
             com.yonzmusic.app.playback.StreamTimings.record("engine_start",android.os.SystemClock.elapsedRealtime()-started)
+            com.yonzmusic.app.playback.StreamPerformance.mark(null,com.yonzmusic.app.playback.StreamPerformance.Stage.PYTHON_INIT,android.os.SystemClock.elapsedRealtime()-started)
         }}
-        return Python.getInstance().getModule(name)
+        val started=android.os.SystemClock.elapsedRealtime()
+        return Python.getInstance().getModule(name).also {com.yonzmusic.app.playback.StreamPerformance.mark(null,com.yonzmusic.app.playback.StreamPerformance.Stage.PYTHON_IMPORT,android.os.SystemClock.elapsedRealtime()-started)}
     }
 }

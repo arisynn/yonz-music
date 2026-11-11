@@ -34,6 +34,7 @@ class PlaybackService : MediaSessionService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var player: ExoPlayer
     private var session: MediaSession? = null
+    private var performance:StreamPlayerMetrics?=null
     private var snapshotJob: Job? = null
     private var sleepJob: Job? = null
     private var warmJob: Job? = null
@@ -62,7 +63,7 @@ class PlaybackService : MediaSessionService() {
     /** Follow the player's actual shuffle/repeat order; never crawl search/history on startup. */
     private fun warmUpcoming() {
         val ids = mutableListOf<String>()
-        if (player.isPlaying && player.totalBufferedDuration >= 5000 && app.streamTestDataSource == null) {
+        if (player.isPlaying && player.totalBufferedDuration >= 5000 && (app.streamTestDataSource == null || app.streamTestResolver != null)) {
             val timeline = player.currentTimeline
             var index = player.currentMediaItemIndex
             val visited = mutableSetOf(index)
@@ -89,7 +90,7 @@ class PlaybackService : MediaSessionService() {
                 ensureActive()
                 try {
                     runInterruptible(Dispatchers.IO) {
-                        app.streams.resolve(id, java.util.concurrent.atomic.AtomicBoolean(false), timeoutMillis = 18000)
+                        (app.streamTestResolver ?: app.streams).resolve(id, java.util.concurrent.atomic.AtomicBoolean(false), timeoutMillis = 18000)
                     }
                 } catch (e: CancellationException) { throw e }
                 catch (_: Exception) { /* A warm-up failure must never stop current playback. */ }
@@ -154,6 +155,7 @@ class PlaybackService : MediaSessionService() {
             .setLoadControl(androidx.media3.exoplayer.DefaultLoadControl.Builder().setBufferDurationsMs(5000,30000,1000,2500).build())
             .setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true)
             .setHandleAudioBecomingNoisy(true).setWakeMode(C.WAKE_MODE_LOCAL).build()
+        performance=StreamPlayerMetrics(player)
         // Media3 targets five seconds of the next item after the current buffer is full.
         // Same player, source validation and retry policy; memory only, no offline file claims.
         player.setPreloadConfiguration(ExoPlayer.PreloadConfiguration.DEFAULT)
@@ -344,7 +346,7 @@ class PlaybackService : MediaSessionService() {
     override fun onDestroy() {
         listenTick()
         snapshotJob?.cancel(); sleepJob?.cancel(); warmJob?.cancel(); radioJob?.cancel(); StreamWork.buffering=false; app.sleepEnd.value = 0
-        session?.release(); player.release(); scope.cancel()
+        performance?.close();session?.release(); player.release(); scope.cancel()
         super.onDestroy()
     }
 }

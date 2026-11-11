@@ -50,6 +50,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val onlineSearch = com.yonzmusic.app.search.OnlineSearch(viewModelScope,com.yonzmusic.app.search.EngineSearchBackend(application),onSuccess={query->searchSettings.rememberQuery(query);recentSearch.value=searchSettings.history()})
     private var streamPlayJob:Job?=null
     fun playOnline(song:com.yonzmusic.app.search.OnlineSong,next:Boolean?=null) {
+        if(next==null)com.yonzmusic.app.playback.StreamPerformance.begin(song.id)
         streamPlayJob?.cancel()
         streamPlayJob=action {
             val resolved=if(song.id.startsWith("mb:"))withContext(Dispatchers.IO){app.discovery.audio(song)}else song
@@ -145,6 +146,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun shiftOnline(id:String,songId:String,delta:Int){action{app.onlineCollections.shift(id,songId,delta)}}
     fun deleteOnline(id:String){action{app.onlineCollections.delete(id);notify("Playlist online dihapus; audio lokal tetap aman.")}}
     fun playOnlineCollection(p:OnlineCollection,index:Int=0) {
+        p.songs.getOrNull(index)?.let {com.yonzmusic.app.playback.StreamPerformance.begin(it.id)}
         streamPlayJob?.cancel();streamPlayJob=action {
             require(index in p.songs.indices)
             app.database.withTransaction {p.songs.forEach {app.streams.register(it)}}

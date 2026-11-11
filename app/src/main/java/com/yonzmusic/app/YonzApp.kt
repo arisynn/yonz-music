@@ -24,6 +24,7 @@ class YonzApp : Application() {
     val onlineActivity by lazy { OnlineActivityRepository(this) }
     val discovery by lazy { com.yonzmusic.app.search.DiscoveryRepository(this) }
     val catalog by lazy { com.yonzmusic.app.search.MusicCatalog(this) }
+    internal var streamTestResolver: com.yonzmusic.app.playback.StreamResolver? = null
     internal var streamTestDataSource: androidx.media3.datasource.DataSource.Factory? = null // Internal DI; no Intent/config hook.
     val downloadGallery by lazy { com.yonzmusic.engine.DownloadGalleryVisibility(this) }
     val acquisition by lazy { com.yonzmusic.engine.AcquisitionRepository(this) }

@@ -39,6 +39,7 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
     /** Called only by ExoPlayer loader threads. Never stores the signed URL in Room/preferences/logs. */
     override fun resolve(id:String,cancelled:AtomicBoolean,formatId:String?,timeoutMillis:Long):Resolved {
         require(valid(id))
+        StreamPerformance.sinceTap("engine:$id",StreamPerformance.Stage.RESOLVER_START)
         val started=android.os.SystemClock.elapsedRealtime()
         val selectedQuality=quality
         val deadline=android.os.SystemClock.elapsedRealtime()+timeoutMillis.coerceIn(1,22000)
@@ -48,6 +49,7 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         }
         return cache.resolve("$id:$selectedQuality",{formatId==null || it.formatId==formatId},::active,
             {StreamRange.cacheMillis(it.url,System.currentTimeMillis())}) {
+        StreamPerformance.mark("engine:$id",StreamPerformance.Stage.RESOLVER_LOAD,0)
         val remaining=deadline-android.os.SystemClock.elapsedRealtime()
         if(remaining<5000)throw StreamFailure(StreamIssue.TIMEOUT)
         val config=JSONObject().put("job_id",java.util.UUID.randomUUID().toString()).put("timeout_seconds",(remaining/1000).coerceIn(5,22))
@@ -56,6 +58,7 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         if(qjs.isFile)config.put("runtime",JSONObject().put("quickjs",JSONObject().put("path",qjs.canonicalPath)))
         val raw=PythonRuntime.module(app,"yono_stream").callAttr("execute",JSONObject().put("video_id",id).put("quality",selectedQuality).apply {if(formatId!=null)put("format_id",formatId)}.toString(),config.toString(),Cancellation(cancelled,Thread.currentThread())).toString()
         val j=JSONObject(raw);if(!j.optBoolean("ok"))throw StreamFailure(runCatching {StreamIssue.valueOf(j.optString("code","SOURCE"))}.getOrDefault(StreamIssue.SOURCE))
+        j.optJSONObject("metrics")?.let {StreamPerformance.mark("engine:$id",StreamPerformance.Stage.YTDLP_EXTRACT,it.optLong("extraction_ms").coerceIn(0,30000))}
         val url=j.getString("url");runCatching {StreamPolicy.url(url)}.getOrElse {throw StreamFailure(StreamIssue.UNSAFE)}
         val headers=mutableMapOf<String,String>();j.optJSONObject("headers")?.let {h->h.keys().forEach {k->val v=h.optString(k);if(k.lowercase() in setOf("user-agent","accept","accept-language") && v.length<1500 && !v.contains('\r') && !v.contains('\n'))headers[k]=v}}
         val result=Resolved(url,headers,((j.optJSONObject("song")?.optDouble("duration",0.0) ?: 0.0)*1000).toLong().coerceIn(0,7*86400000L),j.optString("format_id").take(100),j.optString("ext").take(20),j.optString("acodec").take(100),j.optLong("bitrate").coerceIn(0,10000),j.optString("revision").takeIf {it.matches(Regex("[a-f0-9]{64}"))} ?: "$sessionRevision:${java.util.UUID.randomUUID()}")

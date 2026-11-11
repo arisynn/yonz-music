@@ -1,5 +1,6 @@
 """Resolve a single selected public audio stream; no transfer, shell, login or cache files."""
 import json
+import time
 import math
 import re
 import hashlib
@@ -88,7 +89,9 @@ def execute(payload_json,config_json,callback):
         token.network_options=config.get('network') or {}
         options={'format_id':payload['format_id']} if payload.get('format_id') is not None else {}
         options['quality']=payload.get('quality','balanced')
+        started=time.monotonic()
         result=inspect_video(payload.get('video_id'),token,config.get('runtime'),**options)
+        result['metrics']={'extraction_ms':int((time.monotonic()-started)*1000)}
         return json.dumps({'ok':True,**result},ensure_ascii=False,allow_nan=False)
     except Stopped as error:
         return json.dumps({'ok':False,'code':'CANCELLED' if error.code=='CANCELLED' else 'TIMEOUT',

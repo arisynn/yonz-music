@@ -19,6 +19,17 @@ interface StreamResolver {
 class StreamDataSource(private val streams:StreamResolver,
     private val connect:(java.net.URL)->HttpURLConnection={it.openConnection() as HttpURLConnection},
     private val addresses:(String)->Array<InetAddress> = {InetAddress.getAllByName(it)}):BaseDataSource(true) {
+    private var trace=0L
+    private var openAt=0L
+    private var requestAt=0L
+    private var firstAt=0L
+    private var lastAt=0L
+    private var wireBytes=0L
+    private fun received(n:Int){if(n<=0)return
+        val now=android.os.SystemClock.elapsedRealtime()
+        if(firstAt==0L){firstAt=now;StreamPerformance.emit(trace,StreamPerformance.Stage.FIRST_BYTE,now-requestAt);StreamPerformance.emit(trace,StreamPerformance.Stage.OPEN_FIRST_BYTE,now-openAt)}
+        lastAt=now;wireBytes+=n
+    }
     private var connection:HttpURLConnection?=null
     private var input:InputStream?=null
     private var original:Uri?=null
@@ -48,11 +59,11 @@ class StreamDataSource(private val streams:StreamResolver,
         }
     }
     override fun open(spec:DataSpec):Long {
-        val started=android.os.SystemClock.elapsedRealtime()
+        val started=android.os.SystemClock.elapsedRealtime();openAt=started;wireBytes=0;firstAt=0;lastAt=0
         transferInitializing(spec);original=spec.uri;stopped.set(false);remaining=-1;delivered=0;headers=emptyMap()
         val deadline=android.os.SystemClock.elapsedRealtime()+45000
         try {
-            val id=StreamPolicy.source(spec.uri)
+            val id=StreamPolicy.source(spec.uri);trace=StreamPerformance.number("engine:$id")
             if(spec.position !in 0..StreamRange.MAX_BYTES || (spec.length!=C.LENGTH_UNSET.toLong() && spec.length<=0) ||
                 (spec.length>0 && spec.length>StreamRange.MAX_BYTES-spec.position))throw StreamFailure(StreamIssue.SEEK)
             if(sourceId!=id){sourceId=id;anchor=null;totalBytes=null;transientFailures=0}
@@ -68,7 +79,8 @@ class StreamDataSource(private val streams:StreamResolver,
                 for(redirect in 0..5) {
                     active(deadline)
                     val url=runCatching {StreamPolicy.url(next)}.getOrElse {throw StreamFailure(StreamIssue.UNSAFE)}
-                    val found=addresses(url.host);active(deadline)
+                    val dnsAt=android.os.SystemClock.elapsedRealtime()
+                    val found=addresses(url.host);StreamPerformance.mark("engine:$id",StreamPerformance.Stage.DNS,android.os.SystemClock.elapsedRealtime()-dnsAt);active(deadline)
                     if(found.isEmpty() || found.any {it.isAnyLocalAddress || it.isLoopbackAddress || it.isLinkLocalAddress || it.isSiteLocalAddress || it.isMulticastAddress})throw StreamFailure(StreamIssue.UNSAFE)
                     val c=connect(url);connection=c
                     val budget=(deadline-android.os.SystemClock.elapsedRealtime()).coerceAtLeast(1).toInt()
@@ -76,7 +88,8 @@ class StreamDataSource(private val streams:StreamResolver,
                     c.setRequestProperty("User-Agent",com.yonzmusic.app.network.SafeHttp.USER_AGENT);c.setRequestProperty("Accept-Encoding","identity");c.setRequestProperty("Cache-Control","no-store")
                     info.headers.filterKeys {it.lowercase() in setOf("user-agent","accept","accept-language")}.forEach {k,v->if(v.length<1500 && '\r' !in v && '\n' !in v)c.setRequestProperty(k,v)}
                     if(spec.position>0 || spec.length>=0)c.setRequestProperty("Range","bytes=${spec.position}-"+if(spec.length>=0)(spec.position+spec.length-1).toString()else "")
-                    val status=c.responseCode;active(deadline)
+                    requestAt=android.os.SystemClock.elapsedRealtime()
+                    val status=c.responseCode;StreamPerformance.emit(trace,StreamPerformance.Stage.HTTP_CONNECT,android.os.SystemClock.elapsedRealtime()-requestAt);StreamPerformance.mark("engine:$id",StreamPerformance.Stage.HTTP_HEADERS,android.os.SystemClock.elapsedRealtime()-requestAt,count=status.toLong());active(deadline)
                     if(status in setOf(401,403) && refresh==0) {
                         c.disconnect();connection=null
                         if(spec.position>0 && info.formatId.isBlank())throw StreamFailure(StreamIssue.FORMAT_CHANGED)
@@ -104,7 +117,7 @@ class StreamDataSource(private val streams:StreamResolver,
                     input=c.inputStream
                     if(status==200 && spec.position>0) {
                         var skip=spec.position;val b=ByteArray(8192)
-                        while(skip>0){active(deadline);val n=input!!.read(b,0,minOf(skip,b.size.toLong()).toInt());if(n<0)throw StreamFailure(StreamIssue.SEEK);skip-=n}
+                        while(skip>0){active(deadline);val n=input!!.read(b,0,minOf(skip,b.size.toLong()).toInt());if(n<0)throw StreamFailure(StreamIssue.SEEK);received(n);skip-=n}
                     }
                     remaining=when {spec.length<0->available;available<0->spec.length;else->minOf(available,spec.length)}
                     headers=mapOf("Content-Type" to listOf(mime))
@@ -122,7 +135,7 @@ class StreamDataSource(private val streams:StreamResolver,
             val n=input?.read(buffer,offset,if(remaining>=0)minOf(length.toLong(),remaining).toInt()else length) ?: return C.RESULT_END_OF_INPUT
             active()
             if(n<0){if(remaining>0)throw StreamFailure(StreamIssue.NETWORK);return C.RESULT_END_OF_INPUT}
-            delivered+=n
+            received(n);delivered+=n
             if(delivered>StreamRange.MAX_BYTES)throw StreamFailure(StreamIssue.FORMAT)
             if(remaining>=0)remaining-=n
             bytesTransferred(n);return n
@@ -130,5 +143,5 @@ class StreamDataSource(private val streams:StreamResolver,
     }
     override fun getUri():Uri?=original
     override fun getResponseHeaders()=headers
-    override fun close() {stopped.set(true);runCatching {input?.close()};input=null;connection?.disconnect();connection=null;remaining=-1;if(opened){opened=false;transferEnded()}}
+    override fun close() {if(wireBytes>0){StreamPerformance.emit(trace,StreamPerformance.Stage.TRANSFER,(lastAt-firstAt).coerceAtLeast(1),bytes=wireBytes);wireBytes=0};stopped.set(true);runCatching {input?.close()};input=null;connection?.disconnect();connection=null;remaining=-1;if(opened){opened=false;transferEnded()}}
 }

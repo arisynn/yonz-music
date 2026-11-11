@@ -93,8 +93,8 @@ class PlaybackConnection(context: Context) {
         if (it.playWhenReady && it.playbackState != Player.STATE_ENDED) it.pause() else { if (it.playbackState == Player.STATE_ENDED) it.seekTo(0); if (it.playbackState == Player.STATE_IDLE) it.prepare(); it.play() } } }
     fun pause() {controller?.pause()}
     fun previous() { controller?.seekToPrevious() }
-    fun next() { controller?.seekToNext() }
-    fun seek(position: Long) { controller?.seekTo(position.coerceAtLeast(0)) }
+    fun next() { controller?.let {p->if(p.hasNextMediaItem())StreamPerformance.begin(p.getMediaItemAt(p.nextMediaItemIndex).mediaId,StreamPerformance.Intent.NEXT);p.seekToNext()} }
+    fun seek(position: Long) { controller?.let {p->p.currentMediaItem?.let {StreamPerformance.begin(it.mediaId,StreamPerformance.Intent.SEEK)};p.seekTo(position.coerceAtLeast(0))} }
     fun audioSessionId(): Int = controller?.sessionExtras?.getInt(PlaybackService.AUDIO_SESSION, -1) ?: -1
     fun position(): Long = controller?.currentPosition?.coerceAtLeast(0) ?: 0
     fun duration(): Long = controller?.duration?.coerceAtLeast(0) ?: 0
