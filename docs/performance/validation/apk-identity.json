@@ -1,0 +1,11 @@
+{
+  "package": "com.yonzmusic.app",
+  "versionCode": 19,
+  "versionName": "2.0.0-preview.3",
+  "certificateSha256": "ebefa44cc5fba1292fec9fc25bb4840e41e501bb0958a86931c046fd1be523e5",
+  "sha256": "04ba04964d72da8b4f8be5a62f243aa4682af868a0cf5fda9ca230abf81851ce",
+  "bytes": 30137160,
+  "debuggable": false,
+  "upgrade": "18\u219219",
+  "schema": 5
+}

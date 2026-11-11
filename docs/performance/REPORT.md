@@ -112,3 +112,5 @@ Final targeted JVM checks: **13 passed**, zero failures/errors/skips: resolution
 - Cooperative cancellation checks prevent starting new speculative work when current playback is urgent. An already-blocked system DNS/socket operation cannot be forcibly preempted by a coroutine token; existing finite transport timeouts remain. No strict end-to-end hard-wall guarantee is claimed.
 - Keep platform HttpURLConnection pooling, DNS behavior and existing read chunk policy: no successful live evidence justified a new HTTP stack, larger buffers or speculative connection tuning.
 - 100 MB cache remains an opt-in experiment, preserving the existing default and all offline-download storage. No UI redesign, database schema change or data reset is part of this work.
+
+Official owner-signed **18→19** in-place upgrade passed: Room remains schema 5; complete-row SHA-256 snapshots of tracks, favorites, history, playlists, playlist entries and online activity were unchanged. See [before](validation/upgrade-before.txt), [after](validation/upgrade-after.txt), [APK identity](validation/apk-identity.json).
