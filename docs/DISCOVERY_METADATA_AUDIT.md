@@ -1,0 +1,38 @@
+# Charts and synchronized metadata — pre-implementation audit
+
+Inspected on 2026-11-11, after the Preview 3 performance work and before implementing this task. This application already has MusicBrainz search/details, public YouTube Music discovery through ytmusicapi, AppState remote references, Room catalogue caching, a single MediaSessionService/ExoPlayer, remote queue extras, local verification, separate offline downloads and artwork composables. Room is schema 5. No replacement architecture or migration is required.
+
+## Missing synchronization: actual causes
+
+- `yono_stream.inspect_video` already returns a Song containing title, artists, album, duration and artwork. `StreamRepository.resolve` consumes its duration but drops the rest; it returns URL/format identity only. Full extraction never updates the admitted MediaItem.
+- `remoteMediaItem` publishes the initial OnlineSong and a remote artwork URI. Service admission recreates it from AppState, but there is no metadata observer or asynchronous artwork publication to the active player.
+- `PlaybackConnection.refresh` builds remote display Tracks from the `yono.remote` extra, not from a shared enriched state. Home enrichment changes a private page list. Search, queue, player and system metadata consequently diverge.
+- UI `CatalogArtBytes` downloads bytes independently; the session receives neither cached image bytes nor a guaranteed accessible local URI. Its 24 MiB disk policy is URL-keyed, not source/version-keyed, does not update last-access on hits, and does not validate response MIME.
+- Artwork composables can retain the previous `produceState` image during key changes until a new load completes. Stable-ID and generation checks must also protect service publication.
+- `artistVerified` means artist credits exist; it is not proof of channel authorization or official-release status. It must not be reused as an official badge.
+
+## Chart source availability assessment
+
+Primary sources inspected:
+
+- [YouTube chart definitions and supported countries](https://support.google.com/youtube/answer/9014376?hl=en). Daily/weekly music-video charts describe official videos. Weekly songs aggregate several video types; artist charts aggregate a catalogue. Shorts have a different metric. These classifications must remain distinct.
+- [YouTube Charts](https://artists.youtube.com/charts/tracks). No documented anonymous official chart API was established. Existing ytmusicapi is an **unofficial public-web adapter**, not an official API. Installed adapter source explicitly states unauthenticated artists may be unranked and some daily/weekly/top-song sections require premium authentication. Never synthesize a category from the first returned playlist, infer ranks from generic results, or add login/cookies.
+- [Spotify Charts](https://charts.spotify.com/charts/overview/global) and [Spotify chart help](https://support.spotify.com/us/artists/article/understanding-spotify-charts/). The public page is a web application; no authorized anonymous chart-data interface is configured. Top 50/200, genre, city, Local Pulse and viral selections therefore expose official external links and explicit availability, not fabricated rows/statistics or an undocumented token/API.
+- [Official SEA weekly charts](https://www.officialseacharts.com/weeklychart) and [FAQ](https://www.officialseacharts.com/faq). Public pages advertise six national charts and rank/movement/label/peak/last-week fields; the fetched page contains no chart rows. No documented authorized data API was established. Indonesia/domestic, Malaysia, Singapore, Philippines, Thailand and Vietnam expose the official chart page until a supported interface is available. Do not reverse engineer hidden endpoints.
+
+Unavailable categories remain visible with explanation and an external chart button. Fetch time is not a source chart update date. Unknown rank, movement, peak and last-week positions remain absent. Supported YouTube regions come from a validated source-supplied list, with Indonesia/Global always selectable. No real chart success is assumed from documentation or mocked tests.
+
+## Proposed implementation
+
+1. Add normalized immutable metadata with separate provenance for search/full extraction/catalogue/chart/artwork, stable media/source identity, deterministic credit/artwork merge and conservative official evidence. Official filters require source evidence (for example explicit music video type plus identity); title keywords alone cannot establish official status. Known variants are separately classified; uncertain results remain unverified.
+2. An application metadata repository owns a bounded StateFlow and persists sanitized ordinary metadata through existing AppState stream references. Extractor success publishes metadata independently from audio-byte loading. Canonical source mapping updates only records sharing the exact selected video ID; it never randomly matches artwork by text.
+3. One service metadata coordinator observes that state. Publish initial metadata immediately; start bounded asynchronous artwork/enrichment independently. Queue key + stable ID + generation checks reject obsolete jobs. Use `replaceMediaItem` with the identical local configuration and extras so native ProgressiveMediaSource updates metadata in place; do not prepare, seek, reset or create another player.
+4. A shared artwork repository validates host/redirect/content type/byte/dimension limits, scales to approximately 512 px, stores image bytes in a 100 MB LRU using identity+URL-version hashes, and returns local file data plus small session artwork bytes. No signed audio URLs are accepted. Audio priority gates background artwork/chart work. UI cards and all player views observe the same metadata state. Hits reset LRU access time; failures use default artwork.
+5. Typed chart categories/regions/source status/rank fields and source-specific TTL in existing CatalogCache. Preserve public adapter data only for explicitly identifiable supported categories, and display external fallbacks otherwise. Fetch one selected shelf at a time, page bounded rows, never start all sources at once. Chart loading uses a separate low-priority worker, never the audio resolver lock.
+6. Keep current Compose design and library/download flows. Extend Home discovery and filters only. Regression fixtures cover merge precedence, official evidence, chart classification/no invented ranks, invalid artwork, cancellation/rapid skips, in-place metadata updates, service/controller synchronization, local playback and data preservation. Physical lock-screen/Bluetooth validation is reported separately from session assertions.
+
+## Exact planned files
+
+New: `metadata/MusicMetadata.kt`, `metadata/MetadataRepository.kt`, `metadata/ArtworkRepository.kt`, `playback/PlaybackMetadataCoordinator.kt`, `search/MusicCharts.kt`, `ui/ChartDiscovery.kt`, `yono_charts.py`, metadata/chart JVM and Android regression fixtures, final report and screenshots.
+
+Modify: `YonzApp.kt`; `search/SearchModels.kt`, `DiscoveryRepository.kt`; `playback/StreamRepository.kt`, `RemoteMedia.kt`, `PlaybackService.kt`, `PlaybackConnection.kt`; `ui/DiscoveryScreens.kt`, `StreamingScreens.kt`, `SourceThumbnail.kt`, `Components.kt`, `YonzRoot.kt`; `yono_search.py`, `yono_catalog.py`, `yono_stream.py`; `network/SafeHttp.kt` only to expose/validate artwork MIME using its existing bounded transport. `app/build.gradle.kts` for the next prerelease identity. Additional edits will be listed with their justification if inspection requires them. Database entities, schema version and playback engine remain unchanged.
