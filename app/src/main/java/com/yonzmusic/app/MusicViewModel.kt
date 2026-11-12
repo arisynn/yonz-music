@@ -49,6 +49,37 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val recentSearch=MutableStateFlow(searchSettings.history())
     val onlineSearch = com.yonzmusic.app.search.OnlineSearch(viewModelScope,com.yonzmusic.app.search.EngineSearchBackend(application),onSuccess={query->searchSettings.rememberQuery(query);recentSearch.value=searchSettings.history()})
     val forYou=app.forYou
+    val home=com.yonzmusic.app.home.HomeRepository(app,viewModelScope){playback.state.value.buffering}
+    val homeRadioLoading=MutableStateFlow(false)
+    private var homeRadioJob:Job?=null
+    fun playHome(rows:List<com.yonzmusic.app.home.HomeTrack>,index:Int=0,shuffle:Boolean=false,enqueue:Boolean=false,radioKind:String="") {
+        if(rows.isEmpty())return
+        streamPlayJob?.cancel();homeRadioJob?.cancel();homeRadioLoading.value=false
+        streamPlayJob=action {
+            withContext(Dispatchers.IO){rows.mapNotNull {it.online}.forEach {app.streams.register(it)}}
+            withTimeout(6000){playback.state.first {it.ready}}
+            if(enqueue)playback.enqueueHome(rows)else playback.playHome(rows,index,shuffle,radioKind)
+        }
+    }
+    fun homeRadio(seed:com.yonzmusic.app.home.HomeTrack,artist:Boolean,shuffle:Boolean=false) {
+        homeRadioJob?.cancel();streamPlayJob?.cancel();homeRadioLoading.value=true
+        homeRadioJob=viewModelScope.launch {
+            try {
+                withTimeout(6000){playback.state.first {it.ready}}
+                val queueAtRequest=playback.state.value.queueKeys;val idAtRequest=playback.state.value.id
+                val rows=home.radio(seed,artist)
+                ensureActive()
+                withContext(Dispatchers.IO){rows.mapNotNull {it.online}.forEach {app.streams.register(it)}}
+                withTimeout(6000){playback.state.first {it.ready}}
+                if(playback.state.value.queueKeys!=queueAtRequest || playback.state.value.id!=idAtRequest)return@launch
+                playback.playHome(rows,shuffle=shuffle,radioKind=if(artist)"artist"else "song",preparedRadio=true)
+                if(rows.size<3)notify("Kandidat radio belum cukup. Lagu yang tersedia tetap diputar.")
+            }catch(e:CancellationException){throw e}
+            catch(_:Exception){notify("Radio belum tersedia. Coba lagi saat katalog terhubung.")}
+            finally {if(homeRadioJob==currentCoroutineContext()[Job])homeRadioLoading.value=false}
+        }
+    }
+
     data class ArtistPage(val artist:com.yonzmusic.app.search.OnlineArtist?=null,val songs:List<com.yonzmusic.app.search.OnlineSong> = emptyList(),val loading:Boolean=false,val error:String="")
     val artistPage=MutableStateFlow(ArtistPage())
     private var artistJob:Job?=null
@@ -78,6 +109,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun selectOnline(song:com.yonzmusic.app.search.OnlineSong) {if(isCurrentOnline(song))playback.toggle()else playOnline(song)}
     fun playOnline(song:com.yonzmusic.app.search.OnlineSong,next:Boolean?=null) {
+        homeRadioJob?.cancel();homeRadioLoading.value=false
         streamPlayJob?.cancel()
         streamPlayJob=action {
             val local=withContext(Dispatchers.IO) {
@@ -122,6 +154,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun shiftOnline(id:String,songId:String,delta:Int){action{app.onlineCollections.shift(id,songId,delta)}}
     fun deleteOnline(id:String){action{app.onlineCollections.delete(id);notify("Playlist online dihapus; audio lokal tetap aman.")}}
     fun playOnlineCollection(p:OnlineCollection,index:Int=0) {
+        homeRadioJob?.cancel();homeRadioLoading.value=false
         streamPlayJob?.cancel();streamPlayJob=action {
             require(index in p.songs.indices)
             app.database.withTransaction {p.songs.forEach {app.streams.register(it)}}
@@ -323,7 +356,21 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         require(dao.playlistExists(jobs.first().playlistId)) { "This playlist was deleted. Start a new import to reuse any completed audio." }
         dao.jobs(jobs.map { it.copy(status = "Queued", error = "") }); DownloadWorker.enqueue(app, batch)
     } }
-    fun favorite(id: String) { action { if (id in favorites.value) dao.unfavorite(id) else dao.favorite(Favorite(id)) } }
+    fun favoriteOnline(song:com.yonzmusic.app.search.OnlineSong) {action {
+        app.streams.register(song)
+        if(song.id in favorites.value)dao.unfavorite(song.id)else dao.favorite(Favorite(song.id))
+    }}
+    fun favoriteHome(track:com.yonzmusic.app.home.HomeTrack) {action {
+        track.online?.let {app.streams.register(it)}
+        val ids=setOfNotNull(track.id,track.online?.id)
+        if(ids.any {it in favorites.value})ids.forEach {dao.unfavorite(it)}else dao.favorite(Favorite(track.id))
+    }}
+    fun favorite(id: String) { action {
+        val track=dao.track(id)
+        val source=track?.sourceIdentity?.removePrefix("youtube:")?.takeIf {track.sourceIdentity.startsWith("youtube:") && com.yonzmusic.app.playback.StreamRepository.valid(it)}
+        val ids=setOfNotNull(id,source?.let {"engine:$it"})
+        if(ids.any {it in favorites.value})ids.forEach {dao.unfavorite(it)}else dao.favorite(Favorite(id))
+    } }
     fun create(name: String, ids: List<String> = emptyList()) { action { repository.create(name, ids); messages.emit("Playlist created") } }
     fun rename(id: Long, name: String) { action { dao.rename(id, repository.validName(name)) } }
     fun delete(id: Long) { action {
@@ -338,7 +385,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     fun sort(value: String) { action { app.preferences.sort(value) } }
     fun motion(value: Boolean) { action { app.preferences.motion(value) } }
     fun glass(value: Boolean) { action { app.preferences.glass(value) } }
-    fun play(tracks: List<Track>, id: String) { streamPlayJob?.cancel(); if (tracks.none { it.id == id && it.available }) notify("This file is unavailable. Rescan or choose it again in Import.") else if (!playback.state.value.ready) notify("Connecting to playback. Try again in a moment.") else playback.play(tracks, id) }
+    fun play(tracks: List<Track>, id: String) { homeRadioJob?.cancel();homeRadioLoading.value=false;streamPlayJob?.cancel(); if (tracks.none { it.id == id && it.available }) notify("This file is unavailable. Rescan or choose it again in Import.") else if (!playback.state.value.ready) notify("Connecting to playback. Try again in a moment.") else playback.play(tracks, id) }
     fun resetImport() {
         importJob?.cancel(); sourceJob?.cancel(); sourceBusy.value = false
         engineInput.value = ""; engineCandidates.value = emptyList(); engineReport.value = ""; importedSourceRequests = emptyList()

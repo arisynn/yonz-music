@@ -19,11 +19,15 @@ object ForYouPolicy {
 }
 class ForYouRepository(private val app:YonzApp) {
     val state=MutableStateFlow(ForYouState())
-    var profile=ListeningProfile();private set
+    val profileState=MutableStateFlow(ListeningProfile())
+    var profile:ListeningProfile
+        get()=profileState.value
+        private set(value){profileState.value=value}
     fun record(signal:ListeningSignal) {
         val now=System.currentTimeMillis()
         val extra=if(signal.kind==FeedbackKind.STARTED && profile.signals.any {it.id==signal.id && it.kind==FeedbackKind.LISTEN})listOf(signal.copy(kind=FeedbackKind.REPLAY))else emptyList()
-        profile=profile.copy(signals=(profile.signals+signal+extra).filter {now-it.at in 0..30L*86400000}.takeLast(500),hidden=profile.hidden.filterValues {it>now})
+        val previous=if(signal.kind==FeedbackKind.PROGRESS)profile.signals.filterNot {it.kind==FeedbackKind.PROGRESS && it.session==signal.session}else profile.signals
+        profile=profile.copy(signals=(previous+signal+extra).filter {now-it.at in 0..30L*86400000}.takeLast(500),hidden=profile.hidden.filterValues {it>now})
         save()
     }
     fun hide(id:String) {
@@ -39,7 +43,7 @@ class ForYouRepository(private val app:YonzApp) {
         if(saved!=null && saved.length<1024*1024)runCatching {
             val root=JSONObject(saved)
             val signals=root.optJSONArray("signals")?.let {a->(0 until minOf(a.length(),500)).mapNotNull {i->runCatching {
-                val r=a.getJSONObject(i);ListeningSignal(r.getString("id"),r.getString("artist"),FeedbackKind.valueOf(r.getString("kind")),r.getLong("at"))
+                val r=a.getJSONObject(i);ListeningSignal(r.getString("id"),r.getString("artist"),FeedbackKind.valueOf(r.getString("kind")),r.getLong("at"),r.optString("session"),r.optLong("heard").coerceAtLeast(0),r.optLong("duration").coerceAtLeast(0))
             }.getOrNull()}}.orEmpty()
             val hidden=root.optJSONObject("hidden")?.let {obj->obj.keys().asSequence().take(100).associateWith {obj.optLong(it)}}.orEmpty()
             profile=ListeningProfile((signals+profile.signals).distinct().sortedBy {it.at}.takeLast(500),(hidden+profile.hidden).filterValues {it>System.currentTimeMillis()})
@@ -73,7 +77,7 @@ class ForYouRepository(private val app:YonzApp) {
     private fun save() {
         val value=state.value
         val json=JSONObject().put("seed",value.seed?.let(StreamRepository::encode)).put("updated",value.updatedAt)
-            .put("signals",JSONArray(profile.signals.map {JSONObject().put("id",it.id).put("artist",it.artist).put("kind",it.kind.name).put("at",it.at)}))
+            .put("signals",JSONArray(profile.signals.map {JSONObject().put("id",it.id).put("artist",it.artist).put("kind",it.kind.name).put("at",it.at).put("session",it.session).put("heard",it.listenedMs).put("duration",it.durationMs)}))
             .put("hidden",JSONObject(profile.hidden))
             .put("recent",JSONArray(value.recent.map(StreamRepository::encode))).put("songs",JSONArray(value.songs.map(StreamRepository::encode)))
         app.persistenceScope.launch {app.repository.dao.state(AppState("for-you:v1",json.toString()))}

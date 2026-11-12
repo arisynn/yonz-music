@@ -31,6 +31,10 @@ class MusicCatalogue(Catalogue):
 from yono_core.artwork import candidates as image_candidates, choose as artwork
 
 
+def labels(value):
+    return [clean(x,60) for x in value[:12] if isinstance(x,str)] if isinstance(value,list) else []
+
+
 def song(row, query="", *, videos=False):
     if not isinstance(row, dict):
         return None
@@ -65,7 +69,11 @@ def song(row, query="", *, videos=False):
             "artwork": artwork(row.get("thumbnails") or row.get("thumbnail")),
             "artwork_candidates": image_candidates(row.get("thumbnails") or row.get("thumbnail")),
             "album_id": clean(album.get("id"),100) if isinstance(album,dict) else "",
-            "page": "https://www.youtube.com/watch?v=" + ident}
+            "page": "https://www.youtube.com/watch?v=" + ident,
+            "genres": labels(row.get("genres")),
+            "tags": labels(row.get("tags")),
+            "release_date": clean(row.get("releaseDate"),10) if isinstance(row.get("releaseDate"),str) else "",
+            "music_type": kind or ""}
 
 
 def artist(row):

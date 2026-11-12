@@ -23,6 +23,17 @@ public final class QaFixtureProvider extends ContentProvider {
     @Override public boolean onCreate() { return true; }
     @Override public String getType(Uri uri) { return "root".equals(uri.getLastPathSegment()) ? DocumentsContract.Document.MIME_TYPE_DIR : "audio/wav"; }
     @Override public Bundle call(String method,String arg,Bundle extras) {
+        if("home-fixture".equals(method)) {
+            // Test-only, generated 180-second PCM. Never reads target-app or user files.
+            int samples=8000*180;
+            java.nio.ByteBuffer data=java.nio.ByteBuffer.allocate(44+samples*2).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+            data.put("RIFF".getBytes()).putInt(36+samples*2).put("WAVEfmt ".getBytes()).putInt(16)
+                .putShort((short)1).putShort((short)1).putInt(8000).putInt(16000).putShort((short)2).putShort((short)16)
+                .put("data".getBytes()).putInt(samples*2);
+            try(OutputStream out=new FileOutputStream(new File(getContext().getCacheDir(),"owned-provider.wav"))) {out.write(data.array());}
+            catch(IOException error) {throw new IllegalStateException(error);}
+            mode="online";return new Bundle();
+        }
         if(!"mode".equals(method))throw new IllegalArgumentException();mode=arg==null?"online":arg;return new Bundle();
     }
     @Override public Cursor query(Uri uri,String[] projection,String selection,String[] args,String sort) {

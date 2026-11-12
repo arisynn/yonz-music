@@ -30,7 +30,7 @@ class EmptyHomeTest {
    inst.waitForIdleSync()
    val deadline=android.os.SystemClock.elapsedRealtime()+60000;var found=false
    while(android.os.SystemClock.elapsedRealtime()<deadline && !found) {
-    found=containsText(inst.uiAutomation.rootInActiveWindow,"Mulai dari musikmu")
+    found=containsText(inst.uiAutomation.rootInActiveWindow,"Mulai dengan musik yang kamu suka.")
     if(!found)Thread.sleep(200)
    }
    Thread.sleep(1200)

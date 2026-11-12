@@ -7,7 +7,8 @@ enum class SearchProvider(val label: String) { ENGINE("YouTube Music") }
 data class OnlineSong(val id: String,val provider: SearchProvider,val title: String,val credit: String,
     val album: String="",val durationMs: Long=0,val artwork: String="",val page: String,
     val videoId: String="",val artistVerified: Boolean=false,
-    val artworkCandidates:List<com.yonzmusic.app.artwork.ArtworkCandidate> = emptyList(),val albumId:String="")
+    val artworkCandidates:List<com.yonzmusic.app.artwork.ArtworkCandidate> = emptyList(),val albumId:String="",
+    val genres:List<String> = emptyList(),val tags:List<String> = emptyList(),val releaseDate:String="",val musicType:String="")
 data class OnlineArtist(val id: String, val name: String, val artwork: String="")
 data class SearchPage(val songs: List<OnlineSong>,val next: String="",val artists: List<OnlineArtist> = emptyList())
 data class OnlineSearchState(val query: String="",val provider: SearchProvider=SearchProvider.ENGINE,
@@ -23,6 +24,7 @@ object SearchContract {
         val u=URI(value);value.length<=4096 && u.scheme=="https" && u.host?.lowercase() in hosts && u.userInfo==null && u.port in setOf(-1,443) && u.fragment==null
     }.getOrDefault(false)
     fun text(value:String,limit:Int=250)=value.filter {!it.isISOControl()}.trim().take(limit)
+    fun labels(rows:org.json.JSONArray?):List<String> = (0 until minOf(rows?.length() ?: 0,12)).map {text(rows!!.optString(it),60)}.filter {it.isNotBlank()}.distinct()
     fun query(value:String)=text(value.replace(Regex("\\s+")," "),200)
     fun engine(json:String,limit:Int=12): SearchPage {
         val root=JSONObject(json)
@@ -34,7 +36,7 @@ object SearchContract {
             if(!id.matches(Regex("[A-Za-z0-9_-]{11}")) || title.isBlank() || page!="https://www.youtube.com/watch?v=$id")return@mapNotNull null
             val artists=r.optJSONArray("artists")?.let {a->(0 until minOf(a.length(),20)).map {text(a.optString(it))}.filter {it.isNotBlank()}} ?: emptyList()
             OnlineSong("engine:$id",SearchProvider.ENGINE,title,artists.joinToString(", ").ifBlank {text(r.optString("channel"))},text(r.optString("album")),
-                r.optLong("duration_ms").coerceIn(0,7*86400000L),r.optString("artwork").takeIf {https(it,artHosts)}.orEmpty(),page,id,artists.isNotEmpty(),com.yonzmusic.app.artwork.ArtworkPolicy.decode(r.optJSONArray("artwork_candidates")),text(r.optString("album_id"),100))
+                r.optLong("duration_ms").coerceIn(0,7*86400000L),r.optString("artwork").takeIf {https(it,artHosts)}.orEmpty(),page,id,artists.isNotEmpty(),com.yonzmusic.app.artwork.ArtworkPolicy.decode(r.optJSONArray("artwork_candidates")),text(r.optString("album_id"),100),labels(r.optJSONArray("genres")),labels(r.optJSONArray("tags")),text(r.optString("release_date"),10),text(r.optString("music_type"),40))
         }.distinctBy {it.id}
         val artistRows=root.optJSONArray("artists")
         val artists=(0 until minOf(artistRows?.length() ?: 0,12)).mapNotNull { i ->

@@ -37,7 +37,7 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
         metadataMutex.withLock {
             val old=metadata.value[song.id] ?: lookup(song.id)
             val images=(song.artworkCandidates+old?.artworkCandidates.orEmpty()).distinctBy {it.url}.take(16)
-            val merged=song.copy(artwork=old?.artwork?.takeIf {it.isNotBlank()} ?: song.artwork,artworkCandidates=images,albumId=song.albumId.ifBlank {old?.albumId.orEmpty()})
+            val merged=song.copy(artwork=old?.artwork?.takeIf {it.isNotBlank()} ?: song.artwork,artworkCandidates=images,albumId=song.albumId.ifBlank {old?.albumId.orEmpty()},genres=song.genres.ifEmpty {old?.genres.orEmpty()},tags=song.tags.ifEmpty {old?.tags.orEmpty()},releaseDate=song.releaseDate.ifBlank {old?.releaseDate.orEmpty()},musicType=song.musicType.ifBlank {old?.musicType.orEmpty()})
             store(merged)
         }
     }
@@ -127,10 +127,10 @@ class StreamRepository(private val app:YonzApp):StreamResolver {
 
     companion object {
         fun valid(id:String)=id.matches(Regex("[A-Za-z0-9_-]{11}"))
-        fun encode(s:OnlineSong)=JSONObject().put("id",s.videoId).put("title",s.title.take(250)).put("credit",s.credit.take(1000)).put("artist",s.artistVerified).put("album",s.album.take(250)).put("duration",s.durationMs).put("art",s.artwork).put("images",ArtworkPolicy.encode(s.artworkCandidates)).put("album_id",s.albumId)
+        fun encode(s:OnlineSong)=JSONObject().put("id",s.videoId).put("title",s.title.take(250)).put("credit",s.credit.take(1000)).put("artist",s.artistVerified).put("album",s.album.take(250)).put("duration",s.durationMs).put("art",s.artwork).put("images",ArtworkPolicy.encode(s.artworkCandidates)).put("album_id",s.albumId).put("genres",org.json.JSONArray(s.genres)).put("tags",org.json.JSONArray(s.tags)).put("release_date",s.releaseDate).put("music_type",s.musicType)
         fun decode(j:JSONObject):OnlineSong {
             val id=j.getString("id");require(valid(id))
-            return OnlineSong("engine:$id",SearchProvider.ENGINE,SearchContract.text(j.getString("title")),SearchContract.text(j.optString("credit"),1000),SearchContract.text(j.optString("album")),j.optLong("duration").coerceIn(0,7*86400000L),j.optString("art").takeIf {SearchContract.https(it,SearchContract.artHosts)}.orEmpty(),"https://www.youtube.com/watch?v=$id",id,j.optBoolean("artist"),ArtworkPolicy.decode(j.optJSONArray("images")),SearchContract.text(j.optString("album_id"),100))
+            return OnlineSong("engine:$id",SearchProvider.ENGINE,SearchContract.text(j.getString("title")),SearchContract.text(j.optString("credit"),1000),SearchContract.text(j.optString("album")),j.optLong("duration").coerceIn(0,7*86400000L),j.optString("art").takeIf {SearchContract.https(it,SearchContract.artHosts)}.orEmpty(),"https://www.youtube.com/watch?v=$id",id,j.optBoolean("artist"),ArtworkPolicy.decode(j.optJSONArray("images")),SearchContract.text(j.optString("album_id"),100),SearchContract.labels(j.optJSONArray("genres")),SearchContract.labels(j.optJSONArray("tags")),SearchContract.text(j.optString("release_date"),10),SearchContract.text(j.optString("music_type"),40))
         }
         /** View-only adapter for existing artwork/player composables; never inserted into Room. */
         fun display(s:OnlineSong)=Track(s.id,"",s.title,if(s.artistVerified)s.credit else s.credit.takeIf {it.isNotBlank()}?.let {"Kanal: $it"}.orEmpty(),s.album.ifBlank {"Pemutaran daring"},duration=s.durationMs,artUri=s.artwork,source="stream")

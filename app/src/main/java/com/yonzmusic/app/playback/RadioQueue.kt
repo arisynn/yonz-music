@@ -15,7 +15,7 @@ internal fun radioItem(item:MediaItem,origin:String,session:String,seed:String,g
     }).build()).build()
 internal fun preserveRadioContext(requested:MediaItem,resolved:MediaItem):MediaItem {
     val extras=requested.mediaMetadata.extras ?: return resolved
-    val origin=extras.getString(RADIO_ORIGIN).takeIf {it in setOf("direct","playlist")} ?: return resolved
+    val origin=extras.getString(RADIO_ORIGIN).takeIf {it in setOf("direct","playlist","song-radio","artist-radio")} ?: return resolved
     val session=extras.getString(RADIO_SESSION)?.takeIf {it.matches(Regex("[a-fA-F0-9-]{36}"))} ?: return resolved
     val seed=extras.getString(RADIO_SEED)?.takeIf(StreamRepository::valid) ?: return resolved
     return radioItem(resolved,origin,session,seed,extras.getBoolean(RADIO_GENERATED))

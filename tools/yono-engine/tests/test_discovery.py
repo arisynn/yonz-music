@@ -28,6 +28,17 @@ class FakeCatalog:
         raise AssertionError(method)
 
 class DiscoveryTests(unittest.TestCase):
+    def test_optional_home_metadata_is_supplied_not_inferred(self):
+        empty = song(row(title="Happy Rock Chill"))
+        self.assertEqual([], empty["genres"])
+        self.assertEqual([], empty["tags"])
+        self.assertEqual("", empty["release_date"])
+        supplied = song(row(genres=["Rock"], tags=["chill"], releaseDate="2026-11-01", musicVideoType="MUSIC_VIDEO_TYPE_ATV"))
+        self.assertEqual(["Rock"], supplied["genres"])
+        self.assertEqual(["chill"], supplied["tags"])
+        self.assertEqual("2026-11-01", supplied["release_date"])
+        self.assertEqual([], song(row(genres="Rock"))["genres"])
+
     def test_music_search_uses_songs_and_artists_never_generic_video_search(self):
         catalog=FakeCatalog()
         result=run({"query":"Bertaut"},Control("fixture"),catalog)

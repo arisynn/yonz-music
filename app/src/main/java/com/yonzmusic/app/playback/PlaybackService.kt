@@ -119,6 +119,9 @@ class PlaybackService : MediaSessionService() {
     private fun onlineSongNow():com.yonzmusic.app.search.OnlineSong? {
         val item=player.currentMediaItem ?: return null
         return remoteSong(item) ?: item.mediaMetadata.extras?.getString(RADIO_SEED)?.let {app.streams.metadata.value["engine:$it"]}
+            ?: item.takeIf {!it.mediaId.startsWith("engine:")}?.let {
+                com.yonzmusic.app.search.OnlineSong(it.mediaId,com.yonzmusic.app.search.SearchProvider.ENGINE,it.mediaMetadata.title?.toString().orEmpty(),it.mediaMetadata.artist?.toString().orEmpty(),durationMs=player.duration.coerceAtLeast(0),page="")
+            }
     }
     private fun onlineTick() {onlineSignals.tick(player.currentMediaItem?.mediaMetadata?.extras?.getString("yono.queue.key"),player.isPlaying,player.duration.coerceAtLeast(0),android.os.SystemClock.elapsedRealtime(),System.currentTimeMillis())}
     private fun listenTick(restart: Boolean = false) {
@@ -305,6 +308,7 @@ class PlaybackService : MediaSessionService() {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
     override fun onTaskRemoved(rootIntent: Intent?) { if (!player.playWhenReady || player.mediaItemCount == 0 || player.playbackState == Player.STATE_ENDED) stopSelf() }
     override fun onDestroy() {
+        onlineSignals.flush(android.os.SystemClock.elapsedRealtime(),System.currentTimeMillis())
         listenTick()
         snapshotJob?.cancel(); sleepJob?.cancel(); warmJob?.cancel(); app.sleepEnd.value = 0
         session?.release(); player.release(); scope.cancel()

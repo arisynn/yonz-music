@@ -78,6 +78,25 @@ class PlaybackConnection(context: Context) {
         val session=java.util.UUID.randomUUID().toString()
         controller?.apply {setMediaItems(songs.map {radioItem(remoteMediaItem(it),"playlist",session,it.videoId)},index,0);prepare();play()}
     }
+    /** Home reuses this controller/session and the existing local/source MediaItem contracts. */
+    fun playHome(rows:List<com.yonzmusic.app.home.HomeTrack>,index:Int=0,shuffle:Boolean=false,radioKind:String="",preparedRadio:Boolean=false) {
+        if(rows.isEmpty() || index !in rows.indices || index>=10000)return
+        queueGeneration++
+        val session=java.util.UUID.randomUUID().toString()
+        val items=rows.take(10000).mapIndexed {i,row->
+            val item=row.local?.mediaItem() ?: remoteMediaItem(row.online!!)
+            row.online?.let {song->radioItem(item,
+                when(radioKind){"artist"->"artist-radio";"song"->"song-radio";"direct"->"direct";else->"playlist"},session,song.videoId,preparedRadio && i>0)} ?: item
+        }
+        controller?.apply {setMediaItems(items,index,0);shuffleModeEnabled=shuffle;prepare();play()}
+    }
+    fun enqueueHome(rows:List<com.yonzmusic.app.home.HomeTrack>) {
+        controller?.let {p->
+            val items=rows.take(10000).map {row->row.local?.mediaItem() ?: remoteMediaItem(row.online!!)}
+            p.addMediaItems(manualAppendIndex(p),items)
+            if(p.playbackState==Player.STATE_IDLE)p.prepare()
+        }
+    }
     fun toggle() { controller?.let {
         if(it.playerError!=null && it.currentMediaItem?.mediaId?.startsWith("engine:")==true) {
             val code=it.sessionExtras.getString(PlaybackService.STREAM_ISSUE)

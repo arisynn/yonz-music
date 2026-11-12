@@ -55,6 +55,8 @@ interface MusicDao {
     @Query("SELECT * FROM app_state WHERE name LIKE :prefix") suspend fun states(prefix: String): List<AppState>
     @Query("SELECT * FROM app_state WHERE name LIKE :prefix") fun statesFlow(prefix: String): Flow<List<AppState>>
     @Query("DELETE FROM app_state WHERE name = :name") suspend fun deleteState(name: String)
+    @Query("SELECT * FROM listens WHERE startedAt >= :since ORDER BY startedAt DESC LIMIT 5000") fun homeListens(since:Long): Flow<List<ListenEvent>>
+    @Query("SELECT * FROM app_state WHERE name LIKE 'stream:%' LIMIT 1500") fun homeStreams(): Flow<List<AppState>>
     @Query("SELECT * FROM listens") suspend fun allListens(): List<ListenEvent>
     @Query("SELECT trackId, COUNT(*) AS playCount, MAX(startedAt) AS lastPlayed FROM listens GROUP BY trackId") fun listenStats(): Flow<List<ListenStats>>
     @Insert suspend fun listen(event: ListenEvent)

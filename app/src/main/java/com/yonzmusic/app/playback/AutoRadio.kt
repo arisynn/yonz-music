@@ -72,7 +72,7 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
         var changed=available!=nextAvailable
         available=nextAvailable
         if(nextSession!=session) {
-            session=nextSession;origin=nextOrigin;enabled=available && origin=="direct" && defaultEnabled
+            session=nextSession;origin=nextOrigin;enabled=available && (origin in setOf("song-radio","artist-radio") || origin=="direct" && defaultEnabled)
             seenIds.clear();seenRecordings.clear();failedSeed="";radioSeed=null;error="";changed=true
         }
         val nextKey=player.currentMediaItem?.mediaMetadata?.extras?.getString("yono.queue.key")
@@ -140,7 +140,7 @@ internal class AutoRadio(private val app:YonzApp,private val player:ExoPlayer,pr
                 if(!enabled || player.repeatMode!=Player.REPEAT_MODE_OFF || upcoming().size>=RecommendationEngine.REFILL_BELOW)return@launch
                 val slots=RecommendationEngine.TARGET-upcoming().size
                 val chosen=RecommendationEngine.rank(selectedSeed,candidates,app.forYou.profile,app.forYou.state.value.recent,slots,seenIds,seenRecordings,
-                    upcomingArtists=upcoming().map {player.getMediaItemAt(it).mediaMetadata.artist?.toString().orEmpty()})
+                    upcomingArtists=upcoming().map {player.getMediaItemAt(it).mediaMetadata.artist?.toString().orEmpty()},artistRadio=if(origin=="artist-radio")selectedSeed.credit else "")
                 if(chosen.isEmpty()) {failedSeed=seed;error="Pilihan relevan baru belum tersedia.";return@launch}
                 withContext(Dispatchers.IO) {chosen.forEach {ensureActive();app.streams.register(it)}}
                 ensureActive()

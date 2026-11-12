@@ -34,13 +34,13 @@ import kotlinx.coroutines.withContext
     scrollState: LazyListState = rememberLazyListState(), mixes: List<SmartMix.Mix> = emptyList(),
     vm:com.yonzmusic.app.MusicViewModel?=null,onSearch:()->Unit = {}
 ) {
+    if(vm!=null) {PremiumHomeScreen(vm,onSearch,onImport,scrollState);return}
     val recent=remember(tracks,history) { val map=tracks.filter { it.available }.associateBy { it.id };history.mapNotNull { map[it.trackId] }.take(2) }
     val added=remember(tracks) { tracks.filter { it.available }.sortedByDescending { it.added }.take(6) }
     val albums=remember(tracks) { tracks.filter { it.available && MetadataPolicy.known(it.album).isNotBlank() }.distinctBy(::albumKey).take(5) }
     var mix by remember { mutableStateOf<SmartMix.Mix?>(null) }
     LazyColumn(state=scrollState,contentPadding=PaddingValues(bottom=Design.page)) {
-        if(vm!=null)item("for_you") {MusicForYou(vm,onSearch)}
-        if(tracks.isEmpty() && vm==null) item { EmptyState("Mulai dari musikmu", "Pilih berkas atau folder. Koleksi dan pemutaran tetap berfungsi tanpa internet.",action={ Button(onImport) { Text("Pilih musik") } }) }
+        if(tracks.isEmpty()) item { EmptyState("Mulai dari musikmu", "Pilih berkas atau folder. Koleksi dan pemutaran tetap berfungsi tanpa internet.",action={ Button(onImport) { Text("Pilih musik") } }) }
         if(recent.isNotEmpty()) {
             item { SectionTitle("Terakhir diputar",action={ TextButton(onHistory) { Text("Semua") } }) }
             items(recent,key={ "recent_${it.id}" }) { t -> TrackRow(t,t.id==activeId,t.id in favorites,{onPlay(recent to t.id)},{onMenu(t)}) }
@@ -156,26 +156,18 @@ import kotlinx.coroutines.withContext
             OutlinedButton(onLink,Modifier.weight(1f),contentPadding=PaddingValues(horizontal=Design.sm,vertical=Design.sm)){Text("Tautan",maxLines=1)}
         } }
         item {
-            Surface(onClick = onFavorites, color = MaterialTheme.colorScheme.secondaryContainer, shape = Design.card, modifier = Modifier.fillMaxWidth().padding(Design.page)) {
-                Row(Modifier.padding(Design.page), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Design.gap)) {
-                    Icon(Icons.Rounded.Favorite, null, Modifier.size(36.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
-                    Column(Modifier.weight(1f)) { Text("Favorit", style = MaterialTheme.typography.titleLarge); Text("${songCount(favoriteCount)} pilihanmu", style = MaterialTheme.typography.bodySmall) }
-                    Icon(Icons.Rounded.ChevronRight, null)
-                }
+            Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal=Design.page),horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                AssistChip(onFavorites,label={Text("Favorit · $favoriteCount",maxLines=1)},leadingIcon={Icon(Icons.Rounded.Favorite,null,Modifier.size(18.dp))})
+                if(onDevice!=null)AssistChip(onDevice,label={Text("Offline · $deviceCount",maxLines=1)},leadingIcon={Icon(Icons.Rounded.LibraryMusic,null,Modifier.size(18.dp))})
+                if(onHistory!=null)AssistChip(onHistory,label={Text("Riwayat",maxLines=1)},leadingIcon={Icon(Icons.Rounded.History,null,Modifier.size(18.dp))})
             }
         }
-        if(onDevice!=null)item {
-            ListItem(headlineContent={Text("Musik perangkat")},supportingContent={Text("$deviceCount lagu · offline")},
-                leadingContent={Icon(Icons.Rounded.LibraryMusic,null)},trailingContent={Icon(Icons.Rounded.ChevronRight,null)},
-                modifier=Modifier.clickable(onClick=onDevice).padding(horizontal=Design.md))
-        }
-        if(onHistory!=null)item {TextButton(onHistory,Modifier.padding(horizontal=Design.page)) {Text("Riwayat pemutaran")}}
         if(online.isNotEmpty()) {
             item {SectionTitle("Daring","${online.size} daftar putar")}
             items(online,key={"online:"+it.id}){p->
                 Row(Modifier.fillMaxWidth().clickable{onOnline(p)}.padding(horizontal=Design.page,vertical=Design.md),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(Design.gap)) {
                     SourceThumbnail(p.songs.firstOrNull()?.artwork.orEmpty())
-                    Column(Modifier.weight(1f)){Text(p.name,maxLines=2,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium);Text("${p.songs.size} lagu · daring",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
+                    Column(Modifier.weight(1f)){Text(p.name,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium);Text("${p.songs.size} lagu · daring",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
                     Icon(Icons.Rounded.ChevronRight,null)
                 }
             }

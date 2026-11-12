@@ -2,6 +2,8 @@
 
 Your Music. Your Space.
 
+**1.6.0:** Home local-first dengan Quick Picks, mix harian, Discover, radio lagu/artis, favorit dan statistik perangkat. Header serta carousel beraksen merah; filter Cari dan pintasan Koleksi lebih ringkas. Genre/mood/rilisan hanya muncul bila metadata tersedia. [Implementasi dan batasan](docs/LOCAL_FIRST_HOME_1_6_0.md).
+
 **1.5.5:** Cover mengikuti resolusi layar dengan cache bersama, radio menargetkan 30 lagu relevan, preferensi belajar dari waktu dengar/skip, dan tampilan lebih padat dengan font Inter serta aksen teal. [Implementasi, tes dan batasan](docs/RADIO30_ARTWORK_UI_1_5_5.md).
 
 **1.5.4:** Beranda personal dengan Musik untukmu, Lanjutkan mendengarkan, dan Baru kamu putar. Banner dan daftar populer dihapus. Cover pencarian dipulihkan dari metadata ID lagu yang sama dan diteruskan ke player tanpa menyiapkan ulang audio. [Rincian, tes dan checklist HP](docs/SMART_HOME_1_5_4.md).
